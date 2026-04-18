@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Slop Code Monitor — pola-rs/polars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>pola-rs/polars</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">2.1</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">2.1</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">502</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1577</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">762,675</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">3093</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-18</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(199 hits · 995 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">    assert s1.equals(s2) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">    assert s1.equals(s2, check_dtypes=True) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">    assert s1.equals(s2, null_equal=False) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    assert s3.equals(s4) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    assert s3.equals(s4, check_dtypes=True) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    assert s3.equals(s4, null_equal=False) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">        s1.equals(pl.DataFrame(s2), check_names=False)  # type: ignore[arg-type]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">        s1.equals(pl.DataFrame(s2).lazy(), check_names=False)  # type: ignore[arg-type]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    assert s5.equals(DummySeriesSubclass(s5)) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    assert s1.equals(s2) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">    assert s1.equals(s2, check_names=True) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">        assert not s1.equals(s2, strict=True)  # type: ignore[call-arg]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_equals.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">    assert s.equals(s)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/series/test_series.py</td>
+                    <td>2377</td>
+                    <td class="mono snippet">    assert calculated.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_df.py</td>
+                    <td>3340</td>
+                    <td class="mono snippet">    assert df.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_df.py</td>
+                    <td>3347</td>
+                    <td class="mono snippet">    assert df.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    assert df1.equals(df1) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">    assert df1.equals(df2) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    assert df1.equals(df3) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    assert df.equals(df.with_columns(pl.col(&quot;foo&quot;).cast(pl.Int8))) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    assert df.equals(df.with_columns(pl.col(&quot;ham&quot;).cast(pl.Categorical))) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">    assert df.equals(df) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    assert df.equals(df, null_equal=False) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">        df1.equals(df2.lazy())  # type: ignore[arg-type]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        df1.equals(pl.Series([1, 2, 3]))  # type: ignore[arg-type]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_equals.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">    assert df1.equals(df2) is True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_glimpse.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">    $ d          &lt;str&gt; null, 'b', 'c'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_0_width_df.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">    assert df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/dataframe/test_0_width_df.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">    assert not df.equals(pl.DataFrame())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_list.py</td>
+                    <td>868</td>
+                    <td class="mono snippet">    assert expected.equals(actual)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_temporal.py</td>
+                    <td>381</td>
+                    <td class="mono snippet">    assert s.equals(tz_s, null_equal=False) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_temporal.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">    assert s.equals(tz_s, null_equal=True) is False</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_datatype_exprs.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">    (pl.List(pl.Null()), &quot;list&quot;, &quot;list[null]&quot;, None),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_datatype_exprs.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">    (pl.Array(pl.Null(), 2), &quot;array&quot;, &quot;array[null, 2]&quot;, 0),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_from_pandas.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">    pd_df = pd.DataFrame({&quot;col&quot;: [&quot;a&quot;, null]})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_interop.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">    # Create a pyarrow table with a list[null] column.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_interop.py</td>
+                    <td>1018</td>
+                    <td class="mono snippet">        assert df.equals(df_res)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_ipc.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    assert pd_df.equals(pd_df_read)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_lazy_parquet.py</td>
+                    <td>1026</td>
+                    <td class="mono snippet">assert [x.equals(pl.DataFrame({&quot;x&quot;: 1})) for x in results] == [</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_lazy_json.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">{&quot;a&quot;: {&quot;x&quot;: 1}, &quot;b&quot;: [1,2,3], &quot;c&quot;: {&quot;y&quot;: null}, &quot;d&quot;: [{&quot;k&quot;: &quot;abc&quot;}, {&quot;j&quot;: &quot;123&quot;}, {&quot;l&quot;: 7, &quot;m&quot;: 8}]}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_lazy_json.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">                &quot;c&quot;: '{&quot;y&quot;: null}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    assert out == '[{&quot;a&quot;:1,&quot;b&quot;:&quot;a&quot;},{&quot;a&quot;:2,&quot;b&quot;:&quot;b&quot;},{&quot;a&quot;:3,&quot;b&quot;:null}]'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">    assert value == &quot;&quot;&quot;[{&quot;a&quot;:&quot;1.00&quot;},{&quot;a&quot;:&quot;2.00&quot;},{&quot;a&quot;:null}]&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">        {&quot;a&quot;: 5, &quot;b&quot;: &quot;foo&quot;, &quot;c&quot;: null},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">        {&quot;a&quot;: 11.4, &quot;b&quot;: null, &quot;c&quot;: true, &quot;d&quot;: 8},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">        {&quot;a&quot;: 5, &quot;b&quot;: &quot;foo&quot;, &quot;c&quot;: null},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">        {&quot;a&quot;: 11.4, &quot;b&quot;: null, &quot;c&quot;: true, &quot;d&quot;: 8},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">    assert out == '{&quot;a&quot;:1,&quot;b&quot;:&quot;a&quot;}\n{&quot;a&quot;:2,&quot;b&quot;:&quot;b&quot;}\n{&quot;a&quot;:3,&quot;b&quot;:null}\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">    {&quot;id&quot;: 1, &quot;zero_column&quot;: 0, &quot;empty_array_column&quot;: [], &quot;empty_object_column&quot;: {}, &quot;null_column&quot;: null}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">py-polars/tests/unit/io/test_json.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">    {&quot;id&quot;: 2, &quot;zero_column&quot;: 0, &quot;empty_array_column&quot;: [], &quot;empty_object_column&quot;: {}, &quot;null_column&quot;: null}</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 149 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(214 hits · 428 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/optimizer/slice_pushdown_expr.rs</td>
+                    <td>310</td>
+                    <td class="mono snippet">    //        ┌──────►==◄─────┐  (current expr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/optimizer/slice_pushdown_expr.rs</td>
+                    <td>318</td>
+                    <td class="mono snippet">    //    ┌──────┐   ┌──────┐      │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/optimizer/slice_pushdown_expr.rs</td>
+                    <td>320</td>
+                    <td class="mono snippet">    //    └──────┘   └──────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>439</td>
+                    <td class="mono snippet">        // ┌─────────────────────┬─────────────────────┬──────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>443</td>
+                    <td class="mono snippet">        // ╞═════════════════════╪═════════════════════╪══════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>447</td>
+                    <td class="mono snippet">        // └─────────────────────┴─────────────────────┴──────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>461</td>
+                    <td class="mono snippet">        // ┌─────────────────────────────────┬─────┬───────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>465</td>
+                    <td class="mono snippet">        // ╞═════════════════════════════════╪═════╪═══════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/conversion/type_coercion/binary.rs</td>
+                    <td>469</td>
+                    <td class="mono snippet">        // └─────────────────────────────────┴─────┴───────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/dsl/mod.rs</td>
+                    <td>818</td>
+                    <td class="mono snippet">    /// ╭────────┬────────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/dsl/mod.rs</td>
+                    <td>822</td>
+                    <td class="mono snippet">    /// ╞════════╪════════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/dsl/mod.rs</td>
+                    <td>833</td>
+                    <td class="mono snippet">    /// ╰────────┴────────╯</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>144</td>
+                    <td class="mono snippet">//! ┌──────────┐                 ┌─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>145</td>
+                    <td class="mono snippet">//! │  &quot;Bar&quot;   │ ───────────────▶│ 01  │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>146</td>
+                    <td class="mono snippet">//! └──────────┘                 └─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>147</td>
+                    <td class="mono snippet">//! ┌──────────┐                 ┌─────┬─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>148</td>
+                    <td class="mono snippet">//! │&quot;Fabulous&quot;│ ───────────────▶│ 01  │ 02  │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>149</td>
+                    <td class="mono snippet">//! └──────────┘                 └─────┴─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>150</td>
+                    <td class="mono snippet">//! ┌──────────┐                 ┌─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>151</td>
+                    <td class="mono snippet">//! │  &quot;Soup&quot;  │ ───────────────▶│ 05  │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>152</td>
+                    <td class="mono snippet">//! └──────────┘                 └─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>153</td>
+                    <td class="mono snippet">//! ┌──────────┐                 ┌─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>154</td>
+                    <td class="mono snippet">//! │   &quot;ZZ&quot;   │ ───────────────▶│ 07  │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>155</td>
+                    <td class="mono snippet">//! └──────────┘                 └─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>162</td>
+                    <td class="mono snippet">//!                           ┌─────┬─────┬─────┬─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>164</td>
+                    <td class="mono snippet">//!                           └─────┴─────┴─────┴─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>166</td>
+                    <td class="mono snippet">//!                           ┌─────┬─────┬─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>168</td>
+                    <td class="mono snippet">//!                           └─────┴─────┴─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>170</td>
+                    <td class="mono snippet">//!                           ┌─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>172</td>
+                    <td class="mono snippet">//!                           └─────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>188</td>
+                    <td class="mono snippet">//! ┌───────┬────────────────────────┬───────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>190</td>
+                    <td class="mono snippet">//! └───────┴────────────────────────┴───────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>196</td>
+                    <td class="mono snippet">//! ┌───────┬───────────────┬───────┬─────────┬───────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>198</td>
+                    <td class="mono snippet">//! └───────┴───────────────┴───────┴─────────┴───────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-row/src/lib.rs</td>
+                    <td>239</td>
+                    <td class="mono snippet">//!                          └──── rows ────┘   └───────── row lengths ─────────┘  └─ count ─┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/eager.rs</td>
+                    <td>371</td>
+                    <td class="mono snippet">//! // ╭─────┬─────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/eager.rs</td>
+                    <td>375</td>
+                    <td class="mono snippet">//! // ╞═════╪═════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/eager.rs</td>
+                    <td>379</td>
+                    <td class="mono snippet">//! // ╰─────┴─────╯</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>60</td>
+                    <td class="mono snippet">//! // ╭─────┬─────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>64</td>
+                    <td class="mono snippet">//! // ╞═════╪═════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>66</td>
+                    <td class="mono snippet">//! // ╰─────┴─────╯</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>90</td>
+                    <td class="mono snippet">//! // ╭─────┬─────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>94</td>
+                    <td class="mono snippet">//! // ╞═════╪═════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>98</td>
+                    <td class="mono snippet">//! // ╰─────┴─────╯</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>148</td>
+                    <td class="mono snippet">//! // ╭─────┬─────┬─────┬──────┬─────────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>152</td>
+                    <td class="mono snippet">//! // ╞═════╪═════╪═════╪══════╪═════════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>159</td>
+                    <td class="mono snippet">//! // ╰─────┴─────┴─────┴──────┴─────────╯</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>218</td>
+                    <td class="mono snippet">//! // ╭───────┬───────┬───────┬────────────╮</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>222</td>
+                    <td class="mono snippet">//! // ╞═══════╪═══════╪═══════╪════════════╡</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/src/docs/lazy.rs</td>
+                    <td>233</td>
+                    <td class="mono snippet">//! // ╰───────┴───────┴───────┴────────────╯</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 164 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(21 hits · 42 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-expr/src/expressions/structeval.rs</td>
+                    <td>300</td>
+                    <td class="mono snippet">        // elementwise top-level and not fallible. We leverage the reference dispatch for ApplyExpr,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-plan/src/plans/aexpr/predicates/skip_batches.rs</td>
+                    <td>504</td>
+                    <td class="mono snippet">    // Essentially, what this does is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-core/src/series/arithmetic/list.rs</td>
+                    <td>271</td>
+                    <td class="mono snippet">            //   * Essentially as if the NULL primitive was added to every primitive in the row of the list column.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-core/src/chunked_array/mod.rs</td>
+                    <td>122</td>
+                    <td class="mono snippet">/// When multiplying two [`ChunkedArray`]s with different chunk sizes they cannot utilize [SIMD](https://en.wikipedia.org/wiki/SIMD) for instance.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-core/src/chunked_array/logical/time.rs</td>
+                    <td>12</td>
+                    <td class="mono snippet">        // Invalid time values are replaced with `null` during the arrow cast. We utilize the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-core/src/frame/column/mod.rs</td>
+                    <td>700</td>
+                    <td class="mono snippet">                // We utilize the aggregation on Series to see:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-arrow/src/array/mod.rs</td>
+                    <td>547</td>
+                    <td class="mono snippet">        /// This is an API to leverage clone-on-write</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-arrow/src/array/utf8/mutable.rs</td>
+                    <td>222</td>
+                    <td class="mono snippet">    /// This is an API to leverage clone-on-write</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-arrow/src/array/utf8/mod.rs</td>
+                    <td>480</td>
+                    <td class="mono snippet">    /// This is an API to leverage clone-on-write</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-io/src/parquet/read/read_impl.rs</td>
+                    <td>494</td>
+                    <td class="mono snippet">    // faster. Essentially, it sees how many times it needs to switch between</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars-stream/src/nodes/joins/equi_join.rs</td>
+                    <td>1023</td>
+                    <td class="mono snippet">            // TODO: implement something more re-usable and robust.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/parquet/read/mod.rs</td>
+                    <td>3</td>
+                    <td class="mono snippet">/// In comparison to Arrow, this in-memory format does not leverage logical types nor SIMD operations,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/io/test_spreadsheet.py</td>
+                    <td>628</td>
+                    <td class="mono snippet">    # read multiple sheets in conjunction with 'schema_overrides'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/io/test_delta_deletion_vector.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># explicitly not comprehensive and should be used with care.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/operations/namespaces/temporal/test_round.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # Definitely uses slowpath:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/operations/namespaces/temporal/test_truncate.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    # Definitely uses slowpath:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/testing/parametric/strategies/test_core.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">    # ensure dtype constraint works in conjunction with 'n' cols</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/constructors/test_constructors.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">        # in conjunction with full 'columns' override (rename/downcast)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/src/polars/_utils/construction/series.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">        # # Essentially, when given a [0, u64::MAX] then it would Overflow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/src/polars/io/spreadsheet/_write_utils.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Insert dummy frame columns in order to create empty/named table columns.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/src/polars/functions/col.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    # note: using `co_qualname` is more robust; can additionally</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(18 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_list.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    # Create a left relation where the join column contains a null value.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_list.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # Create a right relation where there is a column to count distinct on.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/datatypes/test_temporal.py</td>
+                    <td>2368</td>
+                    <td class="mono snippet">    # Create a Series where the null value is backed by a value which would</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_interop.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">    # Create an enum / categorical / dictionary typed pyarrow array</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_interop.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">    # Create a pyarrow table with a list[null] column.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/interop/test_interop.py</td>
+                    <td>872</td>
+                    <td class="mono snippet">    # Create a dataset with 3 rows</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/io/test_parquet.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    # Create a dataframe with 3 chunks:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/io/test_delta_deletion_vector.py</td>
+                    <td>27</td>
+                    <td class="mono snippet"># This file contains temporary homegrown logic with the sole purpose of generating</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/operations/namespaces/temporal/test_datetime.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">    # Define a DataFrame with columns for datetime, date, and time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/sql/test_set_ops.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">    # Create a context and register the tables</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/src/polars/_plr.py</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This module represents the Rust API functions exposed to Python through PyO3. We do a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/io/sheets_colab.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Creating a new sheet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/expressions/lists-and-arrays.md</td>
+                    <td>223</td>
+                    <td class="mono snippet">### Creating an array column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/development/contributing/index.md</td>
+                    <td>356</td>
+                    <td class="mono snippet">#### Creating a new user guide page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/polars-cloud/explain/service-accounts.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">## Create a service account</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/polars-on-premises/bare-metal/integrations/slurm.md</td>
+                    <td>259</td>
+                    <td class="mono snippet"># Create a shared Python virtual environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/src/python/user-guide/expressions/user-defined-functions.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">    # Create a struct that has two columns in it:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/release-python.yml</td>
+                    <td>10</td>
+                    <td class="mono snippet">      # Create the sdist and build the wheels, but do not publish to PyPI / GitHub.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(22 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/io/test_skip_batch_predicate.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">    except Exception as _:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/io/test_skip_batch_predicate.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">            except Exception as _:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/io/test_delta_deletion_vector.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/io/test_multiscan.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">    except Exception as _:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/meta/test_api.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/_cpu_check.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/series/utils.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/datatypes/convert.py</td>
+                    <td>352</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/catalog/unity/client.py</td>
+                    <td>665</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/plugins.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/database/_executor.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/iceberg/_dataset.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">            except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/iceberg/_utils.py</td>
+                    <td>395</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/cloud/credential_provider/_providers.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/io/cloud/credential_provider/_providers.py</td>
+                    <td>492</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/meta/versions.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/convert/general.py</td>
+                    <td>1154</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/lazyframe/frame.py</td>
+                    <td>827</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/source/_build/scripts/people.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/source/src/python/user-guide/io/hive.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/source/src/python/user-guide/expressions/categoricals.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/source/src/python/user-guide/lazy/schema.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(10 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">py-polars/tests/unit/operations/map/test_inefficient_map_warning.py</td>
+                    <td>576</td>
+                    <td class="mono snippet">    # make sure to keep the `^` and `$`, and the assertion on `len(warnings)`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/concepts/expressions-and-contexts.md</td>
+                    <td>212</td>
+                    <td class="mono snippet">[the lazy API and the function `explain`](lazy-api.md#previewing-the-query-plan), which you can use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/expressions/casting.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">It's worth noting that `str.to_datetime` features additional options that support timezone</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/expressions/structs.md</td>
+                    <td>140</td>
+                    <td class="mono snippet">As mentioned earlier, the data type `Struct` is also useful if you need to pass multiple columns as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/user-guide/expressions/user-defined-python-functions.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">We want to run a custom function on the contents of a whole `Series`. For demonstration purposes,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/polars-cloud/run/query-profile.md</td>
+                    <td>51</td>
+                    <td class="mono snippet">    yourself. Don't forget to change the workspace name to one of your own workspaces.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/polars-cloud/run/query-profile.md</td>
+                    <td>127</td>
+                    <td class="mono snippet">    Copy and paste the example below to explore the feature yourself. Don't forget to change the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/polars-cloud/run/distributed-engine.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">PDS-H benchmarks queries for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/src/python/polars-cloud/remote-query.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # make sure to enter your own workspace name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyo3-polars/example/derive_expression/expression_lib/src/expressions.rs</td>
+                    <td>205</td>
+                    <td class="mono snippet">/// This expression is for demonstration purposes as we have a dedicated</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>418</td>
+                    <td class="mono snippet">-86.64408227,&quot;Lorem Ipsum is simply dummy text of the printing and typesetting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>419</td>
+                    <td class="mono snippet">industry. Lorem Ipsum has been the industry's standard dummy text ever since th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>423</td>
+                    <td class="mono snippet">in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>425</td>
+                    <td class="mono snippet">versions of Lorem Ipsum.&quot;,11</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>436</td>
+                    <td class="mono snippet">            r#&quot;Lorem Ipsum is simply dummy text of the printing and typesetting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>437</td>
+                    <td class="mono snippet">industry. Lorem Ipsum has been the industry's standard dummy text ever since th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>441</td>
+                    <td class="mono snippet">in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">crates/polars/tests/it/io/csv.rs</td>
+                    <td>443</td>
+                    <td class="mono snippet">versions of Lorem Ipsum.&quot;#,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">crates/polars-stream/src/nodes/io_sources/ipc/record_batch_decode.rs</td>
+                    <td>35</td>
+                    <td class="mono snippet">        // Rows as requested, relative to the start of the Record Batch.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">docs/source/development/contributing/index.md</td>
+                    <td>307</td>
+                    <td class="mono snippet">- If your contribution contains code generated by AI you **must**:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/io/test_delta_deletion_vector.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">    # Set statistics to pre-deletion-vector values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/operations/test_is_in.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">    # Check if empty list is converted to pl.String</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/operations/arithmetic/test_arithmetic.py</td>
+                    <td>211</td>
+                    <td class="mono snippet">    # Check if fused is turned off for literals see: #9857</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/unit/lazyframe/test_cse.py</td>
+                    <td>898</td>
+                    <td class="mono snippet">    # Check if output is stable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/tests/docs/run_doctest.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # Set doctests to fail on warnings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/source/_build/scripts/macro.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">            # Check if file exists for the language</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">crates/polars-io/src/path_utils/mod.rs</td>
+                    <td>222</td>
+                    <td class="mono snippet">        // We need to check if it is a directory for local paths (we can be here due</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">py-polars/src/polars/lazyframe/opt_flags.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">    def helper(f: QueryOptFlags, field_name: str, value: bool) -&gt; QueryOptFlags:  # noqa: FBT001</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+</div>
+<footer>
+    Generated on 2026-04-18 16:34 UTC &middot; AI Slop Code Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+    </a>
+</footer>
+</body>
+</html>

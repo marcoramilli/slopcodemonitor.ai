@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Slop Code Monitor — go-delve/delve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>go-delve/delve</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">193</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">423</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">131,183</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">597</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-18</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(177 hits · 354 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>226</td>
+                    <td class="mono snippet">Telemetry notice: starting with version 1.24.0 Delve will begin collecting opt-in telemetry data using the same mechanism used by the toolchain, see &lt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>226</td>
+                    <td class="mono snippet">Telemetry notice: starting with version 1.24.0 Delve will begin collecting opt-in telemetry data using the same mechanism used by the toolchain, see &lt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>1</td>
+                    <td class="mono snippet">![Delve](https://raw.githubusercontent.com/go-delve/delve/master/assets/delve_horizontal.png)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/go-delve/delve/master/LICENSE)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>4</td>
+                    <td class="mono snippet">[![Go Reference](https://pkg.go.dev/badge/github.com/go-delve/delve.svg)](https://pkg.go.dev/github.com/go-delve/delve)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">[![Build Status](https://delve.teamcity.com/app/rest/builds/buildType:(id:Delve_AggregatorBuild)/statusIcon.svg)](https://delve.teamcity.com/viewType.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">The GitHub issue tracker is for **bugs** only. Please use the [developer mailing list](https://groups.google.com/forum/#!forum/delve-dev) for any feat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">The GitHub issue tracker is for **bugs** only. Please use the [developer mailing list](https://groups.google.com/forum/#!forum/delve-dev) for any feat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">If you are planning to contribute a significant change, please draft a design document (or start a conversation) and post it to the [developer mailing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">If you are planning to contribute a significant change, please draft a design document (or start a conversation) and post it to the [developer mailing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">AGENTS.md</td>
+                    <td>351</td>
+                    <td class="mono snippet">- [Internal Architecture Slides](https://speakerdeck.com/aarzilli/internal-architecture-of-delve)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CLAUDE.md</td>
+                    <td>351</td>
+                    <td class="mono snippet">- [Internal Architecture Slides](https://speakerdeck.com/aarzilli/internal-architecture-of-delve)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>129</td>
+                    <td class="mono snippet">	// Give delve some time to compile and write the binary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>155</td>
+                    <td class="mono snippet">		// Sometimes delve on Windows can't remove the built binary before</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>157</td>
+                    <td class="mono snippet">		// See: https://travis-ci.com/go-delve/delve/jobs/296325131.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>1649</td>
+                    <td class="mono snippet">	// Check that when delve is run twice in the same directory simultaneously</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/cmds/commands.go</td>
+                    <td>400</td>
+                    <td class="mono snippet">	// -c is unused and exists so delve can be used with coredumpctl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/cmds/commands.go</td>
+                    <td>1007</td>
+                    <td class="mono snippet">// so SIGINT gets sent to the debuggee and not to delve.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/cmds/commands.go</td>
+                    <td>1013</td>
+                    <td class="mono snippet">		// as SIGINT to delve. Ignore it instead of stopping the server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/backend_test_health.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">	* 6 see https://github.com/go-delve/delve/issues/2768</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/faq.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">- [32bit ARM support](https://github.com/go-delve/delve/issues/328)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/faq.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">- [PowerPC support](https://github.com/go-delve/delve/issues/1564)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/faq.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">- [OpenBSD](https://github.com/go-delve/delve/issues/1477)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/faq.md</td>
+                    <td>122</td>
+                    <td class="mono snippet">If you still think this is a bug in Delve and not a configuration problem, open an [issue](https://github.com/go-delve/delve/issues), filling the issu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/EditorIntegration.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">* [vim-delve](https://github.com/sebdah/vim-delve) (both Vim and Neovim)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/KnownBugs.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">- When Delve is compiled with versions of go prior to 1.7.0 it is not possible to set a breakpoint on a function in a remote package using the `Receiv</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/KnownBugs.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">- When Delve is compiled with versions of go prior to 1.7.0 it is not possible to set a breakpoint on a function in a remote package using the `Receiv</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/internal/README.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">* [Architecture of Delve slides](https://speakerdeck.com/aarzilli/internal-architecture-of-delve).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/internal/portnotes.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">Code that isn't tested doesn't work, we like to run CI on all supported platforms. Currently our CI is done on an [instance of TeamCity cloud provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/internal/portnotes.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">An introduction to the architecture of Delve can be found in the 2018 Gophercon Iceland talk: [slides](https://speakerdeck.com/aarzilli/internal-archi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/installation/README.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">[GitHub Releases page](https://github.com/go-delve/delve/releases).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/installation/README.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">  --certificate-identity-regexp &quot;https://github.com/go-delve/delve/.github/workflows/release.yml@refs/tags/.*&quot; \</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/installation/README.md</td>
+                    <td>47</td>
+                    <td class="mono snippet">$ git clone https://github.com/go-delve/delve</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/installation/README.md</td>
+                    <td>84</td>
+                    <td class="mono snippet">You do not need the macOS native backend and it [has known problems](https://github.com/go-delve/delve/issues/1112). If you still want to build it:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">amend_breakpoint(Breakpoint) | Equivalent to API call [AmendBreakpoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.AmendBreak</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">ancestors(GoroutineID, NumAncestors, Depth) | Equivalent to API call [Ancestors](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.A</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">attached_to_existing_process() | Equivalent to API call [AttachedToExistingProcess](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">build_id() | Equivalent to API call [BuildID](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.BuildID)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">cancel_next() | Equivalent to API call [CancelNext](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.CancelNext)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">checkpoint(Where) | Equivalent to API call [Checkpoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.Checkpoint)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">clear_breakpoint(Id, Name) | Equivalent to API call [ClearBreakpoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.ClearBreakpo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">clear_checkpoint(ID) | Equivalent to API call [ClearCheckpoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.ClearCheckpoint)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">raw_command(Name, ThreadID, GoroutineID, ReturnInfoLoadConfig, Expr, WithEvents, UnsafeCall) | Equivalent to API call [Command](https://pkg.go.dev/git</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>29</td>
+                    <td class="mono snippet">create_breakpoint(Breakpoint, LocExpr, SubstitutePathRules, Suspended) | Equivalent to API call [CreateBreakpoint](https://pkg.go.dev/github.com/go-de</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">create_ebpf_tracepoint(FunctionName) | Equivalent to API call [CreateEBPFTracepoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServ</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">create_watchpoint(Scope, Expr, Type) | Equivalent to API call [CreateWatchpoint](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.C</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">debug_info_directories(Set, List) | Equivalent to API call [DebugInfoDirectories](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">detach(Kill) | Equivalent to API call [Detach](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.Detach)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>34</td>
+                    <td class="mono snippet">disassemble(Scope, StartPC, EndPC, Flavour) | Equivalent to API call [Disassemble](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/cli/starlark.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">dump_cancel() | Equivalent to API call [DumpCancel](https://pkg.go.dev/github.com/go-delve/delve/service/rpc2#RPCServer.DumpCancel)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 127 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(5 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/proc/target_exec.go</td>
+                    <td>782</td>
+                    <td class="mono snippet">	if !backward &amp;&amp; !topframe.Current.Fn.cu.image.Stripped() {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/proc/target_exec.go</td>
+                    <td>1062</td>
+                    <td class="mono snippet">	if topframe.Call.Fn == nil || topframe.Call.Fn.cu.image.Stripped() {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/proc/target_exec.go</td>
+                    <td>1071</td>
+                    <td class="mono snippet">	dwarfTree, err := topframe.Current.Fn.cu.image.getDwarfTree(topframe.Current.Fn.offset)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/proc/stack.go</td>
+                    <td>400</td>
+                    <td class="mono snippet">			r.Call.File, r.Call.Line = r.Current.Fn.cu.lineInfo.PCToLine(r.Current.Fn.Entry, it.pc-1)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/proc/stack.go</td>
+                    <td>490</td>
+                    <td class="mono snippet">	dwarfTree, err := frame.Call.Fn.cu.image.getDwarfTree(frame.Call.Fn.offset)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>997</td>
+                    <td class="mono snippet">	Street: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/dlv/dlv_test.go</td>
+                    <td>1002</td>
+                    <td class="mono snippet">		Street: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">_fixtures/issue1598.go</td>
+                    <td>9</td>
+                    <td class="mono snippet">	return `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">_fixtures/issue1598.go</td>
+                    <td>9</td>
+                    <td class="mono snippet">	return `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">_fixtures/traceverb.go</td>
+                    <td>48</td>
+                    <td class="mono snippet">		Street: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/terminal/command_test.go</td>
+                    <td>1068</td>
+                    <td class="mono snippet">		if !strings.Contains(r, &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut \\nlabore et dolore magna aliq</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/terminal/command_test.go</td>
+                    <td>1068</td>
+                    <td class="mono snippet">		if !strings.Contains(r, &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut \\nlabore et dolore magna aliq</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">_scripts/gencert.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Create the certificate template</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">_scripts/gencert.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Check if the certificate is already present in the system keychain</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">_fixtures/testreturnaddress.go</td>
+                    <td>5</td>
+                    <td class="mono snippet">func doSomething(wg *sync.WaitGroup) {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/debugdetect/doc.go</td>
+                    <td>8</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+</div>
+<footer>
+    Generated on 2026-04-18 16:34 UTC &middot; AI Slop Code Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+    </a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Slop Code Monitor — pandas-dev/pandas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>pandas-dev/pandas</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">5.6</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">5.6</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1249</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">3925</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">697,217</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1755</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-18</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(506 hits · 2530 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/index_object.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        self.idx_non_object.equals(self.mi_large_slow)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>570</td>
+                    <td class="mono snippet">        self.float_df.equals(self.float_df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>573</td>
+                    <td class="mono snippet">        self.float_df.equals(self.float_df_nan)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>576</td>
+                    <td class="mono snippet">        self.nonunique_cols.equals(self.nonunique_cols)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>579</td>
+                    <td class="mono snippet">        self.nonunique_cols.equals(self.nonunique_cols_nan)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>582</td>
+                    <td class="mono snippet">        self.object_df.equals(self.object_df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/frame_methods.py</td>
+                    <td>585</td>
+                    <td class="mono snippet">        self.object_df.equals(self.object_df_nan)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/multiindex_object.py</td>
+                    <td>236</td>
+                    <td class="mono snippet">        self.mi.equals(self.mi_deepcopy)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">asv_bench/benchmarks/multiindex_object.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">        self.mi.equals(self.idx_non_object)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/algorithms.py</td>
+                    <td>919</td>
+                    <td class="mono snippet">                and idx.equals(values)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/resample.py</td>
+                    <td>2184</td>
+                    <td class="mono snippet">            and obj.index.equals(res_index)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1412</td>
+                    <td class="mono snippet">        &gt;&gt;&gt; df.equals(exactly_equal)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1423</td>
+                    <td class="mono snippet">        &gt;&gt;&gt; df.equals(different_column_type)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1434</td>
+                    <td class="mono snippet">        &gt;&gt;&gt; df.equals(different_data_type)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1441</td>
+                    <td class="mono snippet">        &gt;&gt;&gt; df_nan1.equals(df_nan2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1447</td>
+                    <td class="mono snippet">        &gt;&gt;&gt; df_nan1.equals(df_nan3)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1453</td>
+                    <td class="mono snippet">        return self._mgr.equals(other._mgr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>9947</td>
+                    <td class="mono snippet">        if (axis is None or axis == 0) and not self.index.equals(other.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>9955</td>
+                    <td class="mono snippet">            and not self.columns.equals(other.columns)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>9997</td>
+                    <td class="mono snippet">            if self.index.equals(other.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>10019</td>
+                    <td class="mono snippet">            if not join_index.equals(other.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>12742</td>
+                    <td class="mono snippet">        If all elements in Series are NA/null, returns None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>12776</td>
+                    <td class="mono snippet">        If all elements in DataFrame are NA/null, returns None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>12829</td>
+                    <td class="mono snippet">        If all elements in Series are NA/null, returns None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>12863</td>
+                    <td class="mono snippet">        If all elements in DataFrame are NA/null, returns None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/series.py</td>
+                    <td>448</td>
+                    <td class="mono snippet">            elif not data.index.equals(index) or copy:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/series.py</td>
+                    <td>3599</td>
+                    <td class="mono snippet">            if self.index.equals(other.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/series.py</td>
+                    <td>7024</td>
+                    <td class="mono snippet">            if not left.index.equals(right.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/series.py</td>
+                    <td>7062</td>
+                    <td class="mono snippet">        if not self.index.equals(other.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>4292</td>
+                    <td class="mono snippet">        if isinstance(key, Series) and not key.index.equals(self.index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>4712</td>
+                    <td class="mono snippet">                if len(cols_droplevel) and not cols_droplevel.equals(value.columns):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>4715</td>
+                    <td class="mono snippet">                if not cols_droplevel.equals(cols):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>9088</td>
+                    <td class="mono snippet">            assert self.index.equals(right.index)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>9089</td>
+                    <td class="mono snippet">            assert self.columns.equals(right.columns)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>9102</td>
+                    <td class="mono snippet">            assert right.index.equals(self.columns)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>9114</td>
+                    <td class="mono snippet">            assert right.index.equals(self.index)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>9218</td>
+                    <td class="mono snippet">            and not self.columns.equals(right.columns)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>18902</td>
+                    <td class="mono snippet">    if value.index.equals(index) or not len(index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>2686</td>
+                    <td class="mono snippet">        elif not unique_cols and value.columns.equals(self.obj.columns):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3014</td>
+                    <td class="mono snippet">                    if not len(new_ix) or ser.index.equals(new_ix):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3023</td>
+                    <td class="mono snippet">                    if ser.index.equals(ax) or not len(ax):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3033</td>
+                    <td class="mono snippet">            if ser.index.equals(ax):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3041</td>
+                    <td class="mono snippet">            if ser.index.equals(ax):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3069</td>
+                    <td class="mono snippet">                if df.index.equals(idx) and df.columns.equals(cols):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3077</td>
+                    <td class="mono snippet">            if df.index.equals(ax):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/indexing.py</td>
+                    <td>3417</td>
+                    <td class="mono snippet">    if isinstance(key, ABCSeries) and not key.index.equals(index):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>360</td>
+                    <td class="mono snippet">        if not isinstance(result, (ABCSeries, ABCDataFrame)) or not result.index.equals(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/reshape/concat.py</td>
+                    <td>490</td>
+                    <td class="mono snippet">        if not no_sort_result_index.equals(orig):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/reshape/concat.py</td>
+                    <td>652</td>
+                    <td class="mono snippet">                if not new_labels.equals(obj_labels):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/core/reshape/concat.py</td>
+                    <td>919</td>
+                    <td class="mono snippet">            if isinstance(hlevel, Index) and hlevel.equals(level):</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 456 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(587 hits · 1174 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">AUTHORS.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">#-----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">AUTHORS.md</td>
+                    <td>45</td>
+                    <td class="mono snippet">#-----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">doc/source/conf.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">doc/source/conf.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>98</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>100</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>256</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>258</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>280</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>282</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>489</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>491</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>527</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>529</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>608</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>610</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>840</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>842</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>956</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>958</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1008</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1010</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1033</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1212</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1214</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1257</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1259</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1336</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>1338</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>2014</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/conftest.py</td>
+                    <td>2016</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/algorithms.py</td>
+                    <td>1430</td>
+                    <td class="mono snippet"># --------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/arraylike.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/arraylike.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/arraylike.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/arraylike.py</td>
+                    <td>253</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>299</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>472</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>484</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>946</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1349</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1455</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1587</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1874</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>2024</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>2066</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>2117</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>2150</td>
+                    <td class="mono snippet">    # ----------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 537 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(31 hits · 62 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">requirements-dev.txt</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file is auto-generated from environment.yml, do not modify.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_pip_deps_from_conda.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">        f&quot;# This file is auto-generated from {conda_path.name}, do not modify.\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">doc/source/conf.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its containing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>1317</td>
+                    <td class="mono snippet">                # Create the series</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>1456</td>
+                    <td class="mono snippet">                # Create the series</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/interchange/from_dataframe.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">        # Create the string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/interchange/column.py</td>
+                    <td>370</td>
+                    <td class="mono snippet">            # Define the dtype for the returned buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/interchange/column.py</td>
+                    <td>428</td>
+                    <td class="mono snippet">            # Define the dtype of the returned buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/dtypes/concat.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # Creating an empty array directly is tempting, but the winnings would be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/computation/parsing.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">    # Create a dict with the special characters and their replacement string.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/_numba/extensions.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">    # Create an empty typed dict in numba for the hashmap for indexing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/arrays/datetimes.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">            # Create a linearly spaced date_range in local time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/util/version/__init__.py</td>
+                    <td>5</td>
+                    <td class="mono snippet"># This file is dual licensed under the terms of the Apache License, Version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/parsers/readers.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">    # Create the parser.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/excel/_base.py</td>
+                    <td>1140</td>
+                    <td class="mono snippet">    # Defining an ExcelWriter implementation (see abstract methods for more...)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/excel/_xlsxwriter.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        # Create an XlsxWriter format object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/clipboard/__init__.py</td>
+                    <td>459</td>
+                    <td class="mono snippet">        # This function is heavily based on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/test_optional_dependency.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">    # Create a fake module with a submodule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/series/test_formats.py</td>
+                    <td>286</td>
+                    <td class="mono snippet">        # Define a stub extension type with just enough code to run Series.__repr__()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/series/accessors/test_cat_accessor.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">        # This method is likely to be confused, so test that it raises an error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/apply/test_invalid_arg.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is organized by reason for exception.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/apply/test_frame_apply_relabeling.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # This method is used by other libraries (e.g. dask)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/resample/test_period_index.py</td>
+                    <td>339</td>
+                    <td class="mono snippet">        # Create the expected series</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/io/test_compression.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">    # Create a new temporary file for uncompressed comparison</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/tseries/offsets/test_custom_business_month.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">        # Define a TradingDay offset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/tseries/offsets/test_custom_business_month.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">        # Define a TradingDay offset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/tseries/offsets/test_custom_business_day.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">        # Define a TradingDay offset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/libs/test_lib.py</td>
+                    <td>314</td>
+                    <td class="mono snippet">    # Define a custom ndarray subclass</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/plotting/frame/test_frame_color.py</td>
+                    <td>711</td>
+                    <td class="mono snippet">        # Creating a DataFrame with duplicate column labels and testing colors of them.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/arithmetic/test_datetime64.py</td>
+                    <td>772</td>
+                    <td class="mono snippet">    # This class is intended for &quot;finished&quot; tests that are fully parametrized</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/arithmetic/test_array_ops.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # Define a custom ndarray subclass</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(46 hits · 46 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">doc/make.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/series.py</td>
+                    <td>6466</td>
+                    <td class="mono snippet">            except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>14333</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>404</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>1125</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/groupby/generic.py</td>
+                    <td>2756</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/groupby/groupby.py</td>
+                    <td>1489</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/_arrow_string_mixins.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/base.py</td>
+                    <td>430</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/util/_print_versions.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/util/_exceptions.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/pytables.py</td>
+                    <td>1326</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/pytables.py</td>
+                    <td>1891</td>
+                    <td class="mono snippet">                    except Exception as detail:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/sql.py</td>
+                    <td>715</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/sql.py</td>
+                    <td>2137</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/sql.py</td>
+                    <td>2689</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/stata.py</td>
+                    <td>2934</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/parsers/readers.py</td>
+                    <td>1936</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/parsers/readers.py</td>
+                    <td>1949</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/parsers/readers.py</td>
+                    <td>1963</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/excel/_base.py</td>
+                    <td>567</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/excel/_base.py</td>
+                    <td>962</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/json/_json.py</td>
+                    <td>1131</td>
+                    <td class="mono snippet">        except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/json/_json.py</td>
+                    <td>1378</td>
+                    <td class="mono snippet">                    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/sas/sas7bdat.py</td>
+                    <td>241</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/sas/sas_xport.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/methods.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/ops.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/ops.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>211</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">            except Exception as err2:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">            except Exception as err2:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dim2.py</td>
+                    <td>299</td>
+                    <td class="mono snippet">            except Exception as err2:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/test_html.py</td>
+                    <td>1433</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/test_html.py</td>
+                    <td>1501</td>
+                    <td class="mono snippet">                except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/frame/test_block_internals.py</td>
+                    <td>439</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/api/test_api.py</td>
+                    <td>576</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/tslibs/test_conversion.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/tslibs/test_conversion.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/plotting/_matplotlib/converter.py</td>
+                    <td>339</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/plotting/_matplotlib/converter.py</td>
+                    <td>363</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/plotting/_matplotlib/converter.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">        except Exception:  # pragma: no cover</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/plotting/_matplotlib/core.py</td>
+                    <td>1738</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(33 hits · 41 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/missing.py</td>
+                    <td>518</td>
+                    <td class="mono snippet">        # both directions... just use _interp_limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/missing.py</td>
+                    <td>1102</td>
+                    <td class="mono snippet">            # just use forwards</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>1592</td>
+                    <td class="mono snippet">    # operations should utilize/extend these methods when possible so that we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>4291</td>
+                    <td class="mono snippet">                # so just return them (GH 6394)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>6528</td>
+                    <td class="mono snippet">            #  robust in case we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/frame.py</td>
+                    <td>4584</td>
+                    <td class="mono snippet">        # NB: we can't just use self.loc[key] = value because that</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/apply.py</td>
+                    <td>1104</td>
+                    <td class="mono snippet">        # so just return a copy of the existing object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/reshape/merge.py</td>
+                    <td>1340</td>
+                    <td class="mono snippet">                # make sure to just use the right values or vice-versa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/reshape/reshape.py</td>
+                    <td>434</td>
+                    <td class="mono snippet">            # Otherwise, we just use each level item exactly once:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/strings/accessor.py</td>
+                    <td>4806</td>
+                    <td class="mono snippet">    # ideally we just pass `dtype=arr.dtype` unconditionally, but this fails</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/groupby/grouper.py</td>
+                    <td>821</td>
+                    <td class="mono snippet">    # already have a BaseGrouper, just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/window/online.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">                        # used in conjunction with vals[i+1]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/window/numba_.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">                            # is to be used in conjunction with vals[i+1]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/window/numba_.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">                            # is to be used in conjunction with vals[i+1]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/_ranges.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">        # cannot just use e = Timestamp(end) + 1 because arange breaks when</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/masked.py</td>
+                    <td>757</td>
+                    <td class="mono snippet">                # special case, here we can simply return the underlying data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/base.py</td>
+                    <td>1997</td>
+                    <td class="mono snippet">               # just pass that here instead of coercing to object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/indexes/base.py</td>
+                    <td>5337</td>
+                    <td class="mono snippet">            # TODO(ExtensionIndex): remove special-case, just use self._values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/stata.py</td>
+                    <td>2989</td>
+                    <td class="mono snippet">        # ds_format - just use 114</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/parsers/arrow_parser_wrapper.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">            # just set to pyarrow default of None</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/json/_normalize.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">    # Determine we have a JSON list to turn to lines otherwise just return the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/reshape/merge/test_merge_asof.py</td>
+                    <td>1909</td>
+                    <td class="mono snippet">        # just use a single ticker</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/dtype.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">        # (we shortcut to just use that dtype as the common dtype), but</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/test_stata.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">        # TODO(GH#55564): just pass M8[s] to the constructor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/frame/test_query_eval.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">        # list equality (really just set membership)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/frame/test_query_eval.py</td>
+                    <td>328</td>
+                    <td class="mono snippet">        # list equality (really just set membership)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/frame/test_query_eval.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        # list equality (really just set membership)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/dtypes/test_inference.py</td>
+                    <td>813</td>
+                    <td class="mono snippet">            # make sure that this function is robust against it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/dtypes/cast/test_promote.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">        # Compare types in a way that is robust to platform-specific</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/groupby/test_categorical.py</td>
+                    <td>2163</td>
+                    <td class="mono snippet">    # Only testing the ids/result_index, okay to just use one kernel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/arrays/test_datetimes.py</td>
+                    <td>294</td>
+                    <td class="mono snippet">    #  sufficiently robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/tslibs/test_parsing.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">    # Raise on invalid input, don't just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/plotting/_matplotlib/tools.py</td>
+                    <td>314</td>
+                    <td class="mono snippet">        # one subplot, just return it instead of a 1-element array.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(27 hits · 27 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>2052</td>
+                    <td class="mono snippet">            # Check if both conversions can be done without a copy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>4737</td>
+                    <td class="mono snippet">                # Set level to zero in case of MultiIndex and label is string,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/generic.py</td>
+                    <td>4743</td>
+                    <td class="mono snippet">                # Check if label doesn't exist along axis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/reshape/merge.py</td>
+                    <td>1796</td>
+                    <td class="mono snippet">            # Check if we are trying to merge on obviously</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/internals/managers.py</td>
+                    <td>1299</td>
+                    <td class="mono snippet">            # Check if we can use _iset_single fastpath</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/computation/expr.py</td>
+                    <td>676</td>
+                    <td class="mono snippet">                # Check if this is a supported function name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/datetimes.py</td>
+                    <td>3208</td>
+                    <td class="mono snippet">            # Check if the offset preserves start's time-of-day</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/arrays/base.py</td>
+                    <td>559</td>
+                    <td class="mono snippet">        # Check if the array is readonly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/indexes/multi.py</td>
+                    <td>500</td>
+                    <td class="mono snippet">        # Check if elements of array are list-like</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/indexes/multi.py</td>
+                    <td>505</td>
+                    <td class="mono snippet">        # Check if lengths of all arrays are equal or not,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/indexes/multi.py</td>
+                    <td>3826</td>
+                    <td class="mono snippet">                # Check if this tuple is a single key in our first level</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/formats/format.py</td>
+                    <td>1820</td>
+                    <td class="mono snippet">        # Check if all decimal numbers end in &quot;0&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/io/excel/_base.py</td>
+                    <td>911</td>
+                    <td class="mono snippet">            # Check if we have an empty dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/reshape/merge/test_merge.py</td>
+                    <td>1091</td>
+                    <td class="mono snippet">        # Check if working name in df</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/apply/test_frame_apply.py</td>
+                    <td>754</td>
+                    <td class="mono snippet">    # Check if categorical comparisons on apply, GH 21239</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/apply/test_frame_apply.py</td>
+                    <td>1283</td>
+                    <td class="mono snippet">    # Check if name is still preserved when aggregating series instead</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/extension/base/methods.py</td>
+                    <td>437</td>
+                    <td class="mono snippet">        # Check if the operation is supported pointwise for our scalars. If not,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/test_clipboard.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">    # Set raising to False because WinError won't exist on non-windows platforms</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/excel/test_readers.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">                # Check if values match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/excel/test_readers.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">                # Check if types match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/excel/test_writers.py</td>
+                    <td>1262</td>
+                    <td class="mono snippet">        # Read file without comment arg.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/excel/test_writers.py</td>
+                    <td>1282</td>
+                    <td class="mono snippet">        # Read file with default and explicit comment=None</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/sas/test_sas7bdat.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">    # Check if the SAS file has zero variables (PR #18184)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/pytables/test_file_handling.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">    # Check if not setting complib or complevel results in no compression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/pytables/test_file_handling.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">    # Check if file-defaults can be overridden on a per table basis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/pytables/test_file_handling.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">    # Open file and check metadata for correct amount of compression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/indexing/multiindex/test_loc.py</td>
+                    <td>834</td>
+                    <td class="mono snippet">    # Check if get_loc matches for Index and MultiIndex</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(11 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/wheels.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Alternatively, you can add labels to the pull request in order to trigger wheel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/unit-tests.yml</td>
+                    <td>351</td>
+                    <td class="mono snippet">    #    To unfreeze, comment out the ``if: false`` condition, and make sure you update</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/unit-tests.yml</td>
+                    <td>361</td>
+                    <td class="mono snippet">    # Feel free to modify this comment as necessary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/core/reshape/merge.py</td>
+                    <td>1340</td>
+                    <td class="mono snippet">                # make sure to just use the right values or vice-versa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/pytables.py</td>
+                    <td>4458</td>
+                    <td class="mono snippet">        # make sure to include levels if we have them</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/formats/excel.py</td>
+                    <td>1022</td>
+                    <td class="mono snippet">            # make sure to close opened file handles</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/io/excel/_base.py</td>
+                    <td>531</td>
+                    <td class="mono snippet">        # make sure to close opened file handles</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/series/methods/test_reindex.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    # (don't forget to fix this) I think it's fixed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/series/methods/test_reindex.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    # (don't forget to fix this) I think it's fixed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/io/parser/test_compression.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">    # make sure to create un-compressed file with zip extension</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/indexing/test_chaining_and_caching.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">        # GH 4939, make sure to update the cache on setitem</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(1 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pandas/tests/io/formats/style/test_html.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">    project_dir = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pandas/tests/dtypes/test_inference.py</td>
+                    <td>1118</td>
+                    <td class="mono snippet">        # make sure the inferred dtype of the fixture is as requested</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/io/formats/test_to_html.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">    &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pandas/tests/io/formats/test_to_html.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">    &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod &quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/pandas/community/ecosystem.md</td>
+                    <td>366</td>
+                    <td class="mono snippet">def process_data():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/tests/io/json/test_ujson.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        def helper(expected_output, **encode_kwargs):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/code_checks.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pandas/core/groupby/grouper.py</td>
+                    <td>777</td>
+                    <td class="mono snippet">        # we need to check if it makes no side effect to subsequent processes</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+</div>
+<footer>
+    Generated on 2026-04-18 16:34 UTC &middot; AI Slop Code Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+    </a>
+</footer>
+</body>
+</html>
