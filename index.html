@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Slop Code Monitor — Synthetic Code Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- Layout ---------- */
+.container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #0f1117 100%);
+    border-bottom: 1px solid #21262d;
+    padding: 2.5rem 0;
+    text-align: center;
+}
+.header-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: center;
+}
+.header-brand img {
+    height: 56px;
+    flex-shrink: 0;
+}
+header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #2ea043, #3fb950, #56d364, #7ee787);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+header p { color: #8b949e; margin-top: 0.5rem; font-size: 1.05rem; }
+.suggest-btn {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.55rem 1.4rem;
+    background: linear-gradient(135deg, #238636, #2ea043);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.suggest-btn:hover { opacity: 0.85; }
+.suggest-btn svg { vertical-align: -2px; margin-right: 0.4rem; }
+
+/* ---------- KPI cards ---------- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin: 2rem 0;
+}
+.kpi-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+.kpi-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0f0f0;
+}
+.kpi-card .label {
+    color: #8b949e;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+    display: inline-block;
+    padding: 0.2em 0.75em;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+}
+.badge-critical { background: #e74c3c; }
+.badge-high     { background: #e67e22; }
+.badge-medium   { background: #d4a017; color: #1a1a1a; }
+.badge-low      { background: #2ea043; }
+.badge-error    { background: #6e40c9; }
+
+/* ---------- SLOP Alert ---------- */
+.slop-alert {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+.slop-alert svg { color: #f0ad4e; }
+.slop-alert .slop-tip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    background: #1c2028;
+    color: #e0e0e0;
+    border: 1px solid #f0ad4e;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+.slop-alert:hover .slop-tip { visibility: visible; opacity: 1; }
+
+/* ---------- Section ---------- */
+section { margin: 2.5rem 0; }
+section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #21262d;
+}
+
+/* ---------- Intro ---------- */
+.intro {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    line-height: 1.75;
+    color: #c9d1d9;
+}
+.intro strong { color: #f0f0f0; }
+
+/* ---------- Charts ---------- */
+.chart-row-full {
+    margin: 1.5rem 0;
+}
+.chart-row-half {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+.chart-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+.chart-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #e0e0e0;
+}
+.chart-card canvas {
+    max-height: 400px;
+}
+.chart-toggle {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+}
+.chart-toggle:hover { background: #30363d; }
+
+/* ---------- Table ---------- */
+.table-wrapper {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #21262d;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.table-controls input {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    width: 260px;
+}
+.table-controls input:focus { outline: none; border-color: #58a6ff; }
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pagination button {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+.pagination button:hover:not(:disabled) { background: #30363d; }
+.pagination span { color: #8b949e; font-size: 0.85rem; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+th {
+    background: #0d1117;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: #8b949e;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+th:hover { color: #c9d1d9; }
+th .sort-arrow { margin-left: 4px; font-size: 0.7rem; }
+td {
+    padding: 0.65rem 1rem;
+    border-top: 1px solid #21262d;
+}
+tr:hover td { background: rgba(88,166,255,0.04); }
+
+/* ---------- Detail sections ---------- */
+.repo-detail {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.repo-detail h3 { margin-bottom: 1rem; }
+.category-block { margin: 1rem 0; }
+.category-block h4 { font-size: 1rem; color: #c9d1d9; margin-bottom: 0.5rem; }
+.category-block h4 small { color: #8b949e; font-weight: 400; }
+.detail-table {
+    width: 100%;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+.detail-table th {
+    background: #0d1117;
+    font-size: 0.7rem;
+    padding: 0.5rem 0.75rem;
+}
+.detail-table td {
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid #21262d;
+    vertical-align: top;
+}
+.mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.overflow { color: #8b949e; font-size: 0.82rem; font-style: italic; }
+
+/* ---------- Footer ---------- */
+footer {
+    text-align: center;
+    color: #484f58;
+    font-size: 0.8rem;
+    padding: 2rem 0;
+    border-top: 1px solid #21262d;
+    margin-top: 3rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+    .chart-row-half { grid-template-columns: 1fr; }
+    .table-controls { flex-direction: column; }
+    .table-controls input { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="logo.png" alt="" onerror="this.style.display='none'">
+            <h1>AI Slop Code Monitor</h1>
+        </div>
+        <p>Synthetic Code Detection Report — powered by <strong>SynthScan</strong></p>
+        <a class="suggest-btn" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+            Suggest a Repository
+        </a>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Intro -->
+    <div class="intro">
+        <p>
+            This report analyses <strong>5 GitHub repositories</strong> for
+            <strong>AI-generated (synthetic) code patterns</strong>.
+            The scanner uses <strong>120+ detection patterns</strong> across 14 categories to
+            identify code that was likely produced by large language models (LLMs).
+            Each match carries a severity weight (Critical&nbsp;=&nbsp;10, High&nbsp;=&nbsp;5,
+            Medium&nbsp;=&nbsp;2, Low&nbsp;=&nbsp;1) and the headline
+            <em>Synthetic&nbsp;Code&nbsp;Score</em> is normalised per 1,000 lines of code so
+            projects of different sizes can be compared fairly.
+        </p>
+        <p style="margin-top:0.75rem;">
+            <strong>Score ranges:</strong>
+            <span class="badge badge-low">0 – 5</span> Likely human-written &nbsp;
+            <span class="badge badge-medium">5 – 15</span> Low AI signal &nbsp;
+            <span class="badge badge-high">15 – 30</span> Moderate AI signal &nbsp;
+            <span class="badge badge-critical">30+</span> Strong AI signal
+        </p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="value">5</div>
+            <div class="label">Repositories scanned</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value">1.8</div>
+            <div class="label">Avg Synthetic Score</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value">1,469</div>
+            <div class="label">Total pattern hits</div>
+        </div>
+        <div class="kpi-card">
+            <div class="value">5,942,714</div>
+            <div class="label">Lines of code scanned</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <section>
+        <h2>📊 Overview Charts</h2>
+
+        <!-- Row 1: Score Distribution Histogram (full width) -->
+        <div class="chart-row-full">
+            <div class="chart-card" style="max-height:320px;">
+                <h3>Score Distribution — How many repos fall into each risk band?</h3>
+                <canvas id="histChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 2: Category + Severity side by side -->
+        <div class="chart-row-half">
+            <div class="chart-card">
+                <h3>Score by Category (all repos)</h3>
+                <canvas id="catChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Severity Breakdown</h3>
+                <canvas id="sevChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 3: Top 30 repos (full width) -->
+        <div class="chart-row-full">
+            <div class="chart-card">
+                <h3>Top 30 Highest-Scoring Repositories</h3>
+                <canvas id="topReposChart" style="max-height:350px;"></canvas>
+                <button class="chart-toggle" onclick="toggleAllRepos()">Show all repositories</button>
+                <canvas id="allReposChart" style="display:none; margin-top:1rem;"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summary Table -->
+    <section>
+        <h2>📋 Repository Summary</h2>
+        <div class="table-wrapper">
+            <div class="table-controls">
+                <input type="text" id="searchInput" placeholder="🔎  Filter repositories…" />
+                <div class="pagination">
+                    <button id="prevBtn" onclick="changePage(-1)">◀ Prev</button>
+                    <span id="pageInfo"></span>
+                    <button id="nextBtn" onclick="changePage(1)">Next ▶</button>
+                </div>
+            </div>
+            <table id="repoTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Repository <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(1)">Score <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(2)">Interpretation <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(3)">Hits <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(4)">Raw Score <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(5)">LOC <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(6)">Files <span class="sort-arrow"></span></th>
+                        <th onclick="sortTable(7)">Scanned <span class="sort-arrow"></span></th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    
+            <tr>
+                <td><a href="https://github.com/freeCodeCamp/freeCodeCamp" target="_blank" rel="noopener noreferrer">freeCodeCamp/freeCodeCamp</a></td>
+                <td><span class="badge badge-low">0.9 <span style="color:#ffffffaa;font-size:0.72rem;opacity:0.9">(0.0)</span></span><span class="slop-alert"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575ZM8 5a.75.75 0 0 0-.75.75v2.5a.75.75 0 0 0 1.5 0v-2.5A.75.75 0 0 0 8 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg><span class="slop-tip">58 critical-severity matches detected. A high count of critical patterns can be a significant SLOP indicator even when the overall score appears low due to lines-of-code normalisation.</span></span></td>
+                <td>Likely human-written</td>
+                <td>942</td>
+                <td>2328</td>
+                <td>2,681,611</td>
+                <td>18643</td>
+                <td>2026-04-18</td>
+                <td><a href="detail_freeCodeCamp_freeCodeCamp.html">View &rarr;</a></td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/EbookFoundation/free-programming-books" target="_blank" rel="noopener noreferrer">EbookFoundation/free-programming-books</a></td>
+                <td><span class="badge badge-low">0.4 <span style="color:#ffffffaa;font-size:0.72rem;opacity:0.9">(0.0)</span></span></td>
+                <td>Likely human-written</td>
+                <td>12</td>
+                <td>14</td>
+                <td>33,959</td>
+                <td>229</td>
+                <td>2026-04-18</td>
+                <td><a href="detail_EbookFoundation_free_programming_books.html">View &rarr;</a></td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener noreferrer">openclaw/openclaw</a></td>
+                <td><span class="badge badge-low">0.3 <span style="color:#ffffffaa;font-size:0.72rem;opacity:0.9">(0.0)</span></span><span class="slop-alert"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575ZM8 5a.75.75 0 0 0-.75.75v2.5a.75.75 0 0 0 1.5 0v-2.5A.75.75 0 0 0 8 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg><span class="slop-tip">16 critical-severity matches detected. A high count of critical patterns can be a significant SLOP indicator even when the overall score appears low due to lines-of-code normalisation.</span></span></td>
+                <td>Likely human-written</td>
+                <td>414</td>
+                <td>870</td>
+                <td>2,607,248</td>
+                <td>13683</td>
+                <td>2026-04-18</td>
+                <td><a href="detail_openclaw_openclaw.html">View &rarr;</a></td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/kamranahmedse/developer-roadmap" target="_blank" rel="noopener noreferrer">kamranahmedse/developer-roadmap</a></td>
+                <td><span class="badge badge-low">0.2 <span style="color:#ffffffaa;font-size:0.72rem;opacity:0.9">(0.0)</span></span></td>
+                <td>Likely human-written</td>
+                <td>80</td>
+                <td>153</td>
+                <td>614,273</td>
+                <td>11408</td>
+                <td>2026-04-18</td>
+                <td><a href="detail_kamranahmedse_developer_roadmap.html">View &rarr;</a></td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/vinta/awesome-python" target="_blank" rel="noopener noreferrer">vinta/awesome-python</a></td>
+                <td><span class="badge badge-medium">7.3 <span style="color:#ffffffaa;font-size:0.72rem;opacity:0.9">(0.0)</span></span></td>
+                <td>Low AI signal</td>
+                <td>21</td>
+                <td>41</td>
+                <td>5,623</td>
+                <td>20</td>
+                <td>2026-04-18</td>
+                <td><a href="detail_vinta_awesome_python.html">View &rarr;</a></td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    Generated on 2026-04-18 07:00 UTC &middot; AI Slop Code Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+    </a>
+</footer>
+
+<script>
+// ---------- Chart data ----------
+const allScores = [0.9, 0.4, 0.3, 0.2, 7.3];
+const allLabels = ["freeCodeCamp/freeCodeCamp", "EbookFoundation/free-programming-books", "openclaw/openclaw", "kamranahmedse/developer-roadmap", "vinta/awesome-python"];
+const allMatches = [942, 12, 414, 80, 21];
+
+// ---------- 1. Score Distribution Histogram ----------
+const bins = [
+  { label: '0–5 (Likely human)', min: 0, max: 5, color: '#2ea043' },
+  { label: '5–15 (Low AI signal)', min: 5, max: 15, color: '#d4a017' },
+  { label: '15–30 (Moderate AI)', min: 15, max: 30, color: '#e67e22' },
+  { label: '30+ (Strong AI)', min: 30, max: Infinity, color: '#e74c3c' },
+];
+const binCounts = bins.map(b => allScores.filter(s => s >= b.min && s < b.max).length);
+new Chart(document.getElementById('histChart'), {
+    type: 'bar',
+    data: {
+        labels: bins.map(b => b.label),
+        datasets: [{
+            label: 'Repositories',
+            data: binCounts,
+            backgroundColor: bins.map(b => b.color),
+            borderRadius: 8,
+            barPercentage: 0.6,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' repositories' } }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#c9d1d9', font: { size: 13 } } },
+            y: { grid: { color: '#21262d' }, ticks: { color: '#8b949e', stepSize: 1 }, title: { display: true, text: 'Number of repos', color: '#8b949e' } }
+        }
+    }
+});
+
+// ---------- 2. Category horizontal bar ----------
+new Chart(document.getElementById('catChart'), {
+    type: 'bar',
+    data: {
+        labels: ["Fake / Example Data", "AI Slop Vocabulary", "Self-Referential Comments", "Slop Phrases", "Overly Generic Function Names", "Verbosity Indicators", "Redundant / Tautological Comments", "Example Usage Blocks", "Excessive Try-Catch Wrapping", "Hallucination Indicators", "Synthetic Comment Markers", "Decorative Section Separators"],
+        datasets: [{
+            label: 'Score',
+            data: [1012.0, 100.0, 256.0, 660.0, 11.0, 74.0, 28.0, 13.0, 34.0, 740.0, 40.0, 438.0],
+            backgroundColor: '#a855f7',
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: '#21262d' }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#21262d' }, ticks: { color: '#8b949e', font: { size: 11 } } }
+        }
+    }
+});
+
+// ---------- 3. Severity horizontal bar ----------
+new Chart(document.getElementById('sevChart'), {
+    type: 'bar',
+    data: {
+        labels: ["MEDIUM", "LOW", "CRITICAL", "HIGH"],
+        datasets: [{
+            label: 'Findings',
+            data: [1239, 148, 74, 8],
+            backgroundColor: ["#f1c40f", "#95a5a6", "#e74c3c", "#e67e22"],
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: '#21262d' }, ticks: { color: '#8b949e' } },
+            y: { grid: { display: false }, ticks: { color: '#c9d1d9', font: { size: 13, weight: 'bold' } } }
+        }
+    }
+});
+
+// ---------- 4. Top 30 repos bar ----------
+const indexed = allLabels.map((l, i) => ({ label: l, score: allScores[i] }));
+indexed.sort((a, b) => b.score - a.score);
+const top30 = indexed.slice(0, 30);
+new Chart(document.getElementById('topReposChart'), {
+    type: 'bar',
+    data: {
+        labels: top30.map(r => r.label),
+        datasets: [{
+            label: 'Synthetic Code Score',
+            data: top30.map(r => r.score),
+            backgroundColor: top30.map(r =>
+                r.score >= 30 ? '#e74c3c' : r.score >= 15 ? '#e67e22' : r.score >= 5 ? '#d4a017' : '#2ea043'
+            ),
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: ctx => 'Score: ' + ctx.parsed.x.toFixed(1) } }
+        },
+        scales: {
+            x: { grid: { color: '#21262d' }, ticks: { color: '#8b949e' } },
+            y: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 11 } } }
+        }
+    }
+});
+
+// ---------- Show-all toggle ----------
+let allReposChartBuilt = false;
+function toggleAllRepos() {
+    const canvas = document.getElementById('allReposChart');
+    const btn = canvas.previousElementSibling;
+    if (canvas.style.display === 'none') {
+        canvas.style.display = 'block';
+        btn.textContent = 'Hide full list';
+        if (!allReposChartBuilt) {
+            const sorted = [...indexed].sort((a, b) => b.score - a.score);
+            canvas.style.height = Math.max(400, sorted.length * 22) + 'px';
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(r => r.label),
+                    datasets: [{
+                        label: 'Synthetic Code Score',
+                        data: sorted.map(r => r.score),
+                        backgroundColor: sorted.map(r =>
+                            r.score >= 30 ? '#e74c3c' : r.score >= 15 ? '#e67e22' : r.score >= 5 ? '#d4a017' : '#2ea043'
+                        ),
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#21262d' }, ticks: { color: '#8b949e' } },
+                        y: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 10 } } }
+                    }
+                }
+            });
+            allReposChartBuilt = true;
+        }
+    } else {
+        canvas.style.display = 'none';
+        btn.textContent = 'Show all repositories';
+    }
+}
+
+// ---------- Paged Table ----------
+const ROWS_PER_PAGE = 15;
+let currentPage = 1;
+let allRows = [];
+let filteredRows = [];
+let sortCol = -1;
+let sortAsc = true;
+
+function initTable() {
+    const tbody = document.getElementById('tableBody');
+    allRows = Array.from(tbody.querySelectorAll('tr'));
+    filteredRows = [...allRows];
+    renderPage();
+}
+
+function renderPage() {
+    const tbody = document.getElementById('tableBody');
+    const totalPages = Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    const end = start + ROWS_PER_PAGE;
+
+    // Clear tbody and add only current page rows
+    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+    filteredRows.slice(start, end).forEach(r => tbody.appendChild(r));
+
+    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('prevBtn').disabled = currentPage <= 1;
+    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+}
+
+function changePage(delta) {
+    currentPage += delta;
+    renderPage();
+}
+
+function sortTable(colIdx) {
+    if (sortCol === colIdx) { sortAsc = !sortAsc; } else { sortCol = colIdx; sortAsc = true; }
+    filteredRows.sort((a, b) => {
+        const aText = a.cells[colIdx]?.textContent.trim() || '';
+        const bText = b.cells[colIdx]?.textContent.trim() || '';
+        const aNum = parseFloat(aText.replace(/,/g, ''));
+        const bNum = parseFloat(bText.replace(/,/g, ''));
+        if (!isNaN(aNum) && !isNaN(bNum)) return sortAsc ? aNum - bNum : bNum - aNum;
+        return sortAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    currentPage = 1;
+    renderPage();
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    filteredRows = allRows.filter(r => r.textContent.toLowerCase().includes(q));
+    currentPage = 1;
+    renderPage();
+});
+
+initTable();
+</script>
+
+</body>
+</html>
