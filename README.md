@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/logo.png" alt="AI Slop Code Monitor" width="220">
+  <img src="images/logo.png" alt="AI Code Slop Monitor" width="220">
 </p>
 
-<h1 align="center">AI Slop Code Monitor</h1>
+<h1 align="center">AI Code Slop Monitor</h1>
 
 <p align="center">
   <strong>Real-time detection of AI-generated code across open-source repositories</strong><br>
@@ -19,7 +19,7 @@
 
 ## 🔍 What Is This?
 
-**AI Slop Code Monitor** automatically scans hundreds of trending GitHub repositories looking for telltale signs of AI-generated ("slop") code — repetitive patterns, excessive boilerplate, decorative separators, over-commented logic, and more.
+**AI Code Slop Monitor** automatically scans hundreds of trending GitHub repositories looking for telltale signs of AI-generated ("slop") code — repetitive patterns, excessive boilerplate, decorative separators, over-commented logic, and more.
 
 Every day, the scanner:
 1. Fetches the most popular repositories from GitHub's trending feed
