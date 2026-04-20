@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — duckdb/duckdb</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>duckdb/duckdb</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">168</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">416</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,529,087</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">6305</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(11 hits · 110 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>309</td>
+                    <td class="mono snippet">	if (sniffed_column_counts.state_machine.options.dialect_options.skip_rows.IsSetByUser()) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>311</td>
+                    <td class="mono snippet">		    sniffed_column_counts.state_machine.options.dialect_options.skip_rows.GetValue();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>355</td>
+                    <td class="mono snippet">	    sniffed_column_counts.state_machine.dialect_options.state_machine_options.quote.GetValue() != '\0';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>210</td>
+                    <td class="mono snippet">	if (result.state_machine.dialect_options.state_machine_options.new_line.GetValue() != NewLineIdentifier::CARRY_ON) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>606</td>
+                    <td class="mono snippet">				    value_ptr, length, result.state_machine.dialect_options.state_machine_options.escape.GetValue(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>607</td>
+                    <td class="mono snippet">				    result.state_machine.dialect_options.state_machine_options.quote.GetValue(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>608</td>
+                    <td class="mono snippet">				    result.state_machine.dialect_options.state_machine_options.strict_mode.GetValue(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>1514</td>
+                    <td class="mono snippet">					                 result.state_machine.dialect_options.state_machine_options.strict_mode.GetValue(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>1546</td>
+                    <td class="mono snippet">					                 result.state_machine.dialect_options.state_machine_options.strict_mode.GetValue(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>1556</td>
+                    <td class="mono snippet">			    !result.state_machine.dialect_options.state_machine_options.delimiter.GetValue().empty()) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>1558</td>
+                    <td class="mono snippet">				    result.state_machine.dialect_options.state_machine_options.delimiter.GetValue().size() - 1;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(47 hits · 72 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/inline_grammar.py</td>
+                    <td>346</td>
+                    <td class="mono snippet">                print(f&quot;Error: rule '{rule_name}' references undefined rule '{ref}'&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/autocomplete/inline_grammar.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/autocomplete/inline_grammar.py</td>
+                    <td>384</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/runner.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/runner.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/bwc/update_cache.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        print(f&quot;Error: cache directory not found in test-utils: {cache_dir}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/bwc/export_cache.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">        print(f&quot;Error: runtime directory not found: {runtime_dir}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/test_files_parser.py</td>
+                    <td>495</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/test_files_parser.py</td>
+                    <td>674</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/duckdb_cli.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/duckdb_cli.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/duckdb_cli.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/duckdb_cli.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/parquet/generate_parquet_test.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/run-clang-tidy.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">            print('Error: could not find compilation database.')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/run-clang-tidy.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">            print('Error exporting fixes.\n', file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/run-clang-tidy.py</td>
+                    <td>346</td>
+                    <td class="mono snippet">            print('Error applying fixes.\n', file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create_patch.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">        print(f&quot;Error: Extension CMake file not found: {cmake_path}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create_patch.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">        print(f&quot;Error: Could not find GIT_TAG in {cmake_path}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create_patch.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">        print(f&quot;Error: Failed to run git in {args.repository_path} — {e.stderr.strip()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create_patch.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        print(f&quot;Error: Failed to run git diff — {e.stderr.strip()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/format.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/format.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/format.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_serialization.py</td>
+                    <td>837</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/cleanup_config_skip_tests.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">            print(f&quot;Error: Config directory not found: {config_dir}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/cleanup_config_skip_tests.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">            print(f&quot;Error parsing {config_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/cleanup_config_skip_tests.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/cleanup_config_skip_tests.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">            print(f&quot;Error processing {config_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">        print(f&quot;Error: Grammar directory not found: {grammar_path}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        print(f&quot;Error: No *.gram files found in {grammar_path}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">            print(f&quot;Error reading {file_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">        print(f&quot;Error: No *.cpp files found in {transformer_path}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">            print(f&quot;Error reading {file_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">        print(f&quot;Error: Factory file not found: {factory_file_path}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">        print(f&quot;Error reading {factory_file_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_peg_transformer.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">        print(&quot;Error: Could not find grammar rules. Exiting.&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/run-clangd-tidy.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/clang-tidy-diff.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/asset-upload-gha.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/format_test_benchmark.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">            print(&quot;Error: -i cannot be used with stdin&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/format_test_benchmark.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        print(f&quot;Error: {file_path} is not a file&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/format_test_benchmark.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        print(&quot;Error: -f/--full-path can only be used with stdin (-)&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/format_test_benchmark.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        print(&quot;Error: -f/--full-path cannot be used with multiple files&quot;, file=sys.stderr)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(14 hits · 70 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_shell_rendering.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">        .statement(&quot;select 'val || other_val' c;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">            &quot;value&quot;: {&quot;type&quot;: {&quot;id&quot;: &quot;BLOB&quot;, &quot;type_info&quot;: null}, &quot;is_null&quot;: false, &quot;value&quot;: &quot;10&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">        &quot;from_table&quot;: {&quot;type&quot;: &quot;EMPTY&quot;, &quot;alias&quot;: &quot;&quot;, &quot;sample&quot;: null, &quot;query_location&quot;: 18446744073709551615},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">        &quot;where_clause&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">        &quot;having&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">        &quot;sample&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1281</td>
+                    <td class="mono snippet">expected_results[all_types_source][&quot;json&quot;] = '''[{&quot;bool&quot;:&quot;false&quot;,&quot;tinyint&quot;:-128,&quot;smallint&quot;:-32768,&quot;int&quot;:-2147483648,&quot;bigint&quot;:-9223372036854775808,&quot;hug</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1282</td>
+                    <td class="mono snippet">{&quot;bool&quot;:&quot;true&quot;,&quot;tinyint&quot;:127,&quot;smallint&quot;:32767,&quot;int&quot;:2147483647,&quot;bigint&quot;:9223372036854775807,&quot;hugeint&quot;:&quot;170141183460469231731687303715884105727&quot;,&quot;uhuge</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1283</td>
+                    <td class="mono snippet">{&quot;bool&quot;:null,&quot;tinyint&quot;:null,&quot;smallint&quot;:null,&quot;int&quot;:null,&quot;bigint&quot;:null,&quot;hugeint&quot;:null,&quot;uhugeint&quot;:null,&quot;utinyint&quot;:null,&quot;usmallint&quot;:null,&quot;uint&quot;:null,&quot;ubig</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1286</td>
+                    <td class="mono snippet">expected_results[all_types_source][&quot;jsonlines&quot;] = '''{&quot;bool&quot;:&quot;false&quot;,&quot;tinyint&quot;:-128,&quot;smallint&quot;:-32768,&quot;int&quot;:-2147483648,&quot;bigint&quot;:-9223372036854775808,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1287</td>
+                    <td class="mono snippet">{&quot;bool&quot;:&quot;true&quot;,&quot;tinyint&quot;:127,&quot;smallint&quot;:32767,&quot;int&quot;:2147483647,&quot;bigint&quot;:9223372036854775807,&quot;hugeint&quot;:&quot;170141183460469231731687303715884105727&quot;,&quot;uhuge</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/shell/tests/test_rendering_mode_regression.py</td>
+                    <td>1288</td>
+                    <td class="mono snippet">{&quot;bool&quot;:null,&quot;tinyint&quot;:null,&quot;smallint&quot;:null,&quot;int&quot;:null,&quot;bigint&quot;:null,&quot;hugeint&quot;:null,&quot;uhugeint&quot;:null,&quot;utinyint&quot;:null,&quot;usmallint&quot;:null,&quot;uint&quot;:null,&quot;ubig</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/metrics/emit_enum_cpp.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">            f&quot;return static_cast&lt;uint8_t&gt;(type) &gt;= START_OPTIMIZER &amp;&amp; static_cast&lt;uint8_t&gt;(type) &lt;= END_OPTIMIZER;&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/metrics/emit_enum_cpp.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">	if (metric_u8 &lt; START_OPTIMIZER || metric_u8 &gt; END_OPTIMIZER) {{</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(31 hits · 62 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/tests/test_format.py</td>
+                    <td>59</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/tests/test_format.py</td>
+                    <td>61</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>20</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>22</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>82</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>84</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>112</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>114</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>181</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>183</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>301</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>303</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>340</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>342</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>747</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>749</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>807</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>809</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>915</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>917</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1011</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1013</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1233</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1235</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1509</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1511</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1624</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/autocomplete/sql_formatter.cpp</td>
+                    <td>1626</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/sync_out_of_tree_extensions.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">        # ── Fresh clone ──────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/sync_out_of_tree_extensions.py</td>
+                    <td>314</td>
+                    <td class="mono snippet">        # ── Skip patches: leave the existing repo untouched ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/sync_out_of_tree_extensions.py</td>
+                    <td>317</td>
+                    <td class="mono snippet">        # ── Existing repo ────────────────────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(13 hits · 26 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/tests/test_autocomplete.py</td>
+                    <td>304</td>
+                    <td class="mono snippet">    # Create the files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/juliapkg/scripts/generate_c_api_julia.py</td>
+                    <td>700</td>
+                    <td class="mono snippet">        self._analyze_types(function_groups)  # Create the julia type map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/README.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">#### Create a Collator and sort a vector of strings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/bwc/runner.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">    # Create the report database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/mbedtls/mbedtls_wrapper.cpp</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Create a new key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/regression_test_python.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">        # Create the DataFrame with the specified data and column type as object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_c_api.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Define the extension struct</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate_c_api.py</td>
+                    <td>764</td>
+                    <td class="mono snippet">    # Create the versioning defines</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/metrics/emit_tests.py</td>
+                    <td>184</td>
+                    <td class="mono snippet"># This file is automatically generated by scripts/generate_metric_enums.py</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/metrics/emit_tests.py</td>
+                    <td>217</td>
+                    <td class="mono snippet">            f.write(&quot;# This file is automatically generated by scripts/generate_metric_enums.py\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/regression/benchmark.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">        # Define the arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/regression/benchmark.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        # Create an instance of BenchmarkRunnerConfig using parsed arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/regression/test_runner.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Define the arguments</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(15 hits · 26 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/third_party/icu/common/locmap.cpp</td>
+                    <td>1173</td>
+                    <td class="mono snippet">    // The purpose of this function is to leverage the Windows platform name-&gt;lcid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/common/unicode/platform.h</td>
+                    <td>62</td>
+                    <td class="mono snippet"> * Solution: #define any defines for non @internal API here, so that they are visible in the docs.  If you just set PREDEFINED in Doxyfile.in,  they w</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/decNumberLocal.h</td>
+                    <td>48</td>
+                    <td class="mono snippet">  #define DECCHECK  0         /* 1 to enable robust checking          */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/dtptngen.cpp</td>
+                    <td>1299</td>
+                    <td class="mono snippet">                    // in #13183 just add b/B to skeleton, no longer need to set special flags</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/httplib/httplib.hpp</td>
+                    <td>9114</td>
+                    <td class="mono snippet">  // Cross-host/scheme redirect - create new client with robust setup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/httplib/httplib.hpp</td>
+                    <td>9119</td>
+                    <td class="mono snippet">// New method for robust redirect client creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/httplib/httplib.hpp</td>
+                    <td>9187</td>
+                    <td class="mono snippet">    // Setup client with robust configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/httplib/httplib.hpp</td>
+                    <td>9195</td>
+                    <td class="mono snippet">// New method for robust client setup (based on basic_manual_redirect.cpp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/re2/re2/prefilter_tree.h</td>
+                    <td>114</td>
+                    <td class="mono snippet">  // These are all the nodes formed by Compile. Essentially, there is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/python/duckdb-python.py</td>
+                    <td>180</td>
+                    <td class="mono snippet"># or just use df(), a shorthand for fetchdf() on query results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_extensions_function.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">            # Otherwise, just add the character if we're inside braces.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/include/duckdb/parser/parsed_data/create_macro_info.hpp</td>
+                    <td>29</td>
+                    <td class="mono snippet">	//! Essentially we used to only support a single function in the CreateMacroInfo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/function/table/direct_file_reader.cpp</td>
+                    <td>64</td>
+                    <td class="mono snippet">	// We utilize projection pushdown here to only read the file content if the 'data' column is requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/function/table/direct_file_reader.cpp</td>
+                    <td>86</td>
+                    <td class="mono snippet">		// We utilize projection pushdown to avoid potentially expensive fs operations.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/execution/operator/join/physical_iejoin.cpp</td>
+                    <td>1784</td>
+                    <td class="mono snippet">	// We can't leverage any more threads than tasks.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(18 hits · 18 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/swift/duckdb-swift/DuckDBPlayground.playground/Pages/3. Visualizing Data.xcplaygroundpage/Contents.swift</td>
+                    <td>31</td>
+                    <td class="mono snippet"> ## Step 1: Extracting Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/swift/duckdb-swift/DuckDBPlayground.playground/Pages/3. Visualizing Data.xcplaygroundpage/Contents.swift</td>
+                    <td>120</td>
+                    <td class="mono snippet"> ## Step 2: Making Charts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/swift/duckdb-swift/DuckDBPlayground.playground/Pages/2. Getting Started.xcplaygroundpage/Contents.swift</td>
+                    <td>36</td>
+                    <td class="mono snippet"> ## Step 1: Fetching Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/swift/duckdb-swift/DuckDBPlayground.playground/Pages/2. Getting Started.xcplaygroundpage/Contents.swift</td>
+                    <td>79</td>
+                    <td class="mono snippet"> ## Step 2: Rendering Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/json/json_reader.cpp</td>
+                    <td>856</td>
+                    <td class="mono snippet">	// we need to check if there is data available within our current reader</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/common/locmap.cpp</td>
+                    <td>1173</td>
+                    <td class="mono snippet">    // The purpose of this function is to leverage the Windows platform name-&gt;lcid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/dtptngen.cpp</td>
+                    <td>685</td>
+                    <td class="mono snippet">    // We need to check if there is an hour cycle on locale</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/tzgnames.cpp</td>
+                    <td>935</td>
+                    <td class="mono snippet">            // then we need to check if the name is same with the location name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/catch/catch.hpp</td>
+                    <td>12766</td>
+                    <td class="mono snippet">                    // No children have started. We need to check if they _can_</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/function/table/arrow_conversion.cpp</td>
+                    <td>1363</td>
+                    <td class="mono snippet">				//! We need to check if our indexes fit in a uint32_t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/function/table/arrow_conversion.cpp</td>
+                    <td>1371</td>
+                    <td class="mono snippet">				//! We need to check if our indexes fit in a uint32_t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/execution/sample/base_reservoir_sample.cpp</td>
+                    <td>31</td>
+                    <td class="mono snippet">	//! first we need to check if the reservoir already has &quot;m&quot; elements</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>611</td>
+                    <td class="mono snippet">	// Step 1: Generate state machines</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>613</td>
+                    <td class="mono snippet">	// Step 2: Analyze all candidates on the first chunk</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/execution/operator/csv_scanner/sniffer/dialect_detection.cpp</td>
+                    <td>617</td>
+                    <td class="mono snippet">	// Step 3: Loop over candidates and find if they can still produce good results for the remaining chunks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp</td>
+                    <td>859</td>
+                    <td class="mono snippet">	// We need to check if we are getting the correct number of columns here.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/main/database_manager.cpp</td>
+                    <td>378</td>
+                    <td class="mono snippet">	// If we are loading a database type from an extension, then we need to check if that extension is loaded.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/main/client_verify.cpp</td>
+                    <td>40</td>
+                    <td class="mono snippet">	// The purpose of this function is to test correctness of otherwise hard to test features:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/double-conversion-bignum.cpp</td>
+                    <td>434</td>
+                    <td class="mono snippet">  // Don't forget to update the used_digits and the exponent.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/unicode/dtfmtsym.h</td>
+                    <td>69</td>
+                    <td class="mono snippet"> * DateFormatSymbols object, they can feel free to modify the date-time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/third_party/icu/i18n/unicode/dtitvinf.h</td>
+                    <td>146</td>
+                    <td class="mono snippet"> * they can feel free to modify it as necessary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">extension/icu/scripts/makedata.sh</td>
+                    <td>37</td>
+                    <td class="mono snippet"># build the data, make sure to create &quot;filters.json&quot; first, see above</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/thrift/thrift/transport/TBufferTransports.h</td>
+                    <td>481</td>
+                    <td class="mono snippet">  // Don't forget to update constrctors, initCommon, and swap if</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">long_string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/tests/test_large_value_rendering.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">long_string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/include/duckdb/function/scalar/string_functions.hpp</td>
+                    <td>352</td>
+                    <td class="mono snippet">	static constexpr const char *Example = &quot;regexp_extract('abcde', '[a-z]{3}')\001regexp_extract('abc', '([a-z])(b)', 1)\001regexp_extract('ABC', '([a-z</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/function/scalar/string/functions.json</td>
+                    <td>351</td>
+                    <td class="mono snippet">                &quot;example&quot;: &quot;regexp_extract('John Doe', '([a-z]+) ([a-z]+)', ['first_name', 'last_name'], 'i')&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/juliapkg/scripts/generate_c_api_julia.py</td>
+                    <td>443</td>
+                    <td class="mono snippet">        # Check if the argument is (likely) an index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/test_report.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        # Check if `self.comparison_results_file_name` exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/bwc/utils/duckdb_installer.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">    # Check if the cli already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/merge_vcpkg_deps.py</td>
+                    <td>88</td>
+                    <td class="mono snippet"># Print output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_serialization.py</td>
+                    <td>791</td>
+                    <td class="mono snippet">    # Check if is a templated class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/cleanup_config_skip_tests.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    # Check if this config inherits from another</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>131</td>
+                    <td class="mono snippet">Please do not submit pull requests generated by AI (LLMs).</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(3 hits · 3 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/delta/README.md</td>
+                    <td>14</td>
+                    <td class="mono snippet"># How to use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">extension/icu/third_party/icu/common/ucase.cpp</td>
+                    <td>1448</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate_extensions_function.py</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [0.3, 0.3];
+        const matches = [164, 168];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

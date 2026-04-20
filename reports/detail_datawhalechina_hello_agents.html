@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — datawhalechina/hello-agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>datawhalechina/hello-agents</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1099</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1412</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">202,653</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">836</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(720 hits · 727 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">fix_bold_format.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/tools/agent_tool.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/tools/code_runner.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/agents/exercise.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/usernamedadad-AutoFlow/backend/app/routers/agent.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/usernamedadad-AutoFlow/backend/app/agents/mermaid_agent_service.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/weather.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/weather.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/gradio_app.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/gradio_app.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        except Exception as e2:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/simple_multi_agent.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/allen2000-FashionDailyDress/simple_multi_agent.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/megg-ops-roleplay_agent/roleplay_agent.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/test_agent_workflow.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/verify_search.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/verify_ecnu_llm.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/verify_ecnu_tts.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/verify_ffmpeg.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>480</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/main.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">        except Exception as exc:  # pragma: no cover - defensive guardrail</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/main.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">                except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/audio_synthesizer.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/audio_synthesizer.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/script_generator.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/script_generator.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/audio_generator.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/audio_generator.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/search.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">    except Exception as exc:  # pragma: no cover - defensive logging</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/summary_manager.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/summary_manager.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/summary_manager.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/summary_manager.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/main_agent.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/main_agent.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/main_agent.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/main_agent.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/main_agent.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/file_manager.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/file_manager.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/file_manager.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/core/file_manager.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/create_plan_agent.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/create_plan_agent.py</td>
+                    <td>153</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/summary_agent.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/summary_agent.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/vibe_learning_agent.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/vibe_learning_agent.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/vibe_learning_agent.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Yixiang-Wu-LearningAgent/agents/vibe_learning_agent.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 670 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(284 hits · 568 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/agents/exercise.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        # =========================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/agents/exercise.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        # =========================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lll0807-CodeTutorAgent/programmer/services/knowledge.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>11</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>57</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>59</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>80</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>121</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/prompts.py</td>
+                    <td>123</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>233</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>556</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/agent.py</td>
+                    <td>558</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/planner.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/planner.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/tool_events.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/tool_events.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/tool_events.py</td>
+                    <td>190</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/src/services/tool_events.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>21</td>
+                    <td class="mono snippet"># ==============</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ==============</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>226</td>
+                    <td class="mono snippet"># ==============</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>228</td>
+                    <td class="mono snippet"># ==============</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>263</td>
+                    <td class="mono snippet"># ==================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/embedding.py</td>
+                    <td>265</td>
+                    <td class="mono snippet"># ==================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/rag/pipeline.py</td>
+                    <td>1126</td>
+                    <td class="mono snippet"># ==================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/YYHDBL-HelloCodeAgentCli/memory/rag/pipeline.py</td>
+                    <td>1128</td>
+                    <td class="mono snippet"># ==================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/Shawnxyxy-HealthRecordAgent/backend/agents/planner.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/Shawnxyxy-HealthRecordAgent/backend/agents/planner.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">    # ======================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/lgs-only-NovelGenerator/main.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    # ---------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ── Color helpers ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet"># ── Kill processes on a given port ─────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>46</td>
+                    <td class="mono snippet"># ── Also kill by process name pattern ──────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/restart.sh</td>
+                    <td>57</td>
+                    <td class="mono snippet"># ── Wait for a port to become available ────────────────────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 234 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(47 hits · 47 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/melxy1997-ColumnWriter/orchestrator.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Step 1: 规划专栏结构（使用 PlanAndSolveAgent）</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/melxy1997-ColumnWriter/orchestrator.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">        # Step 2: 为每个子话题创建内容树</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/melxy1997-ColumnWriter/orchestrator.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">        # Step 3: 组装完整专栏</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/backend/agents.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">        # Step 1: LLM generates subject name + brief intro</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/backend/agents.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">        # Step 2: pre-generate 3 hints via tavily search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/afei-GuessWhoAmI/backend/agents.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">        # Step 3: create role-play Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>2000</td>
+                    <td class="mono snippet">    # Step 1: Search for information</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>2007</td>
+                    <td class="mono snippet">    # Step 2: Perform calculations based on search results (if needed)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1824</td>
+                    <td class="mono snippet"># Step 1: View project structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1827</td>
+                    <td class="mono snippet"># Step 2: Enter source code directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1830</td>
+                    <td class="mono snippet"># Step 3: Find specific files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1833</td>
+                    <td class="mono snippet"># Step 4: View file content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1850</td>
+                    <td class="mono snippet"># Step 1: View project root directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1862</td>
+                    <td class="mono snippet"># Step 2: View source code directory structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1866</td>
+                    <td class="mono snippet"># Step 3: Search for specific patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2137</td>
+                    <td class="mono snippet">        # Step 1: Execute preprocessing based on mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2140</td>
+                    <td class="mono snippet">        # Step 2: Retrieve relevant notes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2144</td>
+                    <td class="mono snippet">        # Step 3: Build optimized context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2152</td>
+                    <td class="mono snippet">        # Step 4: Call LLM</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2156</td>
+                    <td class="mono snippet">        # Step 5: Post-processing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>2159</td>
+                    <td class="mono snippet">        # Step 6: Update conversation history</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>311</td>
+                    <td class="mono snippet"># Step 1: Define functions for each LLM provider</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>345</td>
+                    <td class="mono snippet"># Step 2: Implement tool functions yourself</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>354</td>
+                    <td class="mono snippet"># Step 3: Handle different model response formats</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>371</td>
+                    <td class="mono snippet"># Step 1: Connect to community-provided MCP server (no need to implement yourself)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>380</td>
+                    <td class="mono snippet"># Step 2: Unified calling method (model-independent)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>391</td>
+                    <td class="mono snippet"># Step 3: Any model supporting MCP can use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>968</td>
+                    <td class="mono snippet">    # Step 1: GitHub search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>979</td>
+                    <td class="mono snippet">    # Step 2: Generate report</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>1002</td>
+                    <td class="mono snippet">    # Step 3: Save report</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>1444</td>
+                    <td class="mono snippet">    # Step 1: Research</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>1448</td>
+                    <td class="mono snippet">    # Step 2: Write</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>1452</td>
+                    <td class="mono snippet">    # Step 3: Edit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter13/Chapter13-Intelligent-Travel-Assistant.md</td>
+                    <td>572</td>
+                    <td class="mono snippet">        # Step 1: Attraction search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter13/Chapter13-Intelligent-Travel-Assistant.md</td>
+                    <td>577</td>
+                    <td class="mono snippet">        # Step 2: Weather query</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter13/Chapter13-Intelligent-Travel-Assistant.md</td>
+                    <td>582</td>
+                    <td class="mono snippet">        # Step 3: Hotel recommendation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter13/Chapter13-Intelligent-Travel-Assistant.md</td>
+                    <td>587</td>
+                    <td class="mono snippet">        # Step 4: Integrate and generate plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter13/Chapter13-Intelligent-Travel-Assistant.md</td>
+                    <td>593</td>
+                    <td class="mono snippet">        # Step 5: Parse JSON</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>928</td>
+                    <td class="mono snippet"># Step 1: Quick test (5 samples)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>931</td>
+                    <td class="mono snippet"># Step 2: Medium-scale test (50 samples)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>935</td>
+                    <td class="mono snippet"># Step 3: Full evaluation (all samples)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>1777</td>
+                    <td class="mono snippet">        # Step 1: Run HelloAgents evaluation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>1780</td>
+                    <td class="mono snippet">        # Step 2: Export GAIA format results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>1784</td>
+                    <td class="mono snippet">        # Step 3: Generate evaluation report</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>2441</td>
+                    <td class="mono snippet">    # Step 1: Generate AIME problems</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>2448</td>
+                    <td class="mono snippet">    # Step 2: Evaluation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>2489</td>
+                    <td class="mono snippet">    # Step 3: Generate comprehensive report</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(10 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/usernamedadad-AutoFlow/frontend/package-lock.json</td>
+                    <td>2636</td>
+                    <td class="mono snippet">      &quot;resolved&quot;: &quot;https://registry.npmjs.org/robust-predicates/-/robust-predicates-3.0.3.tgz&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/Apricity-InnocoreAI/models/task.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    analysis_type: str = &quot;comprehensive&quot;  # comprehensive, methodology, findings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/Apricity-InnocoreAI/api/routes/analysis.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    analysis_type: str = &quot;summary&quot;  # summary, innovation, comparison, comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/Apricity-InnocoreAI/api/routes/workflow.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">    analysis_type: str = &quot;summary&quot;  # summary, innovation, comparison, comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter8/Chapter8-Memory-and-Retrieval.md</td>
+                    <td>742</td>
+                    <td class="mono snippet">        # Calculate comprehensive score</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter1/Chapter1-Introduction-to-Agents.md</td>
+                    <td>321</td>
+                    <td class="mono snippet">        # 4. Call API, include_answer=True will return a comprehensive answer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter1/Chapter1-Introduction-to-Agents.md</td>
+                    <td>329</td>
+                    <td class="mono snippet">        # If there's no comprehensive answer, format raw results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>263</td>
+                    <td class="mono snippet">    # Chunk already printed in my_llm, just pass here</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>341</td>
+                    <td class="mono snippet">    # 3. Calculate comprehensive scores for other information</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>2489</td>
+                    <td class="mono snippet">    # Step 3: Generate comprehensive report</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(17 hits · 17 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/JJason-DeepCastAgent/backend/scripts/verify_ffmpeg.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">    # Check if file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter1/Chapter1-Introduction-to-Agents.md</td>
+                    <td>276</td>
+                    <td class="mono snippet">        # Check if response status code is 200 (success)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter6/Chapter6-Framework-Development-Practice.md</td>
+                    <td>829</td>
+                    <td class="mono snippet">    # Check if messages are returned to prevent premature conversation termination</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>200</td>
+                    <td class="mono snippet">        # Check if provider is 'modelscope' that we want to handle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>724</td>
+                    <td class="mono snippet">            # Check if there are tool calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>1755</td>
+                    <td class="mono snippet">        # Check if there are available search sources</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1051</td>
+                    <td class="mono snippet">    # Read file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1803</td>
+                    <td class="mono snippet">    # Check if within working directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1809</td>
+                    <td class="mono snippet">    # Check if directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>491</td>
+                    <td class="mono snippet">        # Read file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter10/Chapter10-Agent-Communication-Protocols.md</td>
+                    <td>499</td>
+                    <td class="mono snippet">        # Write file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter11/Chapter11-Agentic-RL.md</td>
+                    <td>1610</td>
+                    <td class="mono snippet"># Print results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter16/Chapter16-Graduation-Project.md</td>
+                    <td>210</td>
+                    <td class="mono snippet">├── outputs/              # Output results (optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter4/Chapter4-Building-Classic-Agent-Paradigms.md</td>
+                    <td>793</td>
+                    <td class="mono snippet">        # Check if plan was successfully generated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter15/Chapter15-Building-Cyber-Town.md</td>
+                    <td>1356</td>
+                    <td class="mono snippet">        # Check if reached target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter15/Chapter15-Building-Cyber-Town.md</td>
+                    <td>1523</td>
+                    <td class="mono snippet">    # Check if request is being processed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>1648</td>
+                    <td class="mono snippet">    # Check if it's a comma-separated list</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter8/Chapter8-Memory-and-Retrieval.md</td>
+                    <td>1443</td>
+                    <td class="mono snippet">The embedding model is the core of the RAG system. It is responsible for converting text into high-dimensional vectors, enabling computers to understa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter6/Chapter6-Framework-Development-Practice.md</td>
+                    <td>48</td>
+                    <td class="mono snippet">As mentioned earlier, AutoGen's design philosophy is rooted in &quot;driving collaboration through conversation.&quot; It cleverly maps complex task-solving pro</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter6/Chapter6-Framework-Development-Practice.md</td>
+                    <td>904</td>
+                    <td class="mono snippet">It's worth noting that the CAMEL framework is undergoing rapid development and evolution. From its [GitHub repository](https://github.com/camel-ai/cam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>144</td>
+                    <td class="mono snippet"># Now you can use tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter4/Chapter4-Building-Classic-Agent-Paradigms.md</td>
+                    <td>553</td>
+                    <td class="mono snippet">It's worth noting that since the model's knowledge and internet information are constantly updated, your running results may not be exactly the same a</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Apricity-InnocoreAI/agents/controller.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    async def execute_task(self, task_id: str) -&gt; Dict[str, Any]:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Co-creation-projects/Apricity-InnocoreAI/api/routes/tasks.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">async def execute_task(task_id: str):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/chapter8/04_RAGTool_MarkItDown_Pipeline.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">def process_data(data):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/chapter9/codebase/data_processor.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">def process_data(data: List[Dict[str, Any]]) -&gt; pd.DataFrame:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Extra-Chapter/Extra09-Agent应用开发实践踩坑与经验分享.md</td>
+                    <td>398</td>
+                    <td class="mono snippet">      {&quot;file&quot;: &quot;src/utils.py&quot;, &quot;line&quot;: 42, &quot;text&quot;: &quot;def process_data(...)&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">Extra-Chapter/Extra09-Agent应用开发实践踩坑与经验分享.md</td>
+                    <td>399</td>
+                    <td class="mono snippet">      {&quot;file&quot;: &quot;src/helpers.py&quot;, &quot;line&quot;: 88, &quot;text&quot;: &quot;def process_data(...)&quot;}</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter16/Chapter16-Graduation-Project.md</td>
+                    <td>370</td>
+                    <td class="mono snippet"># Import necessary libraries</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter3/Chapter3-Fundamentals-of-Large-Language-Models.md</td>
+                    <td>451</td>
+                    <td class="mono snippet">        # Create a sufficiently long positional encoding matrix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/chapter12/Chapter12-Agent-Performance-Evaluation.md</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Create a system prompt emphasizing tool use</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">docs/chapter6/Chapter6-Framework-Development-Practice.md</td>
+                    <td>821</td>
+                    <td class="mono snippet"># Call init_chat() to get the initial conversation message generated by AI</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>1992</td>
+                    <td class="mono snippet"># Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter7/Chapter7-Building-Your-Agent-Framework.md</td>
+                    <td>2068</td>
+                    <td class="mono snippet"># Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>753</td>
+                    <td class="mono snippet"># Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter9/Chapter9-Context-Engineering.md</td>
+                    <td>1480</td>
+                    <td class="mono snippet"># Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/chapter11/Chapter11-Agentic-RL.md</td>
+                    <td>1993</td>
+                    <td class="mono snippet"># Usage example</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Co-creation-projects/jjyaoao-CodeReviewAgent/outputs/review_report.md</td>
+                    <td>116</td>
+                    <td class="mono snippet">    send_email(&quot;admin@example.com&quot;, &quot;用户管理系统的平均年龄已更新&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [7.0, 7.0];
+        const matches = [1099, 1099];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

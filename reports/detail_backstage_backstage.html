@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — backstage/backstage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>backstage/backstage</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.7</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.7</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">415</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1356</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,066,120</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">10284</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(72 hits · 720 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/catalog-backend/src/providers/DefaultLocationStore.ts</td>
+                    <td>218</td>
+                    <td class="mono snippet">    if (this.db.client.config.client.includes('mysql')) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/notifications-backend/src/database/DatabaseNotificationsStore.ts</td>
+                    <td>128</td>
+                    <td class="mono snippet">    this.isSQLite = this.db.client.config.client.includes('sqlite3');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/auth-backend/src/database/OidcDatabase.ts</td>
+                    <td>181</td>
+                    <td class="mono snippet">      this.db.client.config.client.includes('sqlite3') ||</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/auth-backend/src/database/OidcDatabase.ts</td>
+                    <td>182</td>
+                    <td class="mono snippet">      this.db.client.config.client.includes('mysql')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/auth-backend/src/database/OidcDatabase.ts</td>
+                    <td>279</td>
+                    <td class="mono snippet">      this.db.client.config.client.includes('sqlite3') ||</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/auth-backend/src/database/OidcDatabase.ts</td>
+                    <td>280</td>
+                    <td class="mono snippet">      this.db.client.config.client.includes('mysql')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/lib/client.ts</td>
+                    <td>282</td>
+                    <td class="mono snippet">      for (const groupItem of response.data.group.descendantGroups.nodes.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/lib/client.ts</td>
+                    <td>366</td>
+                    <td class="mono snippet">      for (const userItem of response.data.group.groupMembers.nodes.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">plugins/bitbucket-cloud-common/scripts/prepare-schema.js</td>
+                    <td>107</td>
+                    <td class="mono snippet">  const repoProperties = json.components.schemas.repository.allOf.find(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>221</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>223</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>226</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>228</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>287</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>289</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>298</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>302</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>306</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>401</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>403</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>417</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>422</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>427</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>506</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>508</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>522</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>527</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>531</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>587</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>589</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>598</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>602</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>606</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>639</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>643</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>646</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>648</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>676</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>680</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>683</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>685</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>770</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>772</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>783</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>787</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>792</td>
+                    <td class="mono snippet">    expect(mocks.federation.get.mock.calls.flatMap(e =&gt; e[0])).toEqual([</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>888</td>
+                    <td class="mono snippet">    const errorCalls = mocks.console.error.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>890</td>
+                    <td class="mono snippet">    const warnCalls = mocks.console.warn.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>899</td>
+                    <td class="mono snippet">    const infoCalls = mocks.console.info.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/frontend-dynamic-feature-loader/src/loader.test.tsx</td>
+                    <td>904</td>
+                    <td class="mono snippet">    const debugCalls = mocks.console.debug.mock.calls.flatMap(e =&gt; e[0]);</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 22 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(133 hits · 266 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs-ui/src/app/components/dialog/components.tsx</td>
+                    <td>44</td>
+                    <td class="mono snippet">            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs-ui/src/app/components/dialog/components.tsx</td>
+                    <td>44</td>
+                    <td class="mono snippet">            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs-ui/src/app/components/dialog/components.tsx</td>
+                    <td>67</td>
+                    <td class="mono snippet">            Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs-ui/src/app/components/dialog/components.tsx</td>
+                    <td>67</td>
+                    <td class="mono snippet">            Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs-ui/src/app/components/avatar/snippets.ts</td>
+                    <td>3</td>
+                    <td class="mono snippet">&lt;Avatar src=&quot;https://example.com/user.jpg&quot; name=&quot;Jane Doe&quot; /&gt;`;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend-module-cloudflare-access-provider/src/helpers.test.ts</td>
+                    <td>110</td>
+                    <td class="mono snippet">            groups: [{ id: '123', email: 'foo@bar.com', name: 'foo' }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend-module-cloudflare-access-provider/src/helpers.test.ts</td>
+                    <td>140</td>
+                    <td class="mono snippet">        groups: [{ id: '123', email: 'foo@bar.com', name: 'foo' }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend-module-cloudflare-access-provider/src/helpers.test.ts</td>
+                    <td>182</td>
+                    <td class="mono snippet">        groups: [{ id: '123', email: 'foo@bar.com', name: 'foo' }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend-module-cloudflare-access-provider/src/helpers.test.ts</td>
+                    <td>263</td>
+                    <td class="mono snippet">        groups: [{ id: '123', email: 'foo@bar.com', name: 'foo' }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend-module-cloudflare-access-provider/src/helpers.test.ts</td>
+                    <td>308</td>
+                    <td class="mono snippet">        groups: [{ id: '123', email: 'foo@bar.com', name: 'foo' }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/home/src/homePageComponents/FeaturedDocsCard/FeaturedDocsCard.stories.tsx</td>
+                    <td>32</td>
+                    <td class="mono snippet">        'An awesome doc you want to feature to help out your customers. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pretium magna ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/home/src/homePageComponents/FeaturedDocsCard/FeaturedDocsCard.stories.tsx</td>
+                    <td>32</td>
+                    <td class="mono snippet">        'An awesome doc you want to feature to help out your customers. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis pretium magna ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gerrit/src/actions/gerrit.examples.test.ts</td>
+                    <td>355</td>
+                    <td class="mono snippet">      gitAuthorInfo: { name: 'John Doe' },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gerrit/src/actions/gerrit.examples.test.ts</td>
+                    <td>534</td>
+                    <td class="mono snippet">      gitAuthorInfo: { name: 'John Doe', email: 'johndoe@email.com' },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gerrit/src/actions/gerrit.examples.ts</td>
+                    <td>98</td>
+                    <td class="mono snippet">            gitAuthorName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gerrit/src/actions/gerrit.examples.ts</td>
+                    <td>151</td>
+                    <td class="mono snippet">            gitAuthorName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-github/src/events/__fixtures__/push-event-complex.json</td>
+                    <td>200</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-github/src/events/__fixtures__/push-event-complex.json</td>
+                    <td>221</td>
+                    <td class="mono snippet">      &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-github/src/events/__fixtures__/push-event-simple.json</td>
+                    <td>200</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-github/src/events/__fixtures__/push-event-simple.json</td>
+                    <td>221</td>
+                    <td class="mono snippet">      &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/org/src/alpha.test.tsx</td>
+                    <td>127</td>
+                    <td class="mono snippet">            displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/org/src/alpha.test.tsx</td>
+                    <td>138</td>
+                    <td class="mono snippet">      expect(await screen.findByText('John Doe')).toBeInTheDocument();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/search-backend-module-catalog/src/collators/defaultCatalogCollatorEntityTransformer.test.ts</td>
+                    <td>45</td>
+                    <td class="mono snippet">      email: 'test@test.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-azure/README.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">      gitAuthorName: 'John Doe'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-azure/src/actions/azure.examples.ts</td>
+                    <td>103</td>
+                    <td class="mono snippet">            gitAuthorName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-node/src/flow/sendWebMessageResponse.test.ts</td>
+                    <td>50</td>
+                    <td class="mono snippet">            email: 'foo@bar.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-node/src/flow/sendWebMessageResponse.test.ts</td>
+                    <td>118</td>
+                    <td class="mono snippet">            email: 'foo@bar.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-node/src/flow/sendWebMessageResponse.test.ts</td>
+                    <td>136</td>
+                    <td class="mono snippet">            email: 'foo@bar.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-node/src/flow/sendWebMessageResponse.test.ts</td>
+                    <td>172</td>
+                    <td class="mono snippet">            email: 'foo@bar.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-react/src/next/components/ReviewState/ReviewState.test.tsx</td>
+                    <td>24</td>
+                    <td class="mono snippet">      name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-react/src/next/components/ReviewState/ReviewState.test.tsx</td>
+                    <td>38</td>
+                    <td class="mono snippet">      name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-react/src/next/components/ReviewState/ReviewState.test.tsx</td>
+                    <td>69</td>
+                    <td class="mono snippet">      name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-react/src/next/components/ReviewState/ReviewState.test.tsx</td>
+                    <td>123</td>
+                    <td class="mono snippet">      name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1082</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1091</td>
+                    <td class="mono snippet">    name: 'Jane Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1585</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1597</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1612</td>
+                    <td class="mono snippet">    user_name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1631</td>
+                    <td class="mono snippet">    user_name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>1650</td>
+                    <td class="mono snippet">    user_name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2293</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2321</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2349</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2374</td>
+                    <td class="mono snippet">          displayName: 'Jane Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2820</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2845</td>
+                    <td class="mono snippet">          displayName: 'Jane Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>2973</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>3036</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-gitlab/src/__testUtils__/mocks.ts</td>
+                    <td>3071</td>
+                    <td class="mono snippet">          displayName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gitea/src/actions/gitea.examples.ts</td>
+                    <td>115</td>
+                    <td class="mono snippet">            gitAuthorName: 'John Doe',</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 83 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(95 hits · 190 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>210</td>
+                    <td class="mono snippet">yarn new # Create a new module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend/README.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">#### Creating a GitHub OAuth application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend/README.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">#### Creating a GitLab OAuth application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend/README.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">#### Creating a GitLab Enterprise OAuth application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/auth-backend/README.md</td>
+                    <td>116</td>
+                    <td class="mono snippet">#### Creating an Azure AD App Registration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/devtools-backend/src/util/Lockfile.ts</td>
+                    <td>54</td>
+                    <td class="mono snippet">  `# This file is generated by running &quot;yarn install&quot; inside your project.\n`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/publishing.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">### Creating a new release</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/architecture-decisions/index.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">### Creating an ADR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/backend-system/building-plugins-and-modules/01-index.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Creating a new Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/backend-system/architecture/05-extension-points.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">## Defining an Extension Point</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/backend-system/architecture/04-plugins.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Defining a Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/plugins/backend/__meta__.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">### Creating a todo plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/plugins/integrations/003-permissions.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">### Define the permission</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/plugins/integrations/003-permissions.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">### Define a permission rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/plugins/integrations/003-permissions.md</td>
+                    <td>259</td>
+                    <td class="mono snippet">### Define the create permission</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/plugins/integrations/002-search.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">## Creating a custom TODO collator</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/create-app/customize-theme--old.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">## Creating a Custom Theme</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/golden-path/create-app/customize-theme.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Creating a Custom Theme</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/dls/contributing-to-storybook.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">## Creating a new Story</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/dls/design.md</td>
+                    <td>50</td>
+                    <td class="mono snippet">### Creating a New Design Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/bitbucketServer/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an Application Link in Bitbucket Server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/gitlab/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an OAuth App on GitLab</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/onelogin/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an Application on OneLogin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/github/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an OAuth App on GitHub</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/openshift/provider.md</td>
+                    <td>69</td>
+                    <td class="mono snippet">## Create an OAuth client in OpenShift</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/atlassian/provider.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">## Create an OAuth 2.0 (3LO) app in the Atlassian developer console</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/vmware-cloud/provider.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">## Create an OAuth App in the VMware Cloud Console</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/okta/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an Application on Okta</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/bitbucket/provider.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">## Create an OAuth Consumer in Bitbucket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/auth/auth0/provider.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Create an Auth0 Application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/feature-flags.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">## Defining a Feature Flag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/call-existing-api.md</td>
+                    <td>134</td>
+                    <td class="mono snippet">## Creating a Backstage Backend Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/integrating-plugin-into-software-catalog.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">### Create a plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/create-a-plugin.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">## Create a Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/index.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">## Creating a Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/backend-plugin.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Creating a Backend Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/new-backend-system.md</td>
+                    <td>174</td>
+                    <td class="mono snippet">#### Defining an Extension Point</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/new-backend-system.md</td>
+                    <td>206</td>
+                    <td class="mono snippet">#### Defining a Service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/integrating-search-into-plugins.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">### Create a collator</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/integrating-search-into-plugins.md</td>
+                    <td>47</td>
+                    <td class="mono snippet"># Create a new branch using Git command-line</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/building-apps/01-index.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">## Creating a new app</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/25-extension-overrides.md</td>
+                    <td>307</td>
+                    <td class="mono snippet">### Creating a frontend module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/15-plugins.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">## Creating a Plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/36-routes.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">### Creating a Route Reference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/20-extensions.md</td>
+                    <td>91</td>
+                    <td class="mono snippet">## Creating an extension</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/23-extension-blueprints.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Creating an extension from a blueprint</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/23-extension-blueprints.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">### Creating an extension from a blueprint with overrides</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/23-extension-blueprints.md</td>
+                    <td>73</td>
+                    <td class="mono snippet">### Creating an extension from a blueprint with advanced parameter types</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/23-extension-blueprints.md</td>
+                    <td>106</td>
+                    <td class="mono snippet">## Creating an extension blueprint</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/frontend-system/architecture/23-extension-blueprints.md</td>
+                    <td>143</td>
+                    <td class="mono snippet">### Creating an extension blueprint with advanced parameter types</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 45 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(35 hits · 70 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app-config.yaml</td>
+                    <td>299</td>
+                    <td class="mono snippet">    # For local development you can use a file location instead:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-module-addons-contrib/src/plugin.ts</td>
+                    <td>43</td>
+                    <td class="mono snippet"> * Here's a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-module-addons-contrib/src/plugin.ts</td>
+                    <td>90</td>
+                    <td class="mono snippet"> * Here's a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-module-addons-contrib/src/plugin.ts</td>
+                    <td>169</td>
+                    <td class="mono snippet"> * Here's a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-module-addons-contrib/src/plugin.ts</td>
+                    <td>217</td>
+                    <td class="mono snippet"> * Here's a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/home/src/homePageComponents/HeaderWorldClock/HeaderWorldClock.tsx</td>
+                    <td>86</td>
+                    <td class="mono snippet"> * Here's a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder/README.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">**NOTE:** Don't forget to open a second terminal, start your Backstage backend there,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-react/src/hooks/useEntityListProvider.tsx</td>
+                    <td>415</td>
+                    <td class="mono snippet">      // Also make sure to replace the state rather than pushing, since we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-backend/examples/documented-component/docs/extensions.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">    Don't forget to spell check your documentation.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/techdocs-backend/examples/documented-component-uffizzi/docs/extensions.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">    Don't forget to spell check your documentation.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/search/CHANGELOG.md</td>
+                    <td>3540</td>
+                    <td class="mono snippet">- c5b6045f36: Search Modal now relies on the Search Context to access state and state setter. If you use the SidebarSearchModal as described in the [g</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/devtools/README.md</td>
+                    <td>80</td>
+                    <td class="mono snippet">The DevTools plugin has been designed so that you can customize the tabs to suite your needs. You may only want some or none of the out of the box tab</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/kubernetes-backend/CHANGELOG.md</td>
+                    <td>3614</td>
+                    <td class="mono snippet">  For example, here's a simple example of a custom supplier in `packages/backend/src/plugins/kubernetes.ts`:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/kubernetes-backend/CHANGELOG.md</td>
+                    <td>3684</td>
+                    <td class="mono snippet">  For example, here's a simple example of a custom supplier in `packages/backend/src/plugins/kubernetes.ts`:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/scaffolder-backend-module-gitea/README.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">self-signed certificate `gitea cert --host localhost -ca` trusted by a CA authority. Don't forget to set the env var `NODE_EXTRA_CA_CERTS` to point to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend-module-msgraph/README.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">        # If you don't know you tenantId, you can use Microsoft Graph Explorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/releases/v1.31.0.md</td>
+                    <td>87</td>
+                    <td class="mono snippet">The `analyze-location` endpoint of the catalog is now protected by the `catalog.location.analyze` permission, and the `validate-entity` endpoint is no</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/releases/v1.1.0-changelog.md</td>
+                    <td>436</td>
+                    <td class="mono snippet">  For example, here's a simple example of a custom supplier in `packages/backend/src/plugins/kubernetes.ts`:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/backend-system/building-plugins-and-modules/08-migrating.md</td>
+                    <td>265</td>
+                    <td class="mono snippet">This is done by adding a `@deprecated` annotation to the legacy exports. It's worth noting that the plugin can continue using `createRouter` internall</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/backend-system/building-backends/01-index.md</td>
+                    <td>136</td>
+                    <td class="mono snippet">And `backend-b`, don't forget to clean up dependencies in `package.json` as well:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/software-templates/writing-templates.md</td>
+                    <td>271</td>
+                    <td class="mono snippet">        # make sure to use ${{ secrets.parameterName }} to reference these values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/software-catalog/life-of-an-entity.md</td>
+                    <td>244</td>
+                    <td class="mono snippet">As mentioned earlier, entities internally form a graph. The edges go from</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/software-catalog/catalog-customization--old.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">By default, the initially selected filter defaults to Owned. If you are still building up your catalog this may show an empty list to start. If you wo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/permissions/plugin-authors/02-adding-a-basic-permission-check.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">If the outcome of a permission check doesn't need to change for different [resources](../../references/glossary.md#resource-permission-plugin), you ca</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting-started/viewing-catalog.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">[Customizing columns, actions, and table options](../features/software-catalog/catalog-customization.md#customizing-columns-actions-and-table-options)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting-started/config/authentication.md</td>
+                    <td>188</td>
+                    <td class="mono snippet">3. Now make sure to replace the text &quot;YOUR GITHUB USERNAME&quot; with your actual GitHub User name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting-started/config/authentication--old.md</td>
+                    <td>162</td>
+                    <td class="mono snippet">3. Now make sure to replace the text &quot;YOUR GITHUB USERNAME&quot; with your actual GitHub User name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting-started/config/database.md</td>
+                    <td>236</td>
+                    <td class="mono snippet">      # If you want to set a timezone you can use the following environment variables, this is handy when trying to figure out when scheduled tasks wi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorials/auth-service-migration.md</td>
+                    <td>209</td>
+                    <td class="mono snippet">As mentioned earlier, you may end up not needing both `auth` and `httpAuth` in the implementation. If that is the case you should remove the unused on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorials/setup-opentelemetry.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">This tutorial shows how to setup exporters in your Backstage backend package. For demonstration purposes we will use a Prometheus exporter, but you ca</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/accessibility/index.md</td>
+                    <td>51</td>
+                    <td class="mono snippet">Running this command will use the [Lighthouse config](https://github.com/backstage/backstage/blob/39ba2284d73885b7ca8290cb38e2b1e4d983c8d6/lighthouser</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/app/README.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">**NOTE:** Don't forget to open a second terminal and to launch the backend there, using `yarn start`! The frontend requires a backend to connect to.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/create-app/CHANGELOG.md</td>
+                    <td>5327</td>
+                    <td class="mono snippet">- 24d2ce03f3: Search Modal now relies on the Search Context to access state and state setter. If you use the SidebarSearchModal as described in the [g</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/create-app/templates/legacy-app/examples/template/template.yaml</td>
+                    <td>52</td>
+                    <td class="mono snippet">    # you can change that here.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/create-app/templates/default-app/examples/template/template.yaml</td>
+                    <td>52</td>
+                    <td class="mono snippet">    # you can change that here.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(45 hits · 45 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260403000000_add_location_entity_ref.js</td>
+                    <td>57</td>
+                    <td class="mono snippet">  // Step 1: Add column as nullable so the schema change itself needs no data.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260403000000_add_location_entity_ref.js</td>
+                    <td>67</td>
+                    <td class="mono snippet">  // Step 2: Bootstrap row gets an empty string placeholder.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260403000000_add_location_entity_ref.js</td>
+                    <td>72</td>
+                    <td class="mono snippet">  // Step 3: Compute and fill entity refs for all non-bootstrap rows.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260403000000_add_location_entity_ref.js</td>
+                    <td>123</td>
+                    <td class="mono snippet">  // Step 4: Tighten to NOT NULL now that every row has a value.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>29</td>
+                    <td class="mono snippet">  // Step 1: Create the stitch_queue table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>47</td>
+                    <td class="mono snippet">  // Step 2: Migrate existing stitch requests from refresh_state to stitch_queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>67</td>
+                    <td class="mono snippet">  // Step 3: Remove next_stitch_at and next_stitch_ticket columns from refresh_state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>80</td>
+                    <td class="mono snippet">  // Step 4: Remove stitch_ticket from final_entities (now managed via stitch_queue)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>96</td>
+                    <td class="mono snippet">  // Step 1: Add back stitch_ticket to final_entities</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>112</td>
+                    <td class="mono snippet">  // Step 2: Add back the columns to refresh_state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>139</td>
+                    <td class="mono snippet">  // Step 3: Migrate stitch requests back from stitch_queue to refresh_state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20260215000000_move_stitch_queue.js</td>
+                    <td>172</td>
+                    <td class="mono snippet">  // Step 4: Drop the stitch_queue table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-backend/CHANGELOG.md</td>
+                    <td>3988</td>
+                    <td class="mono snippet">  ##### Step 1: Change the credential keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-backend/CHANGELOG.md</td>
+                    <td>3996</td>
+                    <td class="mono snippet">  ##### Step 2: Remove the unused keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-backend/CHANGELOG.md</td>
+                    <td>4002</td>
+                    <td class="mono snippet">  ##### Step 3: Add Swift URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-node/CHANGELOG.md</td>
+                    <td>2996</td>
+                    <td class="mono snippet">  ##### Step 1: Change the credential keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-node/CHANGELOG.md</td>
+                    <td>3004</td>
+                    <td class="mono snippet">  ##### Step 2: Remove the unused keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/techdocs-node/CHANGELOG.md</td>
+                    <td>3010</td>
+                    <td class="mono snippet">  ##### Step 3: Add Swift URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">## Step 1: Migrate Route Refs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">## Step 2: Migrate the Plugin Definition</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>141</td>
+                    <td class="mono snippet">## Step 3: Migrate API Factories to `ApiBlueprint`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>209</td>
+                    <td class="mono snippet">## Step 4: Migrate Pages to `PageBlueprint`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>275</td>
+                    <td class="mono snippet">## Step 5: Replace Internal Routing with Sub-Pages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>384</td>
+                    <td class="mono snippet">## Step 6: Update Hooks and Imports</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>437</td>
+                    <td class="mono snippet">## Step 7: Remove Old System Code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-full-frontend-system-migration/SKILL.md</td>
+                    <td>447</td>
+                    <td class="mono snippet">## Step 8: Update Page Components for BUI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/app-frontend-system-migration/SKILL.md</td>
+                    <td>82</td>
+                    <td class="mono snippet">### Step 1: Switch `createApp`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/app-frontend-system-migration/SKILL.md</td>
+                    <td>94</td>
+                    <td class="mono snippet">### Step 2: Convert `createApp` options</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/app-frontend-system-migration/SKILL.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">### Step 3: Convert the app root</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/app-frontend-system-migration/SKILL.md</td>
+                    <td>156</td>
+                    <td class="mono snippet">### Step 4: Update `index.tsx`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/app-frontend-system-migration/SKILL.md</td>
+                    <td>170</td>
+                    <td class="mono snippet">### Step 5: Update `App.test.tsx`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Step 1: Create the Alpha Entry Point</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>62</td>
+                    <td class="mono snippet">## Step 2: Update `package.json` Exports</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>88</td>
+                    <td class="mono snippet">## Step 3: Implement the Dual Header Pattern</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>265</td>
+                    <td class="mono snippet">## Step 4: Migrate APIs to `ApiBlueprint`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>319</td>
+                    <td class="mono snippet">## Step 5: Route Refs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/.well-known/skills/plugin-new-frontend-system-support/SKILL.md</td>
+                    <td>370</td>
+                    <td class="mono snippet">## Step 6: Translations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/features/techdocs/using-cloud-storage.md</td>
+                    <td>561</td>
+                    <td class="mono snippet">##### Step 1: Change the credential keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/features/techdocs/using-cloud-storage.md</td>
+                    <td>569</td>
+                    <td class="mono snippet">##### Step 2: Remove the unused keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/features/techdocs/using-cloud-storage.md</td>
+                    <td>575</td>
+                    <td class="mono snippet">##### Step 3: Add Swift URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/catalog-model/src/model/compileCatalogModel.test.ts</td>
+                    <td>242</td>
+                    <td class="mono snippet">    // Step 1: Add one of everything</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/catalog-model/src/model/compileCatalogModel.test.ts</td>
+                    <td>442</td>
+                    <td class="mono snippet">    // Step 2: Update everything</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/catalog-model/src/model/compileCatalogModel.test.ts</td>
+                    <td>618</td>
+                    <td class="mono snippet">    // Step 3: Remove things</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/catalog-model/src/model/compileCatalogModel.test.ts</td>
+                    <td>742</td>
+                    <td class="mono snippet">    // Step 4: Remove the kind entirely</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/backend-openapi-utils/src/schema/parameter-validation.ts</td>
+                    <td>212</td>
+                    <td class="mono snippet">    // Since getAll will return an empty array if the key is not found, we need to check if the key exists first.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/catalog-backend/migrations/20230525141717_stitch_queue.js</td>
+                    <td>40</td>
+                    <td class="mono snippet">  // strings - and we leverage the fact that those strings were always shorter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/search/CHANGELOG.md</td>
+                    <td>3434</td>
+                    <td class="mono snippet">  Check the [search plugin storybook](https://backstage.io/storybook/?path=/story/plugins-search-searchfilter) to see how to leverage these new additi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/releases/v1.24.0-changelog.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">- 4a3d434: **BREAKING**: For users that have migrated to the new backend system, incoming requests will now be rejected if they are not properly authe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/releases/v1.24.0-next.0-changelog.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">- 4a3d434: **BREAKING**: For users that have migrated to the new backend system, incoming requests will now be rejected if they are not properly authe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/references/glossary.md</td>
+                    <td>360</td>
+                    <td class="mono snippet">A string that describes a certain type of access that can be granted to a user using [OAuth](#oauth), usually in conjunction with [access tokens](#acc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/contribute/doc-style-guide.md</td>
+                    <td>238</td>
+                    <td class="mono snippet">## Content best practices</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/overview/technical-overview.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">Backstage uses a [plugin-architecture](#plugin-architecture-overview) which allows you to customize the functionality of your Backstage application us</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">beps/0003-auth-architecture-evolution/README.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">This proposal aims to address several of the points in the [Auth Meta issue](https://github.com/backstage/backstage/issues/15999), with the overarchin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">microsite/data/plugins/harness-iacm.yaml</td>
+                    <td>7</td>
+                    <td class="mono snippet">documentation: https://github.com/harness/backstage-plugins/tree/main/plugins/harness-iacm#harness-iacm-plugin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/config-loader/src/schema/filtering.ts</td>
+                    <td>178</td>
+                    <td class="mono snippet">    // We don't use this method for all the errors as the data path is more robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/yarn-plugin/src/util/getPackageVersion.ts</td>
+                    <td>60</td>
+                    <td class="mono snippet">        // 1. This means that the fetch should leverage yarn's built-in cache, so we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/repo-tools/src/commands/package/schema/openapi/fuzz.ts</td>
+                    <td>61</td>
+                    <td class="mono snippet">    // TODO: @sennyeya This should leverage the `guest-provider` if available.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/backend-app-api/CHANGELOG.md</td>
+                    <td>1393</td>
+                    <td class="mono snippet">- 4a3d434: **BREAKING**: For users that have migrated to the new backend system, incoming requests will now be rejected if they are not properly authe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/backend-app-api/CHANGELOG.md</td>
+                    <td>1463</td>
+                    <td class="mono snippet">- 4a3d434: **BREAKING**: For users that have migrated to the new backend system, incoming requests will now be rejected if they are not properly authe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/backend-defaults/src/entrypoints/urlReader/lib/GithubUrlReader.ts</td>
+                    <td>315</td>
+                    <td class="mono snippet">    // For larger repos, we leverage readTree and filter through that instead</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>1</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>3</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>17</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>19</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>54</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/terraform/techdocs-s3-storage/terraform.tf</td>
+                    <td>56</td>
+                    <td class="mono snippet">#==========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>187</td>
+                    <td class="mono snippet">  // ── Step 0 (frontend only): Module federation build ─────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>223</td>
+                    <td class="mono snippet">    // ── Step 1: Populate embedded packages ──────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>228</td>
+                    <td class="mono snippet">      // ── Strategy A: Copy from pre-built dist workspace ───────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>259</td>
+                    <td class="mono snippet">      // ── Strategy B: createDistWorkspace ──────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>314</td>
+                    <td class="mono snippet">    // ── Step 2: Assemble embedded packages ──────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>372</td>
+                    <td class="mono snippet">    // ── Step 1b: Pack main plugin only ──────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>424</td>
+                    <td class="mono snippet">  // ── Step 3: Config schema ────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>464</td>
+                    <td class="mono snippet">  // ── Step 4: Post-process package.json ────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/cli-module-build/src/commands/package/bundle/command.ts</td>
+                    <td>489</td>
+                    <td class="mono snippet">  // ── Step 5: Seed lockfile, prune, &amp; install ──────────────────────────</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-react/CHANGELOG.md</td>
+                    <td>1350</td>
+                    <td class="mono snippet">  ### Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/catalog-react/CHANGELOG.md</td>
+                    <td>1611</td>
+                    <td class="mono snippet">  ### Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/releases/v1.37.0-changelog.md</td>
+                    <td>658</td>
+                    <td class="mono snippet">  ### Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/releases/v1.37.0-next.0-changelog.md</td>
+                    <td>113</td>
+                    <td class="mono snippet">  ### Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/backend-system/core-services/actions.md</td>
+                    <td>140</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

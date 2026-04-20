@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — cilium/cilium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>cilium/cilium</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.1</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.1</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">102</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">177</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,266,613</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">6758</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(27 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.golangci.yaml</td>
+                    <td>198</td>
+                    <td class="mono snippet">      # Skip goheader check on files in the tools/stackwhere/dwarf package these are copied from delve-go and should</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/stackwhere/dwarf/op/opcode.go</td>
+                    <td>3</td>
+                    <td class="mono snippet">// Original from https://github.com/go-delve/delve/tree/v1.26.1/pkg/dwarf/op</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/stackwhere/dwarf/op/op.go</td>
+                    <td>3</td>
+                    <td class="mono snippet">// Original from https://github.com/go-delve/delve/tree/v1.26.1/pkg/dwarf/op</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/stackwhere/dwarf/leb128/encode.go</td>
+                    <td>3</td>
+                    <td class="mono snippet">// Original from https://github.com/go-delve/delve/tree/v1.26.1/pkg/dwarf/leb128</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/stackwhere/dwarf/leb128/doc.go</td>
+                    <td>3</td>
+                    <td class="mono snippet">// Original from https://github.com/go-delve/delve/tree/v1.26.1/pkg/dwarf/leb128</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/stackwhere/dwarf/leb128/decode.go</td>
+                    <td>3</td>
+                    <td class="mono snippet">// Original from https://github.com/go-delve/delve/tree/v1.26.1/pkg/dwarf/leb128</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/README.md</td>
+                    <td>584</td>
+                    <td class="mono snippet">| hubble.metrics | object | `{&quot;dashboards&quot;:{&quot;annotations&quot;:{},&quot;enabled&quot;:false,&quot;label&quot;:&quot;grafana_dashboard&quot;,&quot;labelValue&quot;:&quot;1&quot;,&quot;namespace&quot;:null},&quot;dynamic&quot;:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/values.yaml</td>
+                    <td>1434</td>
+                    <td class="mono snippet">  # for more comprehensive documentation about Hubble metrics.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/templates/cilium-configmap.yaml</td>
+                    <td>151</td>
+                    <td class="mono snippet">  #   for seamless migrations from the kvstore mode to the crd mode. Consult the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-images-ci.yaml</td>
+                    <td>102</td>
+                    <td class="mono snippet">          # We first check if base_ref exist, meaning we're in pull_request_target context, and if not we just use default_branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-images-ci-v1.18.yaml</td>
+                    <td>94</td>
+                    <td class="mono snippet">          # We first check if base_ref exist, meaning we're in pull_request_target context, and if not we just use default_branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-images-ci-v1.19.yaml</td>
+                    <td>94</td>
+                    <td class="mono snippet">          # We first check if base_ref exist, meaning we're in pull_request_target context, and if not we just use default_branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/scale-test-clustermesh.yaml</td>
+                    <td>335</td>
+                    <td class="mono snippet">          # * We enable KVStoreMesh only at this point to leverage the bootstrap QPS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/lint-images-base.yaml</td>
+                    <td>29</td>
+                    <td class="mono snippet">          # We first check if base_ref exist, meaning we're in pull_request context, and if not we just use default_branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cilium-cli/connectivity/tests/encryption_v2.go</td>
+                    <td>23</td>
+                    <td class="mono snippet">// to utilize encrypted overlay, where encryption occurs just prior to the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/eventqueue/eventqueue.go</td>
+                    <td>27</td>
+                    <td class="mono snippet">// processed by anything which chooses to utilize an `EventQueue`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/hubble/metrics/api/context.go</td>
+                    <td>392</td>
+                    <td class="mono snippet">// that leverage the response/return flows where the source and destination are</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/azure/api/api.go</td>
+                    <td>550</td>
+                    <td class="mono snippet">// Uses arm.ParseResourceID from the Azure SDK for robust parsing.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/k8s/slim/k8s/api/core/v1/types.go</td>
+                    <td>1106</td>
+                    <td class="mono snippet">	// should be considered safe for load balancers and clients to utilize.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/clustermesh/remote_cluster_test.go</td>
+                    <td>516</td>
+                    <td class="mono snippet">	// Make use of synctest to leverage [synctest.Wait], which allows waiting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/clustermesh/operator/remote_cluster_test.go</td>
+                    <td>340</td>
+                    <td class="mono snippet">	// Make use of synctest to leverage [synctest.Wait], which allows waiting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/loadbalancer/reconciler/bpf_reconciler_test.go</td>
+                    <td>534</td>
+                    <td class="mono snippet">	// HostPort. Essentially same as NodePort when zero address is used,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/kvstore/allocator/allocator_test.go</td>
+                    <td>686</td>
+                    <td class="mono snippet">	// it is better to be robust in this case as well.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/datapath/loader/tc.go</td>
+                    <td>43</td>
+                    <td class="mono snippet">		// Attach using tcx if available. This is seamless on interfaces with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/datapath/linux/devices_controller.go</td>
+                    <td>619</td>
+                    <td class="mono snippet">		// hence it has no name. Definitely not selected yet!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/cgroups/manager/provider.go</td>
+                    <td>224</td>
+                    <td class="mono snippet">// generating the path of slice. Essentially, test-a-b.slice becomes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/bgp/manager/manager.go</td>
+                    <td>613</td>
+                    <td class="mono snippet">// reconcileBGPConfig will utilize the current set of ConfigReconciler</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(20 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Documentation/conf.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/values.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is based on install/kubernetes/cilium/*values.yaml.tmpl.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/conformance-clustermesh.yaml</td>
+                    <td>559</td>
+                    <td class="mono snippet">            # Create the Cilium CA secret</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/conformance-clustermesh.yaml</td>
+                    <td>563</td>
+                    <td class="mono snippet">            # Create the cert-manager issuer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/generic-external-targets/action.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Create a private key for the self signed CA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/generic-external-targets/action.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Create a self signed CA certificate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/generic-external-targets/action.sh</td>
+                    <td>17</td>
+                    <td class="mono snippet"># Create a secret with the CA certificate, will be used by L7 tests as trused CA for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/generic-external-targets/action.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Create a cerificate signing request and private key for external services</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/generic-external-targets/action.sh</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Create a config file to tell openssl how to turn the signing request into a certificate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Create a private key for the self signed CA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Create a self signed CA certificate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Create a secret with the CA certificate, will be used by L7 tests as trused CA for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>38</td>
+                    <td class="mono snippet"># Create a cerificate signing request and private key for external services</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>45</td>
+                    <td class="mono snippet"># Create a config file to tell openssl how to turn the signing request into a certificate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>64</td>
+                    <td class="mono snippet"># Create a nginx config file for our external services. Its very minimal, essentially just</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-targets/action.sh</td>
+                    <td>149</td>
+                    <td class="mono snippet"># Create a patch for the CoreDNS configmap</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/kind-external-network/action.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet"># Create an external network in the similar way to the one created by kind</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/ginkgo/main-focus.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file contains the list of tests that should be included and excluded.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/actions/ginkgo/main-k8s-versions.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file contains which kernel versions should be run with which k8s versions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">operator/pkg/gateway-api/testdata/gateway/base/manifests.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file contains the base resources that most conformance tests will rely</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(20 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gateway_reconcile.go</td>
+                    <td>56</td>
+                    <td class="mono snippet">	// Step 1: Retrieve the Gateway</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gateway_reconcile.go</td>
+                    <td>82</td>
+                    <td class="mono snippet">	// Step 2: Gather all required information for the ingestion model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gateway_reconcile.go</td>
+                    <td>229</td>
+                    <td class="mono snippet">	// Step 3: Translate the listeners into Cilium model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gateway_reconcile.go</td>
+                    <td>259</td>
+                    <td class="mono snippet">	// Step 4: Update the status of the Gateway</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gamma_reconcile.go</td>
+                    <td>48</td>
+                    <td class="mono snippet">	// Step 1: Retrieve the Service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">operator/pkg/gateway-api/gamma_reconcile.go</td>
+                    <td>77</td>
+                    <td class="mono snippet">	// Step 2: Gather all required information for the ingestion model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>851</td>
+                    <td class="mono snippet">	// Step 1: Start with empty policy map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>858</td>
+                    <td class="mono snippet">	// Step 2: Apply HTTP policy first (should not create DNS table entries)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>865</td>
+                    <td class="mono snippet">	// Step 3: Apply DNS policy for identity 1 and 2</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>873</td>
+                    <td class="mono snippet">	// Step 4: Update existing DNS policy with HTTP policy for identity 2</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>880</td>
+                    <td class="mono snippet">	// Step 5: Apply different DNS policy for identity 4 (should add another entry)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>887</td>
+                    <td class="mono snippet">	// Step 6: Apply same DNS policy again (should be idempotent)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>893</td>
+                    <td class="mono snippet">	// Step 7: Test nil policies (should be no-op)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/fqdn/service/service_test.go</td>
+                    <td>899</td>
+                    <td class="mono snippet">	// Step 8: Test deletion of DNS policies for identity 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/loadbalancer/reconciler/bpf_reconciler_test.go</td>
+                    <td>996</td>
+                    <td class="mono snippet">	// Step 1: Create a ClusterIP with one backend. This succeeds and establishes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/loadbalancer/reconciler/bpf_reconciler_test.go</td>
+                    <td>1018</td>
+                    <td class="mono snippet">	// Step 2: Switch to backend2 with an error injected. updateBackendRevision</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/loadbalancer/reconciler/bpf_reconciler_test.go</td>
+                    <td>1036</td>
+                    <td class="mono snippet">	// Step 3: Retry without the error. The reconciler recovers and proceeds normally.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/loadbalancer/reconciler/bpf_reconciler_test.go</td>
+                    <td>1057</td>
+                    <td class="mono snippet">	// Step 4: Clean up.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/datapath/linux/route/reconciler/reconciler.go</td>
+                    <td>286</td>
+                    <td class="mono snippet">	// When a desired route is deleted, we need to check if there are any other desired routes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/datapath/linux/route/reconciler/reconciler.go</td>
+                    <td>343</td>
+                    <td class="mono snippet">	// If we have a set of keys from a previous run, we need to check if we still desire them.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(2 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/datapath/linux/config/config.go</td>
+                    <td>350</td>
+                    <td class="mono snippet">				ones, _ := option.Config.UnsafeDaemonConfigOption.LoadBalancerRSSv4.Mask.Size()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/datapath/linux/config/config.go</td>
+                    <td>361</td>
+                    <td class="mono snippet">				ones, _ := option.Config.UnsafeDaemonConfigOption.LoadBalancerRSSv6.Mask.Size()</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(16 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">install/kubernetes/cilium/files/nodeinit/prestop.bash</td>
+                    <td>35</td>
+                    <td class="mono snippet"># Check if we're running on a GKE containerd flavor.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">install/kubernetes/cilium/files/nodeinit/startup.bash</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Check if we're running on a GKE containerd flavor as indicated by the presence</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/k8s/manifests/netpol-cyclonus/test-cyclonus.sh</td>
+                    <td>42</td>
+                    <td class="mono snippet">    # Check if the file was successfully copied and display its contents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/scripts/print-downgrade-version.sh</td>
+                    <td>77</td>
+                    <td class="mono snippet">    # Check if the tag is already present locally.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-eks.yaml</td>
+                    <td>210</td>
+                    <td class="mono snippet">          # Check if ipsec is requested via extra-args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-eks.yaml</td>
+                    <td>218</td>
+                    <td class="mono snippet">          # Check if KPR is requested via extra-args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/auto-approve.yaml</td>
+                    <td>59</td>
+                    <td class="mono snippet">        # Check if ciliumbot was requested by cilium-renovate[bot] from the events list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/lint-go.yaml</td>
+                    <td>166</td>
+                    <td class="mono snippet">          # Set GOBIN to ensure 'go install' binaries end up in the same directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-aks.yaml</td>
+                    <td>285</td>
+                    <td class="mono snippet">          # Check if ipsec is requested via extra-args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-aks.yaml</td>
+                    <td>293</td>
+                    <td class="mono snippet">          # Check if KPR is requested via extra-args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-gateway-api.yaml</td>
+                    <td>264</td>
+                    <td class="mono snippet">          # Set this to &quot;standard&quot; to use the standard CRDs instead</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/eks-cluster-pool-manager.yaml</td>
+                    <td>164</td>
+                    <td class="mono snippet">              # Check if kubeconfig exists in S3 pool before deleting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/eks-cluster-pool-manager.yaml</td>
+                    <td>327</td>
+                    <td class="mono snippet">          # Check if bucket exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/conformance-ginkgo.yaml</td>
+                    <td>541</td>
+                    <td class="mono snippet">            # Check if file already exists and fail if it does</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/actions/renovate/entrypoint.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Check if PS1 is unset; using ${PS1:-} to avoid &quot;unbound variable&quot; error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bpf/tests/scapy/README.md</td>
+                    <td>531</td>
+                    <td class="mono snippet">&gt;&gt;&gt; p[&quot;IP&quot;].chksum = 1234 # Set it to an incorrect value</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pkg/maps/ipmasq/ipmasq.go</td>
+                    <td>117</td>
+                    <td class="mono snippet">// and/or IPv6, as requested by the caller.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">pkg/endpoint/endpoint.go</td>
+                    <td>1472</td>
+                    <td class="mono snippet">// was changed as requested</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/values.yaml</td>
+                    <td>3694</td>
+                    <td class="mono snippet">    # Or alternatively you can use a list of clusters:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install/kubernetes/cilium/templates/cilium-configmap.yaml</td>
+                    <td>113</td>
+                    <td class="mono snippet">  # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">images/scripts/update-cilium-envoy-image.sh</td>
+                    <td>51</td>
+                    <td class="mono snippet">  echo &quot;Please don't forget to execute 'make -C install/kubernetes &amp;&amp; make -C Documentation update-helm-values'&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">images/runtime/iptables-wrapper-installer.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/k8s/k8s-cilium-exec.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/scripts/print-downgrade-version.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/bpf/metrics.go</td>
+                    <td>67</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/bpf/ops_linux.go</td>
+                    <td>38</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/bpf/map_linux.go</td>
+                    <td>963</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/command/map_string_test.go</td>
+                    <td>82</td>
+                    <td class="mono snippet">				&quot;k2&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/murmur3/murmur3_test.go</td>
+                    <td>19</td>
+                    <td class="mono snippet">		{500, 0x188f69f0abbd67de, 0x1b0eeb31b4c00cb6, &quot;lorem ipsum dolor sit amet&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/murmur3/murmur3_test.go</td>
+                    <td>19</td>
+                    <td class="mono snippet">		{500, 0x188f69f0abbd67de, 0x1b0eeb31b4c00cb6, &quot;lorem ipsum dolor sit amet&quot;},</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(3 hits · 3 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bpf/tools/log2scapy.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bpf/tests/scapy/trace_diff_pkts.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bpf/tests/scapy/trace_diff_pkts.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

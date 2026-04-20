@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — appsmithorg/appsmith</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>appsmithorg/appsmith</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.8</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.8</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">615</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1183</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,550,132</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">9725</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(442 hits · 884 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-git/src/test/java/com/appsmith/git/service/BashServiceTest.java</td>
+                    <td>243</td>
+                    <td class="mono snippet">            String input = &quot;John Doe&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-git/src/test/java/com/appsmith/git/service/BashServiceTest.java</td>
+                    <td>246</td>
+                    <td class="mono snippet">            assertThat(escaped).isEqualTo(&quot;'John Doe'&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/it/com/appsmith/server/git/GitBranchesWithCentralServiceIT.java</td>
+                    <td>168</td>
+                    <td class="mono snippet">        GitProfile gitProfile = new GitProfile(&quot;foo bar&quot;, &quot;foo@bar.com&quot;, null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/it/com/appsmith/server/git/GitBranchesIT.java</td>
+                    <td>164</td>
+                    <td class="mono snippet">        GitProfile gitProfile = new GitProfile(&quot;foo bar&quot;, &quot;foo@bar.com&quot;, null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/configurations/CsrfTest.java</td>
+                    <td>45</td>
+                    <td class="mono snippet">                BodyInserters.fromFormData(&quot;username&quot;, &quot;user@example.com&quot;).with(&quot;password&quot;, &quot;password&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>11</td>
+                    <td class="mono snippet">        assertThat(EmailNormalizer.normalizeEmail(&quot;\u2060user@example.com&quot;)).isEqualTo(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>16</td>
+                    <td class="mono snippet">        assertThat(EmailNormalizer.normalizeEmail(&quot;\u200Buser@example.com&quot;)).isEqualTo(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>22</td>
+                    <td class="mono snippet">                .isEqualTo(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>27</td>
+                    <td class="mono snippet">        assertThat(EmailNormalizer.normalizeEmail(&quot;  User@Example.COM  &quot;)).isEqualTo(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>42</td>
+                    <td class="mono snippet">        assertThat(EmailNormalizer.normalizeEmail(&quot;user@example.com&quot;)).isEqualTo(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/helpers/EmailNormalizerTest.java</td>
+                    <td>60</td>
+                    <td class="mono snippet">        assertThat(EmailNormalizer.containsInvisibleCharacters(&quot;user@example.com&quot;))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/GitExecutorTest.java</td>
+                    <td>82</td>
+                    <td class="mono snippet">                .commitArtifact(path, &quot;Test commit&quot;, &quot;test&quot;, &quot;test@test.com&quot;, false, false)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/GitExecutorTest.java</td>
+                    <td>90</td>
+                    <td class="mono snippet">                .commitArtifact(path, &quot;Test commit&quot;, &quot;test&quot;, &quot;test@test.com&quot;, false, false)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/GitExecutorTest.java</td>
+                    <td>99</td>
+                    <td class="mono snippet">            assertThat(list.get(0).getAuthorEmail()).isEqualTo(&quot;test@test.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/GitExecutorTest.java</td>
+                    <td>442</td>
+                    <td class="mono snippet">                    assertThat(gitLogDTOS.get(0).getAuthorEmail()).isEqualTo(&quot;test@test.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/autocommit/helpers/GitAutoCommitHelperImplTest.java</td>
+                    <td>185</td>
+                    <td class="mono snippet">        gitProfile.setAuthorEmail(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/git/autocommit/helpers/GitAutoCommitHelperImplTest.java</td>
+                    <td>315</td>
+                    <td class="mono snippet">        gitProfile.setAuthorEmail(&quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java</td>
+                    <td>281</td>
+                    <td class="mono snippet">                        + &quot; 1, 'John Doe', 30, 'john.doe@example.com', '2023-07-31', 75000.00&quot; + &quot;)&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java</td>
+                    <td>285</td>
+                    <td class="mono snippet">                        + &quot; 1, 'Jane Doe', 28, 'jane.doe@example.com', '2023-08-01', 65000.00&quot; + &quot;)&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInputWidget.json</td>
+                    <td>1087</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInputWidget.json</td>
+                    <td>1157</td>
+                    <td class="mono snippet">                &quot;defaultText&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standar</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilSwitchWidget.json</td>
+                    <td>292</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilSwitchGroupWidget.json</td>
+                    <td>274</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>427</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>836</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>1245</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>1841</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>2337</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>2911</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>3407</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>3903</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>4483</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>4979</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>5475</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilTableWidget.json</td>
+                    <td>5971</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilCheckboxGroupWidget.json</td>
+                    <td>273</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/tableV2FilteringWithPrimaryColumnJSObjectWidthData.ts</td>
+                    <td>5</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilStatsWidget.json</td>
+                    <td>1138</td>
+                    <td class="mono snippet">                &quot;caption&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard du</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilStatsWidget.json</td>
+                    <td>1151</td>
+                    <td class="mono snippet">                &quot;value&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilStatsWidget.json</td>
+                    <td>1166</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilCheckboxWidget.json</td>
+                    <td>340</td>
+                    <td class="mono snippet">                &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dumm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilAppTheming.json</td>
+                    <td>1672</td>
+                    <td class="mono snippet">                    &quot;Name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilHeadingWidget.json</td>
+                    <td>235</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilHeadingWidget.json</td>
+                    <td>288</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1012</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1030</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum has been the industry's standard&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1040</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum has been the industry's standard&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1097</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1115</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum has been the industry's standard&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/anvilInlineButtonWidget.json</td>
+                    <td>1125</td>
+                    <td class="mono snippet">                    &quot;label&quot;: &quot;Lorem Ipsum has been the industry's standard&quot;,</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 392 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(11 hits · 110 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-git/src/test/java/com/appsmith/git/helpers/DSLTransformerHelperTest.java</td>
+                    <td>306</td>
+                    <td class="mono snippet">        org.assertj.core.api.Assertions.assertThat(pathToWidgetFile).isEqualTo(&quot;foobar/&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/applications/git/ApplicationGitFileUtilsCEImpl.java</td>
+                    <td>518</td>
+                    <td class="mono snippet">            org.apache.commons.collections.CollectionUtils.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/applications/git/ApplicationGitFileUtilsCEImpl.java</td>
+                    <td>557</td>
+                    <td class="mono snippet">            org.apache.commons.collections.CollectionUtils.filter(actionCollections, PredicateUtils.notNullPredicate());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/applications/git/ApplicationGitFileUtilsCEImpl.java</td>
+                    <td>585</td>
+                    <td class="mono snippet">            org.apache.commons.collections.CollectionUtils.filter(actions, PredicateUtils.notNullPredicate());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/applications/git/ApplicationGitFileUtilsCEImpl.java</td>
+                    <td>636</td>
+                    <td class="mono snippet">        org.apache.commons.collections.CollectionUtils.filter(pages, PredicateUtils.notNullPredicate());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/server/appsmith-plugins/googleAiPlugin/src/main/java/com/external/plugins/commands/GenerateContentCommand.java</td>
+                    <td>97</td>
+                    <td class="mono snippet">                        &amp;&amp; com.external.plugins.models.Type.TEXT.toString().equals(type)) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/client/cypress/e2e/Regression/ClientSide/ActionExecution/StoreValue_spec.ts</td>
+                    <td>103</td>
+                    <td class="mono snippet">        await showAlert(appsmith.store.student.details.isTopper.toString());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/client/public/libraries/jsonwebtoken@8.5.1.js</td>
+                    <td>15812</td>
+                    <td class="mono snippet">                      e.algorithm.decrypt.kde.kdeparams.iters.toString(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/client/public/libraries/jsonwebtoken@8.5.1.js</td>
+                    <td>15815</td>
+                    <td class="mono snippet">                    o = i[e.algorithm.decrypt.cipher.algo.join(&quot;.&quot;)],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/client/public/libraries/echarts-gl@2.0.9.js</td>
+                    <td>1</td>
+                    <td class="mono snippet">!function(e,t){&quot;object&quot;==typeof exports&amp;&amp;&quot;object&quot;==typeof module?module.exports=t(require(&quot;echarts&quot;)):&quot;function&quot;==typeof define&amp;&amp;define.amd?define([&quot;e</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">app/client/src/components/editorComponents/CodeEditor/index.tsx</td>
+                    <td>741</td>
+                    <td class="mono snippet">      this.state.peekOverlayProps.tokenElement.classList.remove(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(84 hits · 84 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/docs/guides/performance.md</td>
+                    <td>283</td>
+                    <td class="mono snippet">### Step 1: Establish Baselines</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/docs/guides/performance.md</td>
+                    <td>289</td>
+                    <td class="mono snippet">### Step 2: Identify Bottlenecks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/docs/guides/performance.md</td>
+                    <td>295</td>
+                    <td class="mono snippet">### Step 3: Optimize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/docs/guides/performance.md</td>
+                    <td>301</td>
+                    <td class="mono snippet">### Step 4: Verify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/docs/guides/performance.md</td>
+                    <td>307</td>
+                    <td class="mono snippet">### Step 5: Monitor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4419</td>
+                    <td class="mono snippet">        // Step 1: Initialize the test application and page identifiers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4426</td>
+                    <td class="mono snippet">        // Step 2: Create an application with a page and publish it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4455</td>
+                    <td class="mono snippet">        // Step 3: Fetch the new page and verify its existence</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4462</td>
+                    <td class="mono snippet">        // Step 4: Assert that page IDs are not null</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4466</td>
+                    <td class="mono snippet">        // Step 5: Delete the pages in edit mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4470</td>
+                    <td class="mono snippet">        // Step 6: Verify basePageId1 is not cached before calling the consolidated API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4476</td>
+                    <td class="mono snippet">        // Step 7: Call the consolidated API to force cache update</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4481</td>
+                    <td class="mono snippet">        // Step 8: Verify basePageId1 is now cached after the consolidated API call</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4487</td>
+                    <td class="mono snippet">        // Step 9: Verify basePageId2 is not cached before calling the consolidated API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4493</td>
+                    <td class="mono snippet">        // Step 10: Call the consolidated API to force cache update for basePageId2</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4498</td>
+                    <td class="mono snippet">        // Step 11: Verify basePageId2 is now cached after the consolidated API call</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4504</td>
+                    <td class="mono snippet">        // Step 12: Verify the application pages after deletion and publishing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4523</td>
+                    <td class="mono snippet">        // Step 13: Publish the application again</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ApplicationServiceCETest.java</td>
+                    <td>4526</td>
+                    <td class="mono snippet">        // Step 14: Verify that the cache entries for deleted pages are evicted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceImplTest.java</td>
+                    <td>1523</td>
+                    <td class="mono snippet">        // Step 1: Page search without refName finds the feature branch page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceImplTest.java</td>
+                    <td>1528</td>
+                    <td class="mono snippet">        // Step 2: Find application from the feature branch page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceImplTest.java</td>
+                    <td>1533</td>
+                    <td class="mono snippet">        // Step 3: Find application in default branch (for branch switching)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/test/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceImplTest.java</td>
+                    <td>1538</td>
+                    <td class="mono snippet">        // Step 4: Page NOT found in default branch - throws error (simulates page doesn't exist in default branch)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/imports/internal/ImportServiceCEImpl.java</td>
+                    <td>426</td>
+                    <td class="mono snippet">                    // Step 2: Validation of artifact JSON</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceCEImpl.java</td>
+                    <td>560</td>
+                    <td class="mono snippet">        // Step 1: Search for page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceCEImpl.java</td>
+                    <td>586</td>
+                    <td class="mono snippet">                        // Step 2: Find application from page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceCEImpl.java</td>
+                    <td>612</td>
+                    <td class="mono snippet">        // Step 3: Check if non-git app</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/services/ce/ConsolidatedAPIServiceCEImpl.java</td>
+                    <td>643</td>
+                    <td class="mono snippet">        // Step 4: Need to switch to target branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/cypress/e2e/Regression/ServerSide/ApiTests/API_Bug_Upload_File_GreaterThan_20MB_spec.ts</td>
+                    <td>20</td>
+                    <td class="mono snippet">      // Step 1: Add a File Picker widget and configure it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/cypress/e2e/Regression/ServerSide/ApiTests/API_Bug_Upload_File_GreaterThan_20MB_spec.ts</td>
+                    <td>33</td>
+                    <td class="mono snippet">      // Step 2: Upload a file greater than 20MB</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/cypress/e2e/Regression/ServerSide/ApiTests/API_Bug_Upload_File_GreaterThan_20MB_spec.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">      // Step 3: Create and configure the API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/cypress/e2e/Regression/ServerSide/ApiTests/API_Bug_Upload_File_GreaterThan_20MB_spec.ts</td>
+                    <td>54</td>
+                    <td class="mono snippet">      // Step 4: Run the API and verify the response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/packages/eslint-plugin/README.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">## Step 1: Create the Custom Rule File</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/packages/eslint-plugin/README.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">## Step 2: Update the Plugin Index File</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/packages/eslint-plugin/README.md</td>
+                    <td>69</td>
+                    <td class="mono snippet">## Step 3: Add Tests for Your Custom Rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/packages/eslint-plugin/README.md</td>
+                    <td>98</td>
+                    <td class="mono snippet">## Step 4: Steps to add it to client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/layoutSystems/anvil/editor/AnvilWidgetName/selectors.ts</td>
+                    <td>55</td>
+                    <td class="mono snippet"> * @param widgetId The widgetId for which we need to check if it should be selected or focused.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">    // Step 1: select getCurrentApplicationId</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>51</td>
+                    <td class="mono snippet">    // Step 2: select getCurrentWorkspaceId</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>57</td>
+                    <td class="mono snippet">    // Step 3: select getDragDetails</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>83</td>
+                    <td class="mono snippet">    // Step 4: call addWidgetAndMoveWidgetsSaga</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>88</td>
+                    <td class="mono snippet">    // Step 5: call initiateBuildingBlockDropEvent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>98</td>
+                    <td class="mono snippet">    // Step 6: select getWidgetByName</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>104</td>
+                    <td class="mono snippet">    // Step 7: call loadBuildingBlocksIntoApplication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>142</td>
+                    <td class="mono snippet">    // Step 1: select getCurrentApplicationId</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>153</td>
+                    <td class="mono snippet">    // Step 2: select getCurrentWorkspaceId</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>159</td>
+                    <td class="mono snippet">    // Step 3: select getDragDetails</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>184</td>
+                    <td class="mono snippet">    // Step 4: call initiateBuildingBlockDropEvent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>193</td>
+                    <td class="mono snippet">    // Step 5: call addChildSaga</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/sagas/BuildingBlockSagas/tests/AddAndMoveBuildingBlockTests.test.ts</td>
+                    <td>197</td>
+                    <td class="mono snippet">    // Step 6: select getWidgetByName</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 34 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(48 hits · 48 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/hooks/scripts/update-docs.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Check if we need to update the codebase map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/hooks/scripts/update-docs.sh</td>
+                    <td>59</td>
+                    <td class="mono snippet"># Check if we need to update the technical details</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/hooks/scripts/update-docs.sh</td>
+                    <td>89</td>
+                    <td class="mono snippet"># Check if we need to update Cursor rules</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-git/src/main/resources/git.sh</td>
+                    <td>224</td>
+                    <td class="mono snippet">    # Check if we have exactly 3 arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/server/appsmith-git/src/main/resources/git.sh</td>
+                    <td>235</td>
+                    <td class="mono snippet">    # Check if directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/.husky/check-staged-files.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet">   # Check if Spotless succeeded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet">  # Check if the Appsmith user does not have read access with local unix socket but has read access with local tcp socket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # Check if the postgres user has read access to databases with local unix socket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>44</td>
+                    <td class="mono snippet">    # Check if the postgres user does not have read access to databases with local tcp socket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # Check if the Appsmith instance is up</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Check if the postgres user has read access to databases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>126</td>
+                    <td class="mono snippet">    # Check if the Appsmith instance is up</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>133</td>
+                    <td class="mono snippet">      # Check if the Appsmith user has read access to databases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>174</td>
+                    <td class="mono snippet">    # Check if the Appsmith instance is up</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>177</td>
+                    <td class="mono snippet">        # Check if the postgres user has read access to databases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>203</td>
+                    <td class="mono snippet">    # Check if the Appsmith instance is up</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/tests/test-pg-auth.sh</td>
+                    <td>210</td>
+                    <td class="mono snippet">      # Check if the Appsmith user has read access to databases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>109</td>
+                    <td class="mono snippet">  # Check if APPSMITH_DB_URL is a PostgreSQL URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>113</td>
+                    <td class="mono snippet">    # Check if the DB_HOST is local (localhost or 127.0.0.1)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>117</td>
+                    <td class="mono snippet">      # Check if the database exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>127</td>
+                    <td class="mono snippet">      # Check if the schema exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>152</td>
+                    <td class="mono snippet">    # Check if the schema creation was successful</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/auto_heal.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Check if the first command-line argument is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/generate-infra-details.sh</td>
+                    <td>41</td>
+                    <td class="mono snippet">## Check if EFS is mounted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/generate-infra-details.sh</td>
+                    <td>60</td>
+                    <td class="mono snippet">## Check if it's a ECS Fargate deployment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/run-with-env.sh</td>
+                    <td>39</td>
+                    <td class="mono snippet"># Check if APPSMITH_DB_URL is set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/entrypoint.sh</td>
+                    <td>538</td>
+                    <td class="mono snippet">  # Check if the appsmith DB is present</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-upgrade.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Check if any Postgres server is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/templates/docker.env.sh</td>
+                    <td>83</td>
+                    <td class="mono snippet"># Set this to a space separated list of addresses that should be allowed to load Appsmith in a frame.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/digital_ocean/scripts/99-img_check.sh</td>
+                    <td>86</td>
+                    <td class="mono snippet">    # Check if there are log archives or log files that have not been recently cleared.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/ansible/appsmith_playbook/roles/setup-appsmith/templates/appsmith/scripts/boot.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Check if Lock File exists, if not create it and set trap on exit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/ansible/appsmith_playbook/roles/setup-appsmith/templates/appsmith/scripts/boot.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Check if Apsmith setup, if not create run setup up script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/aws/boot.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Check if Lock File exists, if not create it and set trap on exit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/aws_ami/boot.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Check if Lock File exists, if not create it and set trap on exit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/aws_ami/boot.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Check if Apsmith setup, if not create run setup up script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/trivy_vulnerabilities_data.sh</td>
+                    <td>58</td>
+                    <td class="mono snippet"># Check if Trivy is installed, if not, install it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/trivy_vulnerabilities_data.sh</td>
+                    <td>116</td>
+                    <td class="mono snippet">        # Check if vurn_id exists in the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/scout_vulnerabilities_data.sh</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Check if Docker is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/scout_vulnerabilities_data.sh</td>
+                    <td>56</td>
+                    <td class="mono snippet"># Check if Docker Scout is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/scout_vulnerabilities_data.sh</td>
+                    <td>83</td>
+                    <td class="mono snippet"># Check if the CSV output file is empty</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/scout_vulnerabilities_data.sh</td>
+                    <td>105</td>
+                    <td class="mono snippet">    # Check if vurn_id exists in the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/scout_vulnerabilities_data.sh</td>
+                    <td>129</td>
+                    <td class="mono snippet"># Check if there are vulnerabilities to process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-client-server-count.yml</td>
+                    <td>65</td>
+                    <td class="mono snippet">              echo &quot;run_count=1&quot; &gt;&gt; $GITHUB_OUTPUT  # Set default to 1 if empty</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-client-server-count.yml</td>
+                    <td>302</td>
+                    <td class="mono snippet">            # Check if the ci_test_failed flag is set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-client-server-count.yml</td>
+                    <td>461</td>
+                    <td class="mono snippet">            # Check if the ci_test_failed flag is set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/test-vulnerabilities-data.yml</td>
+                    <td>54</td>
+                    <td class="mono snippet">          # Check if Scout vulnerabilities file has data after the header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/ci-test-limited-with-count.yml</td>
+                    <td>163</td>
+                    <td class="mono snippet">          # Check if specs_to_run is provided; if not, use the fallback file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/ci-test-limited-with-count.yml</td>
+                    <td>169</td>
+                    <td class="mono snippet">            # Verify if the fallback file exists</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(13 hits · 24 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/git/common/CommonGitServiceCEImpl.java</td>
+                    <td>220</td>
+                    <td class="mono snippet">        // We are using save method to leverage @Encrypted annotation used for private SSH keys.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/git/common/CommonGitServiceCEImpl.java</td>
+                    <td>1138</td>
+                    <td class="mono snippet">        // For default application we expect a GitAuth to be a part of gitMetadata. We are using save method to leverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/appsmith-server/src/main/java/com/appsmith/server/git/central/CentralGitServiceCEImpl.java</td>
+                    <td>2241</td>
+                    <td class="mono snippet">        // We are using save method to leverage @Encrypted annotation used for private SSH keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/config/webpack.config.js</td>
+                    <td>794</td>
+                    <td class="mono snippet">    // Turn off performance processing because we utilize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/ApplicationsNewMockResponse.json</td>
+                    <td>249</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/ApplicationsNewMockResponse.json</td>
+                    <td>249</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/FetchReleasesMockResponse.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/FetchReleasesMockResponse.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/layoutSystems/anvil/integrations/sagas/LayoutElementPositionsSaga.ts</td>
+                    <td>188</td>
+                    <td class="mono snippet">    // Essentially, if we call READ_LAYOUT_ELEMENT_POSITIONS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/constants/defs/forge.json</td>
+                    <td>11040</td>
+                    <td class="mono snippet">        &quot;!doc&quot;: &quot;NOTE: THIS METHOD IS DEPRECATED, use 'decrypt' on a private key object or\n'verify' on a public key object instead.\n\nPerforms RSA d</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/components/editorComponents/PartialImportExport/PartialExportModal/unitTestUtils.ts</td>
+                    <td>11539</td>
+                    <td class="mono snippet">            &quot;### __Overview__\nOrganizations that have businesses running in various verticals have information generated across all domains. Not havi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/pages/AdminSettings/FormGroup/Toggle.tsx</td>
+                    <td>44</td>
+                    <td class="mono snippet">    //TODO: This should be refactored to utilize the functionality of the switch component for state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/run-java.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">  # If this variable is not set, just set it to empty string.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(9 hits · 18 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/cypress/fixtures/mongo_PUT_replaceLayoutWithCRUD.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;responseMeta&quot;:{&quot;status&quot;:201,&quot;success&quot;:true},&quot;data&quot;:{&quot;page&quot;:{&quot;id&quot;:&quot;616d7d4c9594b25adfa3e569&quot;,&quot;name&quot;:&quot;Page3&quot;,&quot;applicationId&quot;:null,&quot;layouts&quot;:[{&quot;id&quot;:&quot;61</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/packages/design-system/widgets/src/components/Modal/src/styles.module.css</td>
+                    <td>73</td>
+                    <td class="mono snippet">  /* don't forget to change the duration Modal.tsx as well */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/packages/design-system/widgets/src/components/Modal/src/Modal.tsx</td>
+                    <td>19</td>
+                    <td class="mono snippet">    // don't forget to change the transition-duration CSS as well</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/ApplicationsNewMockResponse.json</td>
+                    <td>249</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/mockResponses/FetchReleasesMockResponse.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;descriptionHtml&quot;: &quot;&lt;h1&gt;Whats new&lt;/h1&gt;\n&lt;h2&gt;&lt;g-emoji class=\&quot;g-emoji\&quot; alias=\&quot;rocket\&quot; fallback-src=\&quot;https://github.githubassets.com/images/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/components/editorComponents/PartialImportExport/PartialExportModal/unitTestUtils.ts</td>
+                    <td>11401</td>
+                    <td class="mono snippet">            &quot;### __Overview__\nScheduling team meetings without the hassle of back and forth conversations is passé. With this app, you can let anyone</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/src/components/editorComponents/PartialImportExport/PartialExportModal/unitTestUtils.ts</td>
+                    <td>12003</td>
+                    <td class="mono snippet">            &quot;### __Overview__\nMarketers need to have a good pulse on their customers to make an impact. Consistently communicating with customers wit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contributions/docs/TestAutomation.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">   If you are willing to execute tests in headless mode through command line follow [run mode](https://docs.cypress.io/guides/guides/command-line.html</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contributions/docs/GlobalFunctions.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">#### Here are some pull requests you can use as an example:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/buildpack-run.sh</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create the dist directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/build.sh</td>
+                    <td>53</td>
+                    <td class="mono snippet"># Create the dist directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/client/README.old.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Create a file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/JFR-recording-24-hours.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Define the log file path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">deploy/docker/fs/opt/appsmith/pg-utils.sh</td>
+                    <td>106</td>
+                    <td class="mono snippet">  # Create the appsmith schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/ci-test-limited-with-count.yml</td>
+                    <td>450</td>
+                    <td class="mono snippet">            # Define the path for the failure flag file</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">app/server/mongo-seed/seed.js</td>
+                    <td>699</td>
+                    <td class="mono snippet">    print('Error occurred while inserting the records')</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">app/client/src/PluginActionEditor/readme.md</td>
+                    <td>41</td>
+                    <td class="mono snippet">### How to use</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

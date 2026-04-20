@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — taosdata/TDengine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>taosdata/TDengine</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">4.9</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">4.9</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">3695</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">9956</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,013,228</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">5359</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(1229 hits · 6145 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbBtree.c:ASSERT_CORE(pgno &gt; 0 &amp;&amp; pgno &lt;= pBt-&gt;pPager-&gt;dbFileSize, \&quot;invalid page nu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbBtree.c:ASSERT_CORE(pgno != 0 &amp;&amp; pgno &lt;= pBt-&gt;pPager-&gt;dbFileSize, \&quot;invalid page n</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbBtree.c:ASSERT_CORE((vLeft == 0) || (pgno &gt; 0 &amp;&amp; pgno &lt;= pBt-&gt;pPager-&gt;dbFileSize),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbBtree.c:ASSERT_CORE(pgno &gt; 0 &amp;&amp; pgno &lt;= pBtc-&gt;pBt-&gt;pPager-&gt;dbFileSize, \&quot;invalid p</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbPage.c:ASSERT_CORE(pCell - pPage-&gt;pData &gt;= 0 &amp;&amp; pCell - pPage-&gt;pData &lt;= pPage-&gt;pag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbPage.c:ASSERT_CORE(pCell + szCell - pPage-&gt;pData &gt; 0 &amp;&amp; pCell + szCell - pPage-&gt;pD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">            f&quot;{TD_project_path}/community/source/libs/tdb/src/db/tdbPager.c:ASSERT_CORE(pgno &gt; 0 &amp;&amp; pgno &lt;= pPager-&gt;dbFileSize, \&quot;invalid pgno:%u, db </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">        message = &quot; Taosd &amp;&amp; taosc 代码覆盖率低于56%，请密切关注！&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>394</td>
+                    <td class="mono snippet">        message = f&quot; Taosd &amp;&amp; taosc 代码覆盖率由{data2}上升到{data1}，当前覆盖率为 {current_coverage_value:.3f}% 为历史最高覆盖率，继续加油! 失败的 Case:{fail_case_message}&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>398</td>
+                    <td class="mono snippet">        message = f&quot; Taosd &amp;&amp; taosc 代码覆盖率由{data2}上升到{data1}，当前覆盖率为 {current_coverage_value:.3f}% 离历史最高覆盖率 {highest_coverage_value:.3f}% 还差 {round(high</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>402</td>
+                    <td class="mono snippet">        message = f&quot; Taosd &amp;&amp; taosc 代码覆盖率由{data2}下降到{data1}，当前覆盖率为 {current_coverage_value:.3f}% 离历史最高覆盖率 {highest_coverage_value:.3f}% 还差 {round(high</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>406</td>
+                    <td class="mono snippet">        message = f&quot; Taosd &amp;&amp; taosc 本次代码覆盖率基本不变（&lt;0.3%），当前覆盖率为 {current_coverage_value:.3f}% 离历史最高覆盖率 {highest_coverage_value:.3f}% 还差 {round(highest_c</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/ci/cov/tdengine_coverage_alarm.py</td>
+                    <td>469</td>
+                    <td class="mono snippet">                &quot;title&quot;: &quot;Taosd &amp;&amp; taosc coverage report&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/frame.py</td>
+                    <td>856</td>
+                    <td class="mono snippet">        install_cmds.append(f&quot;cd {docker_tmp} &amp;&amp; tar xzf {fileName} &amp;&amp; cd {pkgDir} &amp;&amp; ./install_client.sh &amp;&amp; pip3 install connector/python&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/taosd.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">                                &quot;rm -rf *&quot;, &quot;cmake .. &amp;&amp; make -j 16 &amp;&amp; make install&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/taosd.py</td>
+                    <td>486</td>
+                    <td class="mono snippet">                    #     &quot;if kill -0 $pid 2&gt;/dev/null; then &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/adapter.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">                        &quot;ps -ef|grep -wi %s| grep -v grep | awk '{print $2}' | xargs kill -9 &gt; /dev/null 2&gt;&amp;1 || true&quot; % nodeDict[</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/container.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">            self.remote.cmd(config[&quot;fqdn&quot;][0], [f'docker exec -d {container_name} sh -c \'echo &quot;{ip}\t{host}&quot; &gt;&gt; /etc/hosts &amp;&amp; sort -u /etc/hosts -o /</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        if bool(int(self._remote.cmd(self._fqdn, [f'ls {file} &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        if bool(int(self._remote.cmd(self._fqdn, [f'ls {file} &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep prometheus &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep prometheus &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w prometheus | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w prometheus | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep node_exporter &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep node_exporter &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w node_exporter | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w node_exporter | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep process-exporter &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">            if bool(int(self._remote.cmd(fqdn, ['systemctl -l | grep process-exporter &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w process-exporter | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/taostest/components/prometheus.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">            elif bool(int(self._remote.cmd(fqdn, ['ps -ef | grep -w process-exporter | grep -v grep &gt; /dev/null 2&gt;&amp;1 &amp;&amp; echo 1 || echo 0']))):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/utils/sql.py</td>
+                    <td>2289</td>
+                    <td class="mono snippet">        # loop check util checkData return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/new_test_framework/utils/sql.py</td>
+                    <td>2302</td>
+                    <td class="mono snippet">        # loop check util checkData return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/01-Snode/snode_checkpoint.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">                      &quot;interval(10s) sliding(10s) fill(value, 0, null)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/count_new_dbg.py</td>
+                    <td>3043</td>
+                    <td class="mono snippet">            tdSql.execute(f&quot;create table ct1 using stb tags(null)&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/sliding_case2.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">                        stream_options(fill_history|pre_filter(id&gt;15 and id is not null))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/event_new_dbg.py</td>
+                    <td>1706</td>
+                    <td class="mono snippet">                &quot;insert into ct5 values ('2025-01-01 00:00:15', 8,  8, 3.3, null);&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/event_new_dbg.py</td>
+                    <td>1867</td>
+                    <td class="mono snippet">                &quot;insert into ct5 values ('2025-01-01 00:00:15', 8,  8, 3.3, null);&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/event_new_dbg.py</td>
+                    <td>2100</td>
+                    <td class="mono snippet">                &quot;insert into ct5 values ('2025-01-01 00:00:15', 8,  8, 3.3, null);&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/test_ts_7622.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">                f&quot;create stream s_event event_window(start with c1 &gt; 0 or c2 &gt; 0 end with c1 is null or c2 is null) from {self.virtTb} into {self.outT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/test_sliding.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">            (f&quot;create stream stName sliding({self.sliding}s) from {self.trigTbname} partition by tbname stream_options(pre_filter(cint is null)|fill_h</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/03-TriggerMode/session_zlv.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">            (&quot;create stream stName session(cts,{session}s) from {trigTbname} partition by tbname stream_options(pre_filter(cint is null)|fill_history(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/99-Others/test_stream_tag_cache.py</td>
+                    <td>448</td>
+                    <td class="mono snippet">        tdSql.execute(f&quot;create table ctb6 using {tb_name} tags (null, true, 1, 2.333, 'BJ', '涛思数据')&quot;, show=1)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>418</td>
+                    <td class="mono snippet">            sql=&quot;SELECT *  FROM tdasset.`vt_em-4` WHERE `电流` is null;&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>526</td>
+                    <td class="mono snippet">        vals = &quot;null,null,1,100&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>546</td>
+                    <td class="mono snippet">        vals = &quot;null,null,1,100&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>555</td>
+                    <td class="mono snippet">        vals = &quot;70,null,1,100&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>564</td>
+                    <td class="mono snippet">        vals = &quot;null,100,0,100&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_meters.py</td>
+                    <td>698</td>
+                    <td class="mono snippet">        fixedVals = &quot;null, 20, 1&quot;</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1179 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(864 hits · 1728 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/check_package.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/checkPackageRuning.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Define the packages to be installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Define the packages to be installed for build TDinternal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Define the packages to be installed via pip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Define the version of the Ubuntu release</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>41</td>
+                    <td class="mono snippet"># Define the path where the core dump files should be stored</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Define the path where the repository should be cloned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>47</td>
+                    <td class="mono snippet"># Define the path to the script directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Define the path to the .bashrc file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>53</td>
+                    <td class="mono snippet"># Define the path to the Cargo configuration file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>59</td>
+                    <td class="mono snippet"># Define the path where the Prometheus binary should exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>62</td>
+                    <td class="mono snippet"># Define the path where the Node Exporter binary should exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>65</td>
+                    <td class="mono snippet"># Define the path where the Process Exporter binary should exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>188</td>
+                    <td class="mono snippet">    # Define the codename of the Ubuntu release</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1078</td>
+                    <td class="mono snippet">    # Define the installation location for Go</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/get_version.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install TAOS time-series database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/get_os.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install TAOS time-series database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/set_core.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to set config for core when taosd crash</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/install.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/install_client.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install TDengine client on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/post.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install tdengine rpm package on centos systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/make_install.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install TAOS time-series database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/tools/install_spec.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/docker/entrypoint.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Define the base path for models</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/docker/entrypoint.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Define the five subdirectories under model path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/smokeTest/test_smoking_selfhost.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Define the Python commands to execute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/smokeTest/smokeTestClient.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/smokeTest/versionCheckAndUninstallforPytest.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/smokeTest/versionCheckAndUninstall.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/auto/testCompression/testCompression.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/auto/testBss/testBss.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/auto/stmt2Performance/stmt2Perf.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/tsfmservice/moment-server.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">    # Create an initial DataFrame, convert timestamps to pandas datetime type and set as index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tdgpt/tests/test_config.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">        # Create a custom config file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tdgpt/script/install.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install analysis platform on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tdgpt/script/install.sh</td>
+                    <td>243</td>
+                    <td class="mono snippet">  # Create an array of link names and target scripts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/taos-tools/packaging/tools/get_os.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install TAOS time-series database on linux systems. The operating system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/taos-tools/packaging/tools/install-tools.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install taos-tools on your linux systems.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/taos-tools/packaging/tools/uninstall-tools.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is used to install taos-tools on your linux systems.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/taos-tools/deps/emfisis.physics.uiowa.edu/robots.txt</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This file is to prevent the crawling and indexing of certain parts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/extract_pkg.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Create a temp dir to extract into</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/taostest/tdclustercase.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/taostest/util/common.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/taostest/util/sml_types.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/eos.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/sqlset.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/mqttUtil.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/taosdemoCfg.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is proprietary and confidential to TAOS Technologies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/taosdemoCfg.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">    # The following functions are import functions for different dicts and lists</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 814 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1135 hits · 1219 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packaging/delete_ref_lock.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">            print(&quot;Error parsing branch name.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/delete_ref_lock.py</td>
+                    <td>38</td>
+                    <td class="mono snippet">                    except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>252</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>457</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>501</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>570</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>575</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>801</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">                    print(f&quot;Error: Column '{col}' not found in CSV headers&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">        print(f&quot;Error: File not found: {input_file}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">        print(f&quot;Error processing CSV: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        print(f&quot;Error: Input file does not exist: {args.input}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>492</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>514</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>536</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>559</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>605</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>610</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>637</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>743</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/writeData.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/writeData.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/writeData.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outDB.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outDB.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outMetrics.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outMetrics.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/doTest.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/doTest.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/doTest.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/prepareEnv.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">                        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/prepareEnv.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/prepareEnv.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/main.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/packaging/win_release.py</td>
+                    <td>869</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/packaging/win_release.py</td>
+                    <td>903</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/docker/time-moe_server.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/util.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/util.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/conf.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">except Exception:  # pragma: no cover</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/conf.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">except Exception:  # pragma: no cover</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/model.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">                    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/model.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/app.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/taosanalytics/app.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1085 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(262 hits · 524 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/conftest.py</td>
+                    <td>331</td>
+                    <td class="mono snippet">    # ============================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/conftest.py</td>
+                    <td>359</td>
+                    <td class="mono snippet">    # ============================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">            # ── Print configuration ──────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">            # ── Step 1: Read current version from cmake ──────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">            # ── Step 3: Resolve base dirs and run compat-check ────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-ci/cold_upgrade_task.py</td>
+                    <td>270</td>
+                    <td class="mono snippet"># ──────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>51</td>
+                    <td class="mono snippet"># ── argument check ────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>93</td>
+                    <td class="mono snippet"># ── validate package name ─────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>110</td>
+                    <td class="mono snippet"># ── step 1: extract target green files into ./target ─────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>130</td>
+                    <td class="mono snippet"># ── step 2: run cold-upgrade compat-check for each baseline version ──────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>188</td>
+                    <td class="mono snippet"># ── step 3: run hot (rolling) upgrade compat-check ───────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-publish/compat_publish_main.sh</td>
+                    <td>235</td>
+                    <td class="mono snippet"># ── step 4: summary ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/reporter.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>5</td>
+                    <td class="mono snippet"># ----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>182</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>184</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>284</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>286</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>865</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>867</td>
+                    <td class="mono snippet"># ==============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/run/main.py</td>
+                    <td>1259</td>
+                    <td class="mono snippet">        # ── ROLLING (HOT) UPGRADE ─────────────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 212 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(111 hits · 111 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>592</td>
+                    <td class="mono snippet">    # Check if the operating system is CentOS 7</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>605</td>
+                    <td class="mono snippet">    # Check if cmake is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>735</td>
+                    <td class="mono snippet">    # Check if the JDK package is available in the repository</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>885</td>
+                    <td class="mono snippet">    # Check if the JDK package is available in the repository</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1082</td>
+                    <td class="mono snippet">    # Check if Go is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1140</td>
+                    <td class="mono snippet">    # Check if Rust is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1181</td>
+                    <td class="mono snippet">        # Check if the installation was successful</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1276</td>
+                    <td class="mono snippet">    # Check if version is specified</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1476</td>
+                    <td class="mono snippet">    # Check if Prometheus binary exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1559</td>
+                    <td class="mono snippet">    # Check if Grafana is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1578</td>
+                    <td class="mono snippet">        # Check if Grafana was installed successfully</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1591</td>
+                    <td class="mono snippet">    # Check if Grafana is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1612</td>
+                    <td class="mono snippet">        # Check if Grafana was installed successfully</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1662</td>
+                    <td class="mono snippet">    # Check if Docker is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1701</td>
+                    <td class="mono snippet">    # Check if Docker is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1745</td>
+                    <td class="mono snippet">    # Check if Docker Compose is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>1764</td>
+                    <td class="mono snippet">    # Check if Trivy is already installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/setup_env.sh</td>
+                    <td>2111</td>
+                    <td class="mono snippet">    # Check if at least one argument is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install.sh</td>
+                    <td>832</td>
+                    <td class="mono snippet">      # Check if correct ip address</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install.sh</td>
+                    <td>1402</td>
+                    <td class="mono snippet">  # Check if version compatible</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install_client.sh</td>
+                    <td>165</td>
+                    <td class="mono snippet">        # Check if libtaosws.so.* files exist using ls instead of -f with glob</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install_client.sh</td>
+                    <td>176</td>
+                    <td class="mono snippet">            # Check if libtaosws.so.* files exist using ls instead of -f with glob</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install_client.sh</td>
+                    <td>187</td>
+                    <td class="mono snippet">        # Check if libtaosws.dylib.* files exist using ls instead of -f with glob</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/post.sh</td>
+                    <td>416</td>
+                    <td class="mono snippet">        # Check if correct ip address</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/make_install.sh</td>
+                    <td>228</td>
+                    <td class="mono snippet">      # Check if explorer files exist using ls instead of -f with glob</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install_spec.sh</td>
+                    <td>519</td>
+                    <td class="mono snippet">      # Check if correct ip address</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/tools/install_spec.sh</td>
+                    <td>939</td>
+                    <td class="mono snippet">  # Check if version compatible</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/docker/entrypoint.sh</td>
+                    <td>163</td>
+                    <td class="mono snippet">            # Check if model exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/docker/entrypoint.sh</td>
+                    <td>178</td>
+                    <td class="mono snippet">            # Check if subdirectory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packaging/docker/entrypoint.sh</td>
+                    <td>183</td>
+                    <td class="mono snippet">            # Check if flag file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">            # Check if running on default port 6041</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">            # Check if all sort columns exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">            # Check if running on default port 6041</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>324</td>
+                    <td class="mono snippet">        # Check if DNode is already running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>381</td>
+                    <td class="mono snippet">            # Check if any taosd process is still running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tsbs-tdengine/src/writeData.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">        # Check if any insertions failed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/script/uninstall.sh</td>
+                    <td>163</td>
+                    <td class="mono snippet">  # Iterate over the array and create/remove links as needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/script/install.sh</td>
+                    <td>254</td>
+                    <td class="mono snippet">  # Iterate over the array and create/remove links as needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/script/taosanode_service.py</td>
+                    <td>368</td>
+                    <td class="mono snippet">        # Check if venv exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/script/taosanode_service.py</td>
+                    <td>1215</td>
+                    <td class="mono snippet">            # Check if still running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/tdgpt/script/taosanode_service.py</td>
+                    <td>1653</td>
+                    <td class="mono snippet">            # Check if still running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">            # Check if the stopped node has transitioned out of 'ready'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/compat-check/resource/resourceManager.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        # Assign subtables to threads</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/repair/repair_tsdb_data.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">    # Read file content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/repair/repair_tsdb_data.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">    # Check if the fid exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Check if &quot;community&quot;  or &quot;tests&quot; is in self_path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">    # Check if index_TDinternal is valid and set work_path accordingly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/count_assert.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">    # Check if index_TDengine is valid and set work_path accordingly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/scan_file_path.py</td>
+                    <td>49</td>
+                    <td class="mono snippet"># Check if &quot;community&quot;  or &quot;tests&quot; is in self_path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/scan_file_path.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Check if index_TDinternal is valid and set work_path accordingly</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 61 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(9 hits · 90 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>2</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_02`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_02`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>5</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_05`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_05`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>7</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_07`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_07`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>10</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_10`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_10`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>12</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_12`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_12`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>20</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1a_belt_conveyor_20`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1a_belt_conveyor_20`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/tobacco_data/idmp/vtb.sql</td>
+                    <td>22</td>
+                    <td class="mono snippet">CREATE VTABLE `idmp`.`vt_带式输送机_f1w1b_belt_conveyor_02`(`电机信号` FROM `idmp_sample_tobacco`.`f1w1b_belt_conveyor_02`.`motor_signal`,`设备状态` FROM `idmp_sam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/zh/27-train-faq/01-faq.md</td>
+                    <td>220</td>
+                    <td class="mono snippet">        at com.taosdata.jdbc.ws.Transport.checkConnection(Transport.java:393)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/en/27-train-faq/index.md</td>
+                    <td>199</td>
+                    <td class="mono snippet">        at com.taosdata.jdbc.ws.Transport.checkConnection(Transport.java:393)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(26 hits · 52 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/TDengineClusterSetup.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/tools/sort_csv.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/deployCluster.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/writeData.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outDB.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/tdengine.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/util.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outMetrics.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/cmdLine.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/scene.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/doTest.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/prepareEnv.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/outLog.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/main.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/tsbs-tdengine/src/baseStep.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/tools/compat-check/server/clusterSetup.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This program is free software: you can use, redistribute, and/or modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/new_test_framework/utils/taosdemoCfg.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">#       Please make sure you understand which directory represent which part of which type of the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytest/util/taosdemoCfg.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">#       Please make sure you understand which directory represent which part of which type of the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/army/frame/taosdemoCfg.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">#       Please make sure you understand which directory represent which part of which type of the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/06-advanced/07-data-publisher/01-MQTT.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">Use the `taos` CLI tool or the Explorer management interface to execute SQL statements, create databases, super tables, topics, and insert data for su</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/26-tdinternal/07-topic.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">When creating a consumer, it is necessary to specify a consumer group. Consumers within the same consumer group will share consumption progress, ensur</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/14-reference/02-tools/09-taosdump.md</td>
+                    <td>133</td>
+                    <td class="mono snippet">- Restore data files from a specified path: use the `-i` parameter along with the data file path. As mentioned earlier, the same directory should not </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/14-reference/05-connector/40-csharp.md</td>
+                    <td>87</td>
+                    <td class="mono snippet">  - When the value does not exceed the range of C#'s `decimal` type, you can use `GetDecimal` or `GetValue` to retrieve it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/14-reference/01-components/03-taosadapter.md</td>
+                    <td>2261</td>
+                    <td class="mono snippet">In TDengine server version 2.2.x.x or earlier, the taosd process included an embedded HTTP service(httpd). As mentioned earlier, taosAdapter is a stan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/en/14-reference/03-taos-sql/20-select.md</td>
+                    <td>339</td>
+                    <td class="mono snippet">- INTERP determines how to interpolate at each time point that meets the output conditions based on the FILL field. For how to use the FILL clause, re</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/python/taosdemo/taosdemo.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">#  * This program is free software: you can use, redistribute, and/or modify</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(18 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">- **[Ease of Use](https://tdengine.com/tdengine/easy-time-series-data-platform/)**: For administrators, TDengine significantly reduces the effort to d</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/test_recalc_combined_options.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">        # Trigger table for comprehensive combination (WATERMARK + DELETE_RECALC + EXPIRED_TIME)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/test_recalc_combined_options.py</td>
+                    <td>203</td>
+                    <td class="mono snippet">        # Data for comprehensive combination (02:09:00 - 02:11:30)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/test_recalc_combined_options.py</td>
+                    <td>424</td>
+                    <td class="mono snippet">        # Test comprehensive combination (WATERMARK + DELETE_RECALC + EXPIRED_TIME)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/result_saved_bug_2.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Result saved: comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/test_result_saved_schema_validation.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        # Create trigger table with various data types for comprehensive testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/result_saved_bug_1.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Result saved: comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/common/trow.h</td>
+                    <td>58</td>
+                    <td class="mono snippet">#define TD_VTYPE_OPTR        3  // OPERATOR: 4 - 1, utilize to get remainder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/common/trow.h</td>
+                    <td>58</td>
+                    <td class="mono snippet">#define TD_VTYPE_OPTR        3  // OPERATOR: 4 - 1, utilize to get remainder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/common/trow.h</td>
+                    <td>62</td>
+                    <td class="mono snippet">#define TD_VTYPE_OPTR_I        7  // OPERATOR: 8 - 1, utilize to get remainder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/common/trow.h</td>
+                    <td>62</td>
+                    <td class="mono snippet">#define TD_VTYPE_OPTR_I        7  // OPERATOR: 8 - 1, utilize to get remainder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/os/osThread.h</td>
+                    <td>261</td>
+                    <td class="mono snippet">// int32_t taosThreadMutexAttrGetRobust(const TdThreadMutexAttr * attr, int32_t * robust);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/os/osThread.h</td>
+                    <td>265</td>
+                    <td class="mono snippet">// int32_t taosThreadMutexAttrSetRobust(TdThreadMutexAttr * attr, int32_t robust);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">source/os/src/osThread.c</td>
+                    <td>524</td>
+                    <td class="mono snippet">// int32_t taosThreadMutexAttrGetRobust(const TdThreadMutexAttr * attr, int32_t * robust) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">source/os/src/osThread.c</td>
+                    <td>525</td>
+                    <td class="mono snippet">//   return pthread_mutexattr_getrobust(attr, robust);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">source/os/src/osThread.c</td>
+                    <td>569</td>
+                    <td class="mono snippet">// int32_t taosThreadMutexAttrSetRobust(TdThreadMutexAttr * attr, int32_t robust) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">source/os/src/osThread.c</td>
+                    <td>570</td>
+                    <td class="mono snippet">//   return pthread_mutexattr_setrobust(attr, robust);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytest/crash_gen/crash_gen_main.py</td>
+                    <td>1841</td>
+                    <td class="mono snippet">        # Choose modern stream options following TDengine best practices</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(36 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">        # Step 1: stop all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">        # Step 2: replace binaries on all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/tools/compat-check/server/rollingUpgrade.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">        # Step 3: start all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/new_test_framework/utils/eutil.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">    # Step 1: Find all processes named &quot;taosd&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/new_test_framework/utils/eutil.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # Step 2: Get thread information for the first taosd process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/recalc_expired_bug_2.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        # Step 3: Write trigger data to trigger tables (tdb) to start stream computation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/recalc_expired_bug_3.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Step 3: Write trigger data to trigger tables (tdb) to start stream computation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/recalc_expired_bug_1.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        # Step 1: Write base data to meters table (qdb)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/08-Recalc/recalc_expired_bug_1.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        # Step 3: Write trigger data to trigger tables (tdb) to start stream computation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/test_result_saved_comprehensive.py</td>
+                    <td>821</td>
+                    <td class="mono snippet">        # Step 1: Verify stream exists and is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/test_result_saved_comprehensive.py</td>
+                    <td>827</td>
+                    <td class="mono snippet">        # Step 2: Verify target table was deleted before writing trigger data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/test_result_saved_comprehensive.py</td>
+                    <td>856</td>
+                    <td class="mono snippet">        # Step 3: Check stream status and behavior</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/06-ResultSaved/test_result_saved_comprehensive.py</td>
+                    <td>862</td>
+                    <td class="mono snippet">        # Step 4: Verify system robustness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/23-Compatibility/test_compatibility_cross_version.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">            # Step 1: Install old version and create streams</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/23-Compatibility/test_compatibility_cross_version.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">            # Step 2: Try to start with new version (should fail)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/23-Compatibility/test_compatibility_cross_version.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">            # Step 3: Cleanup streams on old version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/18-StreamProcessing/23-Compatibility/test_compatibility_cross_version.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">            # Step 4: Create new streams on new version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/04-SuperTables/01-Create/test_stable_keep_compact.py</td>
+                    <td>412</td>
+                    <td class="mono snippet">        # Step 1: Insert data from 3 days ago and 7 days ago</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/04-SuperTables/01-Create/test_stable_keep_compact.py</td>
+                    <td>423</td>
+                    <td class="mono snippet">        # Step 2: Flush and compact the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/04-SuperTables/01-Create/test_stable_keep_compact.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">        # Step 3: Query after compaction</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/cases/04-SuperTables/01-Create/test_stable_keep_compact.py</td>
+                    <td>447</td>
+                    <td class="mono snippet">        # Step 4: Try to insert data from 7 days ago again (after compaction)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/vnode/src/meta/metaTable2.c</td>
+                    <td>2126</td>
+                    <td class="mono snippet">  // Step 1: Try index-accelerated pre-filtering with pTagIndexCond</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/vnode/src/meta/metaTable2.c</td>
+                    <td>2159</td>
+                    <td class="mono snippet">  // Step 2: If index was not used, enumerate all child table UIDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/vnode/src/meta/metaTable2.c</td>
+                    <td>2185</td>
+                    <td class="mono snippet">  // Step 3: Apply pTagCond to filter the candidate UIDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/mnode/impl/src/mndXnode.c</td>
+                    <td>1695</td>
+                    <td class="mono snippet">  // Step 1: Validate permissions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/mnode/impl/src/mndXnode.c</td>
+                    <td>1708</td>
+                    <td class="mono snippet">  // Step 2: Check if task already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/mnode/impl/src/mndXnode.c</td>
+                    <td>1711</td>
+                    <td class="mono snippet">  // Step 3: Parse and validate request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/dnode/mnode/impl/src/mndXnode.c</td>
+                    <td>1714</td>
+                    <td class="mono snippet">  // Step 4: Create the xnode task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/wal/test/walMetaTest.cpp</td>
+                    <td>1225</td>
+                    <td class="mono snippet">  // Step 1: Write initial data (version 0-9)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/wal/test/walMetaTest.cpp</td>
+                    <td>1245</td>
+                    <td class="mono snippet">  // Step 2: Simulate crash - close WAL (but don't delete directory)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/wal/test/walMetaTest.cpp</td>
+                    <td>1249</td>
+                    <td class="mono snippet">  // Step 3: Manually corrupt the WAL file by appending garbage data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/wal/test/walMetaTest.cpp</td>
+                    <td>1265</td>
+                    <td class="mono snippet">  // Step 4: Restart WAL and write new data (version 10-19)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/wal/test/walMetaTest.cpp</td>
+                    <td>1283</td>
+                    <td class="mono snippet">  // Step 5: Restart again and verify all data (0-19) can be read</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/executor/src/sysscanoperator.c</td>
+                    <td>2788</td>
+                    <td class="mono snippet">  // Step 1: Get DB vgroup info (with caching)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/executor/src/sysscanoperator.c</td>
+                    <td>2807</td>
+                    <td class="mono snippet">  // Step 2: Calculate vgId for the source table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">source/libs/executor/src/sysscanoperator.c</td>
+                    <td>2828</td>
+                    <td class="mono snippet">  // Step 3: Fetch table schema from the target vnode</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_pv.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">        1. Test the analysis generated by AI recommendations, create a Stream, and verify the correctness of the stream.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/cases/18-StreamProcessing/20-UseCase/test_idmp_tobacco.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">        1. Test the analysis generated by AI recommendations, create a Stream, and verify the correctness of the stream.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/test/totp-cli.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">def generate_qr(secret_key, issuer=&quot;MyApp&quot;, account_name=&quot;user@example.com&quot;):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/shell/test/totp-cli.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    parser.add_argument(&quot;--account&quot;, default=&quot;user@example.com&quot;, help=&quot;账户名称&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ci/run_upgrade_compat.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-20 13:38 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
