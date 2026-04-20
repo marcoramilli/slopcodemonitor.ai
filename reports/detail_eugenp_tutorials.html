@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — eugenp/tutorials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>eugenp/tutorials</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">2.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">2.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1129</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">4089</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,840,967</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">30917</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(231 hits · 2310 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/main/java/com/gateway/security/DomainUserDetailsService.java</td>
+                    <td>61</td>
+                    <td class="mono snippet">        return new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-monolithic/src/main/java/com/baeldung/jhipster8/security/DomainUserDetailsService.java</td>
+                    <td>60</td>
+                    <td class="mono snippet">        return new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">spring-boot-modules/spring-boot-springdoc/src/main/java/com/baeldung/jwt/AuthenticationApi.java</td>
+                    <td>47</td>
+                    <td class="mono snippet">    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = &quot;application/json&quot;, examp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">spring-boot-modules/spring-boot-springdoc/src/main/java/com/baeldung/springdoc/controller/BookController.java</td>
+                    <td>92</td>
+                    <td class="mono snippet">    public Book createBook(@io.swagger.v3.oas.annotations.parameters.RequestBody(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">spring-boot-modules/spring-boot-springdoc/src/main/java/com/baeldung/springdoc/tagorderexample/BooksController.java</td>
+                    <td>31</td>
+                    <td class="mono snippet">    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">spring-boot-modules/spring-boot-springdoc/src/main/java/com/baeldung/springdoc/tagorderexample/BooksController_2.java</td>
+                    <td>38</td>
+                    <td class="mono snippet">	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-libraries-3/src/test/java/com/baeldung/apache/avro/SerializeAndDeserializeDateUnitTest.java</td>
+                    <td>129</td>
+                    <td class="mono snippet">        Conversion&lt;LocalDate&gt; dateConversion = new org.apache.avro.data.TimeConversions.DateConversion();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-libraries-3/src/test/java/com/baeldung/apache/avro/SerializeAndDeserializeDateUnitTest.java</td>
+                    <td>133</td>
+                    <td class="mono snippet">        Conversion&lt;Instant&gt; timestampConversion = new org.apache.avro.data.TimeConversions.TimestampMillisConversion();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>103</td>
+                    <td class="mono snippet">    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CrossPlatformResource.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>468</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>476</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>484</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>488</td>
+                    <td class="mono snippet">            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformResource.java</td>
+                    <td>576</td>
+                    <td class="mono snippet">    return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/InvalidOperationException.java</td>
+                    <td>95</td>
+                    <td class="mono snippet">    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(InvalidOperationException.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/InvalidOperationException.java</td>
+                    <td>386</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/InvalidOperationException.java</td>
+                    <td>394</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/InvalidOperationException.java</td>
+                    <td>398</td>
+                    <td class="mono snippet">            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/InvalidOperationException.java</td>
+                    <td>469</td>
+                    <td class="mono snippet">    return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>772</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_args.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>989</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>993</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1049</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1135</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_result.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1434</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1443</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1447</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1522</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1601</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(save_args.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1826</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1830</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1889</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>1968</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(save_result.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2190</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2194</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2253</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2324</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getList_args.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2463</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2503</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2590</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getList_result.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2915</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2924</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>2928</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3025</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3096</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ping_args.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3235</td>
+                    <td class="mono snippet">              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3275</td>
+                    <td class="mono snippet">      return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3363</td>
+                    <td class="mono snippet">      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ping_result.class, metaDataMap);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3654</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apache-thrift/generated/com/baeldung/thrift/impl/CrossPlatformService.java</td>
+                    <td>3663</td>
+                    <td class="mono snippet">                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 181 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(482 hits · 964 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apache-commons-2/src/test/resources/compress/new.txt</td>
+                    <td>1</td>
+                    <td class="mono snippet">lorem ipsum</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apache-commons-2/src/test/resources/compress/new.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet">dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/main/webapp/app/account/register/register.service.spec.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">      const email = 'test@test.com';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/main/webapp/app/account/password-reset/init/password-reset-init.service.spec.ts</td>
+                    <td>29</td>
+                    <td class="mono snippet">      const mail = 'test@test.com';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-monolithic/src/main/webapp/app/account/register/register.service.spec.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">      const email = 'test@test.com';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-monolithic/src/main/webapp/app/account/password-reset/init/password-reset-init.service.spec.ts</td>
+                    <td>29</td>
+                    <td class="mono snippet">      const mail = 'test@test.com';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-libraries/src/main/java/com/baeldung/caffeine/AddressService.java</td>
+                    <td>25</td>
+                    <td class="mono snippet">        return &quot;123 Main St&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-libraries/src/main/java/com/baeldung/caffeine/AddressService.java</td>
+                    <td>35</td>
+                    <td class="mono snippet">        String address = &quot;123 Main St&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/jms/ArticleListenerLiveTest.java</td>
+                    <td>42</td>
+                    <td class="mono snippet">		articlePublisher.publish(&quot;Foo&quot;, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/jms/ArticleListenerLiveTest.java</td>
+                    <td>43</td>
+                    <td class="mono snippet">		articlePublisher.publish(&quot;Bar&quot;, &quot;Jane Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/resttestclient/RestTestClientUnitTest.java</td>
+                    <td>49</td>
+                    <td class="mono snippet">            .isEqualTo(new Person(1L, &quot;John Doe&quot;));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/resttestclient/RestTestClientUnitTest.java</td>
+                    <td>93</td>
+                    <td class="mono snippet">            .isEqualTo(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/resttestclient/RestTestClientUnitTest.java</td>
+                    <td>109</td>
+                    <td class="mono snippet">                    .name()).isEqualTo(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/resttestclient/RestTestClientUnitTest.java</td>
+                    <td>142</td>
+                    <td class="mono snippet">        return id == 1 ? ResponseEntity.ok(new Person(1L, &quot;John Doe&quot;)) : ResponseEntity.noContent()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/test/java/com/baeldung/spring/resttestclient/RestTestClientUnitTest.java</td>
+                    <td>149</td>
+                    <td class="mono snippet">            new Person(1L, &quot;John Doe&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-4/src/main/java/com/baeldung/spring/jms/ArticlePublisher.java</td>
+                    <td>22</td>
+                    <td class="mono snippet">		publish(&quot;Understanding JMS in Spring Boot&quot;, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-mvc-2/src/test/java/com/baeldung/postman/controller/PostmanUploadControllerUnitTest.java</td>
+                    <td>27</td>
+                    <td class="mono snippet">        JsonRequest request = new JsonRequest(1, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-swagger-springfox/src/main/java/com/baeldung/swagger2/SwaggerConfig.java</td>
+                    <td>41</td>
+                    <td class="mono snippet">        ApiInfo apiInfo = new ApiInfo(&quot;My REST API&quot;, &quot;Some custom description of API.&quot;, &quot;API TOS&quot;, &quot;Terms of service&quot;, new Contact(&quot;John Doe&quot;, &quot;www.ex</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-libraries-3/src/test/java/com/baeldung/spring/modulith/externalization/EventsExternalizationLiveTest.java</td>
+                    <td>66</td>
+                    <td class="mono snippet">        var article = new Article(&quot;introduction-to-spring-boot&quot;, &quot;Introduction to Spring Boot&quot;, &quot;John Doe&quot;, &quot;&lt;p&gt; Spring Boot is [...] &lt;/p&gt;&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-libraries-3/src/test/java/com/baeldung/spring/modulith/externalization/EventsExternalizationLiveTest.java</td>
+                    <td>86</td>
+                    <td class="mono snippet">        var article = new Article(null, &quot;Introduction to Spring Boot&quot;, &quot;John Doe&quot;, &quot;&lt;p&gt; Spring Boot is [...] &lt;/p&gt;&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-libraries-3/src/test/java/com/baeldung/spring/modulith/externalization/EventsExternalizationLiveTest.java</td>
+                    <td>97</td>
+                    <td class="mono snippet">            .containsExactly(&quot;Introduction to Spring Boot&quot;, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/entity/UserUnitTest.java</td>
+                    <td>19</td>
+                    <td class="mono snippet">        User user = new User(&quot;John&quot;, &quot;Doe&quot;, &quot;123 Main St&quot;, Arrays.asList(book1, book2));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/entity/UserUnitTest.java</td>
+                    <td>24</td>
+                    <td class="mono snippet">        assertEquals(&quot;123 Main St&quot;, user.getAddress());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/entity/UserUnitTest.java</td>
+                    <td>35</td>
+                    <td class="mono snippet">        User user = new User(&quot;John&quot;, &quot;Doe&quot;, &quot;123 Main St&quot;, Arrays.asList(book1, book2, book3));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/entity/UserUnitTest.java</td>
+                    <td>45</td>
+                    <td class="mono snippet">        User user = new User(&quot;John&quot;, &quot;Doe&quot;, &quot;123 Main St&quot;, Collections.emptyList());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/mapper/UserMapperUnitTest.java</td>
+                    <td>23</td>
+                    <td class="mono snippet">        User user = new User(&quot;John&quot;, &quot;Doe&quot;, &quot;123 Main St&quot;, Arrays.asList(book1, book2));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/test/java/com/baeldung/entitydtodifferences/controller/UserControllerIntegrationTest.java</td>
+                    <td>47</td>
+                    <td class="mono snippet">        User savedUser = userRepository.save(new User(&quot;John&quot;, &quot;Doe&quot;, &quot;123 Main St&quot;, Arrays.asList(book1, book2)));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-mvc-legacy/src/main/java/com/baeldung/swagger2boot/configuration/SpringFoxConfig.java</td>
+                    <td>32</td>
+                    <td class="mono snippet">                new Contact(&quot;John Doe&quot;, &quot;www.example.com&quot;, &quot;myeaddress@company.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-keycloak-adapters/src/main/resources/templates/external.html</td>
+                    <td>11</td>
+                    <td class="mono snippet">			&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-keycloak-adapters/src/main/resources/templates/external.html</td>
+                    <td>11</td>
+                    <td class="mono snippet">			&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-keycloak-adapters/src/main/resources/templates/layout.html</td>
+                    <td>17</td>
+                    <td class="mono snippet">	&lt;p&gt;Copyright: Lorem Ipsum&lt;/p&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-swagger/src/main/java/com/baeldung/swaggerexample/config/SwaggerConfig.java</td>
+                    <td>21</td>
+                    <td class="mono snippet">            .contact(new Contact().name(&quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-data/src/main/java/com/baeldung/jsondateformat/ContactController.java</td>
+                    <td>21</td>
+                    <td class="mono snippet">        Contact contact1 = new Contact(&quot;John Doe&quot;, &quot;123 Sesame Street&quot;, &quot;123-456-789&quot;, LocalDate.now(), LocalDateTime.now());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-data/src/main/java/com/baeldung/jsondateformat/ContactController.java</td>
+                    <td>36</td>
+                    <td class="mono snippet">        ContactWithJavaUtilDate contact1 = new ContactWithJavaUtilDate(&quot;John Doe&quot;, &quot;123 Sesame Street&quot;, &quot;123-456-789&quot;, new Date(), new Date());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-data/src/main/java/com/baeldung/jsondateformat/ContactController.java</td>
+                    <td>51</td>
+                    <td class="mono snippet">        PlainContact contact1 = new PlainContact(&quot;John Doe&quot;, &quot;123 Sesame Street&quot;, &quot;123-456-789&quot;, LocalDate.now(), LocalDateTime.now());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-data/src/main/java/com/baeldung/jsondateformat/ContactController.java</td>
+                    <td>66</td>
+                    <td class="mono snippet">        PlainContactWithJavaUtilDate contact1 = new PlainContactWithJavaUtilDate(&quot;John Doe&quot;, &quot;123 Sesame Street&quot;, &quot;123-456-789&quot;, new Date(), new Date(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-validation/src/test/java/com/baeldung/springvalidator/UserControllerIntegrationTest.java</td>
+                    <td>35</td>
+                    <td class="mono snippet">        User validUser = new User(&quot;John Doe&quot;, &quot;john@example.com&quot;, 30);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-validation/src/test/java/com/baeldung/springvalidator/UserControllerIntegrationTest.java</td>
+                    <td>67</td>
+                    <td class="mono snippet">        User validUser = new User(&quot;John Doe&quot;, &quot;john@example.com&quot;, 30);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apache-commons/src/test/java/com/baeldung/commons/beanutils/CourseServiceUnitTest.java</td>
+                    <td>54</td>
+                    <td class="mono snippet">        student.setName(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apache-commons/src/test/java/com/baeldung/commons/beanutils/CourseServiceUnitTest.java</td>
+                    <td>60</td>
+                    <td class="mono snippet">        assertEquals(&quot;John Doe&quot;, enrolledStudent.getName());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-kafka-4/src/test/java/com/baeldung/avro/deserialization/exception/AvroMagicByteLiveTest.java</td>
+                    <td>80</td>
+                    <td class="mono snippet">        return new Article(title, &quot;John Doe&quot;, List.of(&quot;avro&quot;, &quot;kafka&quot;, &quot;spring&quot;));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">feign/src/test/java/com/baeldung/feign/soap/FeignLiveTest.java</td>
+                    <td>54</td>
+                    <td class="mono snippet">        user.setName(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">feign/src/test/java/com/baeldung/feign/soap/FeignLiveTest.java</td>
+                    <td>82</td>
+                    <td class="mono snippet">        user.setName(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-webflux/src/test/java/com/baeldung/spring/zipwhen/UserControllerUnitTest.java</td>
+                    <td>25</td>
+                    <td class="mono snippet">        User user = new User(userId, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/test/resources/390KB.json</td>
+                    <td>9243</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Laboris labore ad velit culpa minim nulla aute nulla reprehenderit aute culpa. Enim elit eu proident magna Lorem laboris sunt. Tempor </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/test/resources/390KB.json</td>
+                    <td>10728</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Consequat eu tempor velit veniam ipsum. Sit labore et excepteur deserunt voluptate Lorem incididunt elit id Lorem elit. Incididunt exc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/test/resources/390KB.json</td>
+                    <td>11673</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Lorem ipsum eiusmod deserunt anim magna occaecat ipsum deserunt excepteur incididunt. Lorem excepteur ut adipisicing mollit laboris an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/main/resources/390KB.json</td>
+                    <td>9243</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Laboris labore ad velit culpa minim nulla aute nulla reprehenderit aute culpa. Enim elit eu proident magna Lorem laboris sunt. Tempor </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/main/resources/390KB.json</td>
+                    <td>10728</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Consequat eu tempor velit veniam ipsum. Sit labore et excepteur deserunt voluptate Lorem incididunt elit id Lorem elit. Incididunt exc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-reactive-modules/spring-reactive-exceptions/src/main/resources/390KB.json</td>
+                    <td>11673</td>
+                    <td class="mono snippet">      &quot;about&quot;: &quot;Lorem ipsum eiusmod deserunt anim magna occaecat ipsum deserunt excepteur incididunt. Lorem excepteur ut adipisicing mollit laboris an</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 432 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(328 hits · 656 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application-testdev.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application-testdev.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application-testprod.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application-testprod.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>59</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>63</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>87</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/test/resources/config/application.yml</td>
+                    <td>94</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>73</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>91</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>100</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>104</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>135</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-prod.yml</td>
+                    <td>142</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>79</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>83</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>116</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-dev.yml</td>
+                    <td>123</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-tls.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application-tls.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/bootstrap.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/bootstrap.yml</td>
+                    <td>4</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>11</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>15</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>207</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>211</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>240</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/application.yml</td>
+                    <td>247</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/bootstrap-prod.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/config/bootstrap-prod.yml</td>
+                    <td>3</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application-testdev.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application-testdev.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application.yml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application.yml</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/gateway-app/src/test/resources/config/application.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># ===================================================================</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 278 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(44 hits · 88 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/car-app/src/main/resources/static/index.html</td>
+                    <td>132</td>
+                    <td class="mono snippet">        &lt;span&gt;If you like JHipster, don't forget to give us a star on&lt;/span&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-8-modules/jhipster-8-microservice/dealer-app/src/main/resources/static/index.html</td>
+                    <td>132</td>
+                    <td class="mono snippet">        &lt;span&gt;If you like JHipster, don't forget to give us a star on&lt;/span&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-openapi/src/main/resources/openApi2/swagger.json</td>
+                    <td>4</td>
+                    <td class="mono snippet">    &quot;description&quot;: &quot;This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/README.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/TagTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/UserTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/PetTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/OrderTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/CategoryTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/model/ModelApiResponseTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/api/UserApiTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/api/StoreApiTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/test/java/com/baeldung/petstore/client/api/PetApiTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/invoker/RFC3339DateFormat.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/Order.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/ModelApiResponse.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/Tag.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/Pet.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/Category.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-openapi-generator-api-client/src/main/java/com/baeldung/petstore/client/model/User.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/test/java/com/baeldung/petstore/client/api/StoreApiLiveTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/test/java/com/baeldung/petstore/client/api/PetApiLiveTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/test/java/com/baeldung/petstore/client/api/UserApiLiveTest.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/invoker/RFC3339DateFormat.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/Order.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/ModelApiResponse.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/Tag.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/Pet.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/Category.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-swagger-codegen-modules/spring-swagger-codegen-api-client/src/main/java/com/baeldung/petstore/client/model/User.java</td>
+                    <td>3</td>
+                    <td class="mono snippet"> * This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">testing-modules/automated-testing/readme.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">## Don't forget to give a :star: to make the project popular.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">testing-modules/junit-5-annotations/src/test/java/com/baeldung/junit5/timeout/TimeoutUnitTest.java</td>
+                    <td>73</td>
+                    <td class="mono snippet">//			just for demonstration purposes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">testing-modules/jmeter-2/test-plans/outcome/sbadmin2-1.0.7/bower_components/flot/API.md</td>
+                    <td>703</td>
+                    <td class="mono snippet">a custom tick formatter function as usual. Here's a simple example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-6/bookstore-monolith/src/main/webapp/app/home/home.component.html</td>
+                    <td>38</td>
+                    <td class="mono snippet">            &lt;span&gt;If you like JHipster, don't forget to give us a star on&lt;/span&gt; &lt;a href=&quot;https://github.com/jhipster/generator-jhipster&quot; target=&quot;_bla</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/java-native/src/main/cpp/generateNativeLib.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Don't forget to set java.library.path to point to the folder where you have the libnative you're loading.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/java-native/src/main/cpp/unsatisfiedlink/generateNativeLib.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Don't forget to set java.library.path to point to the folder where you have the lib you're loading.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/core-java-streams-6/src/main/java/com/baeldung/streams/emptylists/StreamFromEmptyList.java</td>
+                    <td>53</td>
+                    <td class="mono snippet">        // This method may return null for demonstration purposes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-scheduling/src/main/java/com/baeldung/async/config/SpringAsyncConfig.java</td>
+                    <td>39</td>
+                    <td class="mono snippet">        // Creating a new one for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-ai-modules/spring-ai-3/src/test/java/com/baeldung/springai/advisors/SpringAILiveTest.java</td>
+                    <td>188</td>
+                    <td class="mono snippet">          .contains(&quot;I'm unable to respond to that due to sensitive content&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-modules/jhipster-uaa/quotes/src/main/resources/static/index.html</td>
+                    <td>98</td>
+                    <td class="mono snippet">        &lt;span&gt;If you like JHipster, don't forget to give us a star on&lt;/span&gt; &lt;a href=&quot;https://github.com/jhipster/generator-jhipster&quot; target=&quot;_blank&quot;&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-modules/jhipster-uaa/gateway/src/main/webapp/app/home/home.component.html</td>
+                    <td>38</td>
+                    <td class="mono snippet">            &lt;span jhiTranslate=&quot;home.like&quot;&gt;If you like JHipster, don't forget to give us a star on&lt;/span&gt; &lt;a href=&quot;https://github.com/jhipster/generat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">jhipster-modules/jhipster-uaa/gateway/src/main/webapp/i18n/en/home.json</td>
+                    <td>16</td>
+                    <td class="mono snippet">        &quot;like&quot;: &quot;If you like JHipster, don't forget to give us a star on&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>50</td>
+                    <td class="mono snippet">        // Log results for demonstration purposes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">persistence-modules/spring-data-cassandra-reactive/src/test/resources/cassandra-server.yaml</td>
+                    <td>438</td>
+                    <td class="mono snippet"># Warning: before enabling this property make sure to ntp is installed</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(11 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-nashorn/src/main/resources/static/js/react.js</td>
+                    <td>13689</td>
+                    <td class="mono snippet">    // Essentially calls `this.reconcileTransaction.perform(method, scope, a)`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-nashorn/src/main/resources/static/js/react.js</td>
+                    <td>16896</td>
+                    <td class="mono snippet">        // children. Definitely want to avoid this.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/main/resources/css/shards.min.css</td>
+                    <td>1</td>
+                    <td class="mono snippet">@import url(https://fonts.googleapis.com/css?family=Poppins:300,400,500,600|Roboto+Mono);:root{--blue:#007bff;--indigo:#674eec;--purple:#8445f7;--pink</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-boot-modules/spring-boot-crud/src/main/resources/css/shards.min.css</td>
+                    <td>1</td>
+                    <td class="mono snippet">@import url(https://fonts.googleapis.com/css?family=Poppins:300,400,500,600|Roboto+Mono);:root{--blue:#007bff;--indigo:#674eec;--purple:#8445f7;--pink</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">persistence-modules/spring-boot-persistence/src/main/resources/css/shards.min.css</td>
+                    <td>1</td>
+                    <td class="mono snippet">@import url(https://fonts.googleapis.com/css?family=Poppins:300,400,500,600|Roboto+Mono);:root{--blue:#007bff;--indigo:#674eec;--purple:#8445f7;--pink</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">persistence-modules/spring-boot-persistence/src/main/resources/css/shards.min.css</td>
+                    <td>1</td>
+                    <td class="mono snippet">@import url(https://fonts.googleapis.com/css?family=Poppins:300,400,500,600|Roboto+Mono);:root{--blue:#007bff;--indigo:#674eec;--purple:#8445f7;--pink</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apm/new-relic/newrelic-monitoring/newrelic/newrelic.yml</td>
+                    <td>252</td>
+                    <td class="mono snippet">    # Agent versions 5.10.0+ utilize both the newrelic header and W3C Trace Context headers for distributed tracing.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apm/new-relic/newrelic-monitoring/newrelic/newrelic.yml</td>
+                    <td>255</td>
+                    <td class="mono snippet">    # If you do not want to utilize the newrelic header, setting this to true will result in the agent excluding the newrelic header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apm/new-relic/currency-converter/newrelic/newrelic.yml</td>
+                    <td>293</td>
+                    <td class="mono snippet">    # Agent versions 5.10.0+ utilize both the newrelic header and W3C Trace Context headers for distributed tracing.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libraries-apm/new-relic/currency-converter/newrelic/newrelic.yml</td>
+                    <td>296</td>
+                    <td class="mono snippet">    # If you do not want to utilize the newrelic header, setting this to true will result in the agent excluding the newrelic header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-web-modules/spring-websockets/src/main/webapp/resources/js/sockjs-0.3.4.js</td>
+                    <td>1529</td>
+                    <td class="mono snippet">// The simplest and most robust transport, using the well-know cross</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(17 hits · 17 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/step_by_step_conversion.java</td>
+                    <td>10</td>
+                    <td class="mono snippet">        // Step 0: Example EBCDIC bytes (&quot;HELLO&quot; in Cp037)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/step_by_step_conversion.java</td>
+                    <td>12</td>
+                    <td class="mono snippet">        // Step 1: Decode from EBCDIC (Cp037) to Unicode string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/step_by_step_conversion.java</td>
+                    <td>14</td>
+                    <td class="mono snippet">        // Step 2: Encode from Unicode string to ASCII bytes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/step_by_step_conversion.java</td>
+                    <td>16</td>
+                    <td class="mono snippet">        // Step 3: Log final ASCII string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/practical_example.java</td>
+                    <td>11</td>
+                    <td class="mono snippet">        // Step 1: Read raw EBCDIC bytes from file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/practical_example.java</td>
+                    <td>16</td>
+                    <td class="mono snippet">        // Step 2: Decode EBCDIC bytes to Unicode string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/practical_example.java</td>
+                    <td>19</td>
+                    <td class="mono snippet">        // Step 3: Encode Unicode string to ASCII bytes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-string-conversions-4/EBCDIC_to_ASCII/practical_example.java</td>
+                    <td>22</td>
+                    <td class="mono snippet">        // Step 4: Log final ASCII string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-io-conversions-3/src/main/java/com/baeldung/xlsxtocsv/ConvertToCSV.java</td>
+                    <td>16</td>
+                    <td class="mono snippet">        // Step 1: Extract data from XLSX file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-io-conversions-3/src/main/java/com/baeldung/xlsxtocsv/ConvertToCSV.java</td>
+                    <td>18</td>
+                    <td class="mono snippet">        // Step 2: Write data to CSV file using Apache Commons CSV</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-io-conversions-3/src/main/java/com/baeldung/xlsxtocsv/ConvertToCSV.java</td>
+                    <td>30</td>
+                    <td class="mono snippet">        // Step 1: Extract data from XLSX file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">core-java-modules/core-java-io-conversions-3/src/main/java/com/baeldung/xlsxtocsv/ConvertToCSV.java</td>
+                    <td>32</td>
+                    <td class="mono snippet">        // Step 2: Write data to CSV file using OpenCSV</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>31</td>
+                    <td class="mono snippet">        // Step 1: Get the CriteriaBuilder from the session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>34</td>
+                    <td class="mono snippet">        // Step 2: Create a CriteriaQuery using HQL (as a string)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>39</td>
+                    <td class="mono snippet">        // Step 3: Mutate the CriteriaQuery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>44</td>
+                    <td class="mono snippet">        // Step 4: Execute the query and get the result list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">persistence-modules/hibernate-queries/src/test/java/com/baeldung/hibernate/criteria/HqlToCriteriaIntegrationTest.java</td>
+                    <td>47</td>
+                    <td class="mono snippet">        // Step 5: Simple assertion to check if the result is not empty</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kubernetes-modules/k8s-admission-controller/src/test/terraform/.terraform.lock.hcl</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file is maintained automatically by &quot;terraform init&quot;.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">quarkus-modules/quarkus-jandex/hello-app/README.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">## Creating a native executable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">quarkus-modules/quarkus-websockets-next/README.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Creating a native executable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netflix-modules/genie/src/main/resources/com/baeldung/netflix/genie/docker/run_spark_submit_job.py</td>
+                    <td>34</td>
+                    <td class="mono snippet"># Create a job instance and fill in the required parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/java-native/src/main/cpp/generateNativeLibMac.sh</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create the header with javac -h . ClassName.java</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/java-native/src/main/cpp/generateNativeLib.sh</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create the header with javac -h . ClassName.java</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">core-java-modules/java-native/src/main/cpp/unsatisfiedlink/generateNativeLib.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># Create the header with javac -h . ClassName.java</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">testing-modules/load-testing-comparison/src/main/resources/scripts/The Grinder/grinder.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">        result = request1.POST(&quot;http://localhost:8080/transactions/add&quot;, &quot;{&quot;'&quot;customerRewardsId&quot;'&quot;:null,&quot;'&quot;customerId&quot;'&quot;:&quot;+ customerId + &quot;,&quot;'&quot;transact</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">testing-modules/load-testing-comparison/src/main/resources/scripts/The Grinder/grinder.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        result = request1.POST(&quot;http://localhost:8080/transactions/add&quot;, &quot;{&quot;'&quot;id&quot;'&quot;:&quot; + txnId + &quot;,&quot;'&quot;customerRewardsId&quot;'&quot;:&quot; + rwdId + &quot;,&quot;'&quot;customerId&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libraries-apm/new-relic/newrelic-monitoring/newrelic/newrelic.yml</td>
+                    <td>182</td>
+                    <td class="mono snippet">    # Set this to true to log SQL statements instead of recording them.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libraries-apm/new-relic/newrelic-monitoring/newrelic/newrelic.yml</td>
+                    <td>206</td>
+                    <td class="mono snippet">    # Set this to 0 to always report the slowest transaction trace.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libraries-apm/new-relic/currency-converter/newrelic/newrelic.yml</td>
+                    <td>222</td>
+                    <td class="mono snippet">    # Set this to true to log SQL statements instead of recording them.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libraries-apm/new-relic/currency-converter/newrelic/newrelic.yml</td>
+                    <td>246</td>
+                    <td class="mono snippet">    # Set this to 0 to always report the slowest transaction trace.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">testing-modules/jmeter-2/test-plans/outcome/sbadmin2-1.0.7/bower_components/flot.tooltip/js/jquery.flot.js</td>
+                    <td>1083</td>
+                    <td class="mono snippet">        function processData() {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">testing-modules/jmeter-2/test-plans/outcome/sbadmin2-1.0.7/bower_components/flot/jquery.flot.js</td>
+                    <td>1083</td>
+                    <td class="mono snippet">        function processData() {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spring-security-modules/spring-security-web-rest/src/main/java/com/baeldung/web/error/CustomAccessDeniedHandler.java</td>
+                    <td>19</td>
+                    <td class="mono snippet">        response.getOutputStream().print(&quot;Error Message Goes Here&quot;);</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [2.2, 2.2];
+        const matches = [1129, 1129];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

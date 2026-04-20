@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — vllm-project/vllm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>vllm-project/vllm</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2356</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">3898</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,145,514</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">4290</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(828 hits · 1656 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>71</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>73</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>263</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>265</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>300</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>302</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>583</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>585</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>855</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>857</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>950</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>952</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1088</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1094</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1182</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1184</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1411</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>1413</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>12</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>45</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>60</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>62</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>96</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>98</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>119</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>121</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>133</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_ray_env.py</td>
+                    <td>135</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>174</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>176</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>214</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>216</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>238</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>240</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>270</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>272</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>388</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>390</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>418</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>420</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>523</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>525</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>584</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>586</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 778 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(327 hits · 654 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/install_deepgemm.sh</td>
+                    <td>83</td>
+                    <td class="mono snippet"># Create a temporary directory for the build</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/report_build_time_ninja.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    # Create a list that is in order by time stamp and has entries for the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pre_commit/update-dockerfile-graph.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet">  # Define the target file path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>523</td>
+                    <td class="mono snippet">                # Create a copy to avoid modifying the original dict</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>561</td>
+                    <td class="mono snippet">            # Create a dedicated process group so we can kill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1266</td>
+                    <td class="mono snippet">        # Create a unique temporary file to store exception info from child</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1385</td>
+                    <td class="mono snippet">        # Create a process with environment variable set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_access_log_filter.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">        # Create a logger with our filter (simulating uvicorn.access)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_access_log_filter.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">        # Create a custom handler that tracks messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_config.py</td>
+                    <td>595</td>
+                    <td class="mono snippet">    # Create a new mock and run the method with the same S3 URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_logger.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">    # Create a mock logger to capture log calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">    # Create a CPU tensor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">        # Create a CPU tensor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>642</td>
+                    <td class="mono snippet">    # Create a CPU tensor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>905</td>
+                    <td class="mono snippet">    # Create a tensor queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_serial_utils.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">    # Create a sample Python object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_serial_utils.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">    # Create a sample tensor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_serial_utils.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">    # Create a sample numpy array</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_serial_utils.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">    # Create a request with a non-multimodal tensor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/test_serial_utils.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">    # Create a request with None for the tensor field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/metrics/test_ray_metrics.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # Create the actor and call the async method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/attention/test_mla_backends.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">        # Create a realistic slot mapping that corresponds to the block table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/attention/test_mla_backends.py</td>
+                    <td>1122</td>
+                    <td class="mono snippet">        # Create a summary for the single-line failure message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/attention/test_attention_backends.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">    # Create a realistic slot mapping that corresponds to the block table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/logits_processors/test_correctness.py</td>
+                    <td>815</td>
+                    <td class="mono snippet">    # Define a shuffled batch of requests which individually use a different</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/logits_processors/test_custom_offline.py</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Create a mixture of requests which do and don't utilize the dummy logitproc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/logits_processors/test_custom_offline.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">    # Create a vLLM instance and load custom logitproc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/logits_processors/test_custom_offline.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    # Create a reference vLLM instance without custom logitproc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">    # Create a list of KVCacheBlock objects</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">    # Create a FreeKVCacheBlockQueue with these blocks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>293</td>
+                    <td class="mono snippet">    # Create an empty FreeKVCacheBlockQueue with these blocks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>341</td>
+                    <td class="mono snippet">    # Create an empty FreeKVCacheBlockQueue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">    # Create an empty FreeKVCacheBlockQueue with these blocks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>415</td>
+                    <td class="mono snippet">    # Create a list of KVCacheBlock objects</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>418</td>
+                    <td class="mono snippet">    # Create a FreeKVCacheBlockQueue with these blocks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>1310</td>
+                    <td class="mono snippet">    # Create a VllmConfig</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_kv_cache_utils.py</td>
+                    <td>1346</td>
+                    <td class="mono snippet">    # Create a VllmConfig</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>2615</td>
+                    <td class="mono snippet">    # Create a request and schedule it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>2642</td>
+                    <td class="mono snippet">    # Create a high priority request and schedule it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3401</td>
+                    <td class="mono snippet">    # Create a request and schedule it (and to be preempted)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3451</td>
+                    <td class="mono snippet">    # Create a high priority request and schedule it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>4200</td>
+                    <td class="mono snippet">    # Create a text-only request (no mm_features).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/cudagraph/test_cudagraph_dispatch.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        # Create a real LoRAConfig with specialize_active_lora enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_nixl_connector.py</td>
+                    <td>1879</td>
+                    <td class="mono snippet">    # Create a request that triggers do_remote_decode so that</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_lmcache_connector.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">        # Create a mock object that is not LMCacheKVEvents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_moriio_connector.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">    # Define a fake remote engine id for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_decode_bench_connector.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    # Create a request with multiple blocks worth of tokens</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_decode_bench_connector.py</td>
+                    <td>190</td>
+                    <td class="mono snippet">    # Create a request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_decode_bench_connector.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">    # Create a request with just 1 token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_decode_bench_connector.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">    # Create a request with 2 tokens</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 277 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(530 hits · 558 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>464</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>475</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>808</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>879</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/generate_cmake_presets.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">        print(f&quot;Error writing file: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/install_nixl_from_source_ubuntu.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>601</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>638</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>754</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>789</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>976</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/profiler/nsys_profile_tools/gputrc2graph.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/vllm-rocm/pin_rocm_dependencies.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>1218</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>1479</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>476</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1295</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1318</td>
+                    <td class="mono snippet">                    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1409</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1456</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1671</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>308</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>443</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>532</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>570</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/test_tensor_ipc_queue.py</td>
+                    <td>721</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/utils.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_offload/test_shared_offload_region.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/shutdown/test_forward_error.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/shutdown/test_processor_error.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_hf3fs_client.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_multi_connector.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/utils.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/toy_proxy_server.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/toy_proxy_server.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">        print(f&quot;Error occurred in disagg prefill proxy server - {api} endpoint&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/test_disagg_accuracy.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">            print(f&quot;Error writing to file: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/test_disagg_accuracy.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">            print(f&quot;Error writing to file: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_online_batch_invariance.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        except Exception as e:  # pragma: no cover</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/distributed/test_external_lb_dp.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 480 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(313 hits · 313 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>776</td>
+                    <td class="mono snippet">            # Check if the upstream_main_commit exists in the local repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/install_torchcodec_rocm.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Check if torchcodec is already installed and working</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>530</td>
+                    <td class="mono snippet">    # Check if this is an MLA backend by parent class or naming</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/generate_attention_backend_docs.py</td>
+                    <td>993</td>
+                    <td class="mono snippet">            # Check if this is the &quot;if use_mla:&quot; branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/check_forbidden_imports.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">            # Check if it's allowed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/update-dockerfile-graph.sh</td>
+                    <td>10</td>
+                    <td class="mono snippet"># Check if docker/Dockerfile is among the provided files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/update-dockerfile-graph.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet">  # Check if Docker is installed and running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pre_commit/update-dockerfile-graph.sh</td>
+                    <td>71</td>
+                    <td class="mono snippet">  # Check if the graph has changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/vllm-rocm/pin_rocm_dependencies.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">        # Check if this line is for one of our custom packages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">        # Set this to avoid hanging issue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>860</td>
+                    <td class="mono snippet">        # Set this to avoid hanging issue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">                    os.kill(spid, 0)  # Check if still alive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils.py</td>
+                    <td>1372</td>
+                    <td class="mono snippet">        # Check if we're already in a subprocess</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_config.py</td>
+                    <td>379</td>
+                    <td class="mono snippet">    # Check if LONGCHAT_ROPE_PARAMETERS entries are in longchat_model_config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_logger.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">        # Set max_log_len to 10</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/attention/test_mla_backends.py</td>
+                    <td>761</td>
+                    <td class="mono snippet">        # Set num_speculative_tokens to query_len - 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/attention/test_sparse_mla_backends.py</td>
+                    <td>611</td>
+                    <td class="mono snippet">    # Set some to -1 to test masking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/attention/test_sparse_mla_backends.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">    # Set some to out of bounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/attention/test_sparse_mla_backends.py</td>
+                    <td>671</td>
+                    <td class="mono snippet">    # Set some to -1 to test masking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/attention/test_sparse_mla_backends.py</td>
+                    <td>675</td>
+                    <td class="mono snippet">    # Set some to out of bounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/logits_processors/test_correctness.py</td>
+                    <td>491</td>
+                    <td class="mono snippet">        # Check if we're in thinking mode and validate token counting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>1965</td>
+                    <td class="mono snippet">                # Verify if position length is identical</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>2860</td>
+                    <td class="mono snippet">    # Check if scheduled_encoder_inputs is empty as expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3212</td>
+                    <td class="mono snippet">    # Set up to test different encoder cache existence scenario after preemption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3542</td>
+                    <td class="mono snippet">    # Set up to test different encoder cache existence scenario after preemption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/core/utils.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">                # Verify if position length is identical</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/extract_hidden_states_integration/predictable_llama.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        # Check if we need auxiliary hidden states</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/config_sweep_accuracy_test.sh</td>
+                    <td>89</td>
+                    <td class="mono snippet"># Check if cross-layers is enabled (non-empty)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>273</td>
+                    <td class="mono snippet">        # Check if tokens match first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>554</td>
+                    <td class="mono snippet">        # Check if tokens match first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>784</td>
+                    <td class="mono snippet">            # Check if tokens match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>802</td>
+                    <td class="mono snippet">            # Check if logprobs match bitwise</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/spec_decode/test_acceptance_length.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">    # Check if get_valid_backends is actually defined in the platform class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/run_epd_correctness_test.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Set 1 to use multimodal prompts; else to use text-only</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/test_epd_correctness.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">    # Check if server is ready</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/e2e/spec_decode/test_async_spec_decode.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">            # Increment counter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/engine/test_engine_core_client.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">        # Check if all request IDs in outputs have finished</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/engine/utils.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">    # Check if the sampled_token_id occurs in choice_tensor[1:]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils_/test_network_utils.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    # Check if IPv6 is supported by trying to create an IPv6 socket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tool_parsers/test_minimax_tool_parser.py</td>
+                    <td>494</td>
+                    <td class="mono snippet">            # Check if function name is sent (should happen only once)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tool_parsers/test_minimax_tool_parser.py</td>
+                    <td>500</td>
+                    <td class="mono snippet">            # Check if arguments are sent incrementally</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        # Check if the slice from the current position matches the target sequence</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_moe_layer.py</td>
+                    <td>1667</td>
+                    <td class="mono snippet">    # Check if enough GPUs available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_rocm_aiter_topk.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># Check if aiter package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_rocm_aiter_topk.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    # Check if the op exists in torch.ops.vllm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_rocm_aiter_topk.py</td>
+                    <td>38</td>
+                    <td class="mono snippet">    # Check if the op is callable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_rocm_aiter_topk.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    # Check if the op exists in torch.ops.vllm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/kernels/moe/test_rocm_aiter_topk.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    # Check if the op is callable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/evals/gsm8k/gsm8k_eval.py</td>
+                    <td>297</td>
+                    <td class="mono snippet">    # Print results to terminal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/distributed/test_eplb_execute.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">                # Check if the weights are correct</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 263 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(42 hits · 210 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">setup.py</td>
+                    <td>623</td>
+                    <td class="mono snippet">    &quot;build_tag&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">setup.py</td>
+                    <td>627</td>
+                    <td class="mono snippet">    &quot;variant&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>512</td>
+                    <td class="mono snippet">        &quot;M &gt; 256 &amp;&amp; K &lt;= 16384 &amp;&amp; N &lt;= 4096&quot;: ((128, 128), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>515</td>
+                    <td class="mono snippet">        &quot;M &gt; 128 &amp;&amp; K &lt;= 4096 &amp;&amp; N &lt;= 4096&quot;: ((128, 64), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>516</td>
+                    <td class="mono snippet">        &quot;M &gt; 128 &amp;&amp; K &lt;= 8192 &amp;&amp; N &lt;= 8192&quot;: ((128, 128), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>519</td>
+                    <td class="mono snippet">        &quot;M &gt; 64 &amp;&amp; K &lt;= 4069 &amp;&amp; N &lt;= 4069&quot;: ((128, 32), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>520</td>
+                    <td class="mono snippet">        &quot;M &gt; 64 &amp;&amp; K &lt;= 4069 &amp;&amp; N &lt;= 8192&quot;: ((128, 64), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">        &quot;M &gt; 64 &amp;&amp; K &gt;= 8192 &amp;&amp; N &gt;= 12288&quot;: ((256, 128), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">        &quot;M &gt; 32 &amp;&amp; K &lt;= 6144 &amp;&amp; N &lt;= 6144&quot;: ((128, 16), (1, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>525</td>
+                    <td class="mono snippet">        &quot;M &gt; 32 &amp;&amp; K &gt;= 16384 &amp;&amp; N &gt;= 12288&quot;: ((256, 64), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>528</td>
+                    <td class="mono snippet">        &quot;M &gt; 16 &amp;&amp; K &lt;= 12288 &amp;&amp; N &lt;= 8192&quot;: ((128, 32), (2, 1, 1)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/attention/test_trtllm_attention_integration.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">    # Randomly permute blocks (starting from block 1; block 0 is null).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/attention/test_mla_backends.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">    # Permute the context blocks (excluding block 0 which is null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/attention/test_attention_backends.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">    # Permute the context blocks (excluding block 0 which is null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>2607</td>
+                    <td class="mono snippet">        num_blocks=5,  # Can hold 64 tokens (first block is null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3389</td>
+                    <td class="mono snippet">        num_blocks=15,  # can hold 244 tokens with 14 blocks (first block is null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/core/test_scheduler.py</td>
+                    <td>3630</td>
+                    <td class="mono snippet">        num_blocks=11,  # Can hold 160 tokens (first block is null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/cudagraph/test_cudagraph_mode.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">    # when above code raises, `llm` may be undefined, so we need to catch that</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/v1/cudagraph/test_cudagraph_mode.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # when above code raises, `llm` may be undefined, so we need to catch that</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_granite_tool_parser.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    &quot;null_field&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_gemma4_tool_parser.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        # instead of `{&quot;param&quot;: null}` for nullable tool parameters.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_gemma4_tool_parser.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        assert json.dumps(result) == '{&quot;param&quot;: null}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_granite_20b_fc_tool_parser.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    &quot;null_field&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_olmo3_tool_parser.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    &quot;role=null, &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_olmo3_tool_parser.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">    '&quot;role&quot;: null, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_pythonic_tool_parser.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    '&quot;role&quot;: null, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_deepseekv3_tool_parser.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">                &quot;&quot;&quot;&quot;bool_field&quot;: true, &quot;null_field&quot;: null, &quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_internlm2_tool_parser.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    &quot;null_field&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_llama4_pythonic_tool_parser.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    '&quot;role&quot;: null, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_phi4mini_tool_parser.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">    &quot;null_field&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_longcat_tool_parser.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    &quot;null_field&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tool_parsers/test_hunyuan_a13b_tool_parser.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">            '&lt;tool_calls&gt;[{&quot;name&quot;: &quot;get_weather&quot;, &quot;arguments&quot;: {&quot;city&quot;: &quot;San Francisco&quot;, &quot;metric&quot;: &quot;celsius&quot;}}, {&quot;name&quot;: &quot;register_user&quot;, &quot;arguments&quot;:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/_custom_ops.py</td>
+                    <td>1829</td>
+                    <td class="mono snippet">        input_tensor: The input tensor with gate || up layout [m_topk, k*2]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/_custom_ops.py</td>
+                    <td>1849</td>
+                    <td class="mono snippet">    assert k_times_2 % 2 == 0, &quot;input width must be even (gate || up layout)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/_custom_ops.py</td>
+                    <td>1958</td>
+                    <td class="mono snippet">    assert k_times_2 % 2 == 0, &quot;input width must be even (gate || up layout)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/v1/core/single_type_kv_cache_manager.py</td>
+                    <td>651</td>
+                    <td class="mono snippet">        [null, null, block 3], otherwise, we return [null, null]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/v1/core/single_type_kv_cache_manager.py</td>
+                    <td>656</td>
+                    <td class="mono snippet">        we return 4 blocks[null, null, null, null]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/v1/core/single_type_kv_cache_manager.py</td>
+                    <td>697</td>
+                    <td class="mono snippet">        # result [null] [null] ... [null] [hit block 1 (1st block contain</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/tool_parsers/utils.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">    (null, true, false) that some models produce instead of Python</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">vllm/distributed/kv_transfer/kv_connector/v1/flexkv_connector.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">            cd FlexKV &amp;&amp; bash build.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">examples/offline_inference/prefix_caching_flexkv.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">        2. cd FlexKV &amp;&amp; bash build.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.buildkite/scripts/generate-nightly-index.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">                &quot;build_tag&quot;: null,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(113 hits · 196 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">csrc/quantization/machete/generate.py</td>
+                    <td>435</td>
+                    <td class="mono snippet">        # For now, we can just use the first accumulator type seen since</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/logits_processors/test_custom_offline.py</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Create a mixture of requests which do and don't utilize the dummy logitproc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/spec_decode/test_tree_attention.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ForwardContext) that is not available in this test harness, but whose</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/spec_decode/test_tree_attention.py</td>
+                    <td>76</td>
+                    <td class="mono snippet"># Backends with known test-harness incompatibilities - see the TODOs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/v1/spec_decode/test_tree_attention.py</td>
+                    <td>286</td>
+                    <td class="mono snippet">            # ForwardContext that isn't available in this test harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">            # Otherwise, just add the current token and move to the next one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_glm4_moe_tool_parser.py</td>
+                    <td>294</td>
+                    <td class="mono snippet">    # depending on how robust we want the parsing to be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/kernels/mamba/test_mamba_mixer2.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">    # - utilize mock patching to disable TP when</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/distributed/test_pynccl.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">    # Essentially this is an all-gather operation.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/distributed/test_context_parallel.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    # .buildkite/lm-eval-harness/configs/DeepSeek-V2-Lite-Chat.yaml</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/distributed/test_context_parallel.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    # .buildkite/lm-eval-harness/configs/Qwen2.5-1.5B-Instruct.yaml</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/model_executor/test_qwen3_omni.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">            # Regular token, just add it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/env_override.py</td>
+                    <td>349</td>
+                    <td class="mono snippet"># functions just return True.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/v1/attention/backends/flash_attn.py</td>
+                    <td>282</td>
+                    <td class="mono snippet">    # but for now just set it to `UNIFORM_BATCH` to get use to drop down</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/v1/attention/backends/utils.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">    #  then we can simply use a cdiv for the rest.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/v1/attention/ops/triton_decode_attention.py</td>
+                    <td>362</td>
+                    <td class="mono snippet">            # explicitly facilitate overlapping load/compute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/v1/core/encoder_cache_manager.py</td>
+                    <td>321</td>
+                    <td class="mono snippet"># utilize the cache and this class will fold into EncoderCacheManager, as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/v1/spec_decode/eagle.py</td>
+                    <td>1762</td>
+                    <td class="mono snippet">        # Therefore, we can just return the logits.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/v1/worker/gpu_worker.py</td>
+                    <td>613</td>
+                    <td class="mono snippet">            # CUDAGraph memory size and may not utilize all gpu memory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/v1/worker/gpu_worker.py</td>
+                    <td>855</td>
+                    <td class="mono snippet">            # Generate the trace name by combining prefix with comprehensive rank suffix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/v1/worker/gpu/model_runner.py</td>
+                    <td>1075</td>
+                    <td class="mono snippet">            # For piecewise and eager mode, just call model().</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/v1/engine/parallel_sampling.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">            # If streaming, just return the current output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/tool_parsers/llama_tool_parser.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">                # re-set stuff pertaining to progress in the current tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/tool_parsers/jamba_tool_parser.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">                # re-set stuff pertaining to progress in the current tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/tool_parsers/granite_tool_parser.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">                # re-set stuff pertaining to progress in the current tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/tool_parsers/xlam_tool_parser.py</td>
+                    <td>558</td>
+                    <td class="mono snippet">            # If we encounter an error, just return the delta text as regular content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/tool_parsers/granite_20b_fc_tool_parser.py</td>
+                    <td>203</td>
+                    <td class="mono snippet">                # re-set stuff pertaining to progress in the current tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/tool_parsers/step3_tool_parser.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        # Explicit state flags for robust streaming</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/tokenizers/mistral.py</td>
+                    <td>582</td>
+                    <td class="mono snippet">            # if underlying tokenizer is sentencepiece, we just add &quot;�&quot;.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/platforms/cuda.py</td>
+                    <td>578</td>
+                    <td class="mono snippet">        #  users can just use IR op priority directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/distributed/utils.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;A robust barrier to synchronize all ranks.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/distributed/kv_transfer/kv_connector/v1/nixl/worker.py</td>
+                    <td>504</td>
+                    <td class="mono snippet">                    # we can leverage host_buffer for permute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/distributed/kv_transfer/kv_connector/v1/mooncake/mooncake_connector.py</td>
+                    <td>666</td>
+                    <td class="mono snippet">        # Tasks can await async events, so a surplus (2x is a robust heuristic)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/config/parallel.py</td>
+                    <td>566</td>
+                    <td class="mono snippet">        # To make the initialization more robust we retry a few times</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/model_executor/layers/mamba/ops/causal_conv1d.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">                # first chunk and does not have prior-token, so just set to 0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/fused_moe/modular_kernel.py</td>
+                    <td>48</td>
+                    <td class="mono snippet"># The goal is to be able to utilize different communication mechanisms with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/model_executor/layers/fused_moe/runner/moe_runner_base.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">                # Once the MK can be created upfront, we can just pass in the proper</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/fused_moe/prepare_finalize/deepep_ll.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # TODO (varun) : Optimize leverage num_tokens_per_expert counts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/fp8.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">        # For GPUs that lack FP8 hardware support, we can leverage the Marlin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/modelopt.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">        # Normalize quant_algo for robust matching (ModelOpt may emit lowercase).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/fbgemm_fp8.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">        # For GPUs that lack FP8 hardware support, we can leverage the Marlin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/utils/marlin_utils_fp4.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">    # to fully utilize the E4M3 dynamic range (e.g., global_scale=1).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/utils/marlin_utils_fp4.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">    # For GPUs that lack FP4 hardware support, we can leverage the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/utils/marlin_utils_fp8.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # For GPUs that lack FP8 hardware support, we can leverage the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/utils/quant_utils.py</td>
+                    <td>361</td>
+                    <td class="mono snippet">    # Unquantized layer: just return base weights</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/quark/quark_moe.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        # For GPUs that lack FP8 hardware support, we can leverage the Marlin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/layers/quantization/compressed_tensors/transform/module.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">            # do not fold into weight in order to utilize FWHT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/models/grok1.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">    # Check for Grok2-specific attributes (both for robust detection)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/models/deepseek_ocr.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Example of overriding the wrapper class `__init__()` in order to utilize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/models/deepseek_ocr.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Example of overriding the wrapper class `__init__()` in order to utilize</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 63 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(145 hits · 145 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_lmcache_connector.py</td>
+                    <td>567</td>
+                    <td class="mono snippet">        # Step 1: Get events from lmcache engine</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_lmcache_connector.py</td>
+                    <td>576</td>
+                    <td class="mono snippet">        # Step 2: Update connector output (simulate receiving from worker)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_lmcache_connector.py</td>
+                    <td>582</td>
+                    <td class="mono snippet">        # Step 3: Take events</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>433</td>
+                    <td class="mono snippet">    # Step 2: 5 blocks are in use (2 new for remote blocks).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>441</td>
+                    <td class="mono snippet">    # Step 3: finish recving (5 blocks in use)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>450</td>
+                    <td class="mono snippet">    # Step 4: try to schedule, remote request is put to running list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>460</td>
+                    <td class="mono snippet">    # Step 5: Remote request will be put back to waiting list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>468</td>
+                    <td class="mono snippet">    # Step 6: finish the request, free it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">    # Step 7: now we can schedule (with 2 blocks computed),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>489</td>
+                    <td class="mono snippet">    # Step 8: free everything.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>536</td>
+                    <td class="mono snippet">    # Step 2: 3 blocks are in use,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>547</td>
+                    <td class="mono snippet">    # Step 3: finish the request, free it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>556</td>
+                    <td class="mono snippet">    # Step 4: now we can initiate KV transfer (with 2 blocks computed).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>564</td>
+                    <td class="mono snippet">    # Step 5: finish recving (5 blocks in use)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>573</td>
+                    <td class="mono snippet">    # Step 6: schedule remote request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/unit/test_remote_prefill_lifecycle.py</td>
+                    <td>580</td>
+                    <td class="mono snippet">    # Step 7: free everything.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>697</td>
+                    <td class="mono snippet">    # Step 1: Run decode and collect logprobs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/determinism/test_batch_invariance.py</td>
+                    <td>716</td>
+                    <td class="mono snippet">        # Step 2: For each token position, run prefill and compare</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>372</td>
+                    <td class="mono snippet">        # Step 2: Schedule creates NewRequestData</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>387</td>
+                    <td class="mono snippet">        # Step 3: Simulate model runner caching the prompt_token_ids</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>420</td>
+                    <td class="mono snippet">        # Step 6: Verify request state after Cycle 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>446</td>
+                    <td class="mono snippet">        # Step 7: Schedule again - now request uses cached state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">        # Step 8: Calculate num_tokens like gpu_model_runner.py:1284 does</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>494</td>
+                    <td class="mono snippet">        # Step 11: Verify request transitioned to WAITING_FOR_STREAMING_REQ</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>513</td>
+                    <td class="mono snippet">        # Step 12: Add new streaming request with seq_id=1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>525</td>
+                    <td class="mono snippet">        # Step 13: Scheduler schedules the updated session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>543</td>
+                    <td class="mono snippet">        # Step 14: Model runner caches NEW prompt_token_ids reference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_scheduler_streaming.py</td>
+                    <td>556</td>
+                    <td class="mono snippet">        # Step 15: FINAL CRITICAL VERIFICATION</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">    # Step 1: Add initial request with 3 prompt tokens, all computed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    # Step 2: Create streaming update with extended prompt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # Step 3: Verify no free_indices leak (old slot recycled)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">    # Step 1: Add initial request with one audio feature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">    # Step 2: Create streaming update with additional multimodal feature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_v2_streaming.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">    # Step 3: Verify no free_indices leak</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">    # Step 1: Create initial request state with some computed tokens</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">    # Step 2: Create new request data with extended prompt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    # Step 3: Update the request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # Step 4: Verify the request state was updated correctly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    # Step 1: Create initial request state with one multimodal feature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">    # Step 2: Create new request data with additional multimodal feature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">    # Step 3: Update the request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/streaming_input/test_gpu_model_runner_streaming.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">    # Step 4: Verify the request state was updated correctly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/README.md</td>
+                    <td>61</td>
+                    <td class="mono snippet">### Step 1: Baseline</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/README.md</td>
+                    <td>68</td>
+                    <td class="mono snippet">### Step 2: EPD (1E + 1PD)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/README.md</td>
+                    <td>76</td>
+                    <td class="mono snippet">### Step 3: EPD (1E + 1P + 1D)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/run_epd_correctness_test.sh</td>
+                    <td>459</td>
+                    <td class="mono snippet"># Step 1: Run baseline</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/run_epd_correctness_test.sh</td>
+                    <td>462</td>
+                    <td class="mono snippet"># Step 2: Test 1E + 1PD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/run_epd_correctness_test.sh</td>
+                    <td>465</td>
+                    <td class="mono snippet"># Step 3: Test baseline 1P + 1D</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/ec_connector/integration/run_epd_correctness_test.sh</td>
+                    <td>468</td>
+                    <td class="mono snippet"># Step 4: Test 1E + 1P + 1D</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/models/multimodal/generation/test_vit_backend_functionality.py</td>
+                    <td>415</td>
+                    <td class="mono snippet">    # Step 1: Backend filtering</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 95 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(8 hits · 80 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/v1/e2e/general/test_mamba_prefix_cache.py</td>
+                    <td>807</td>
+                    <td class="mono snippet">        assert engine.llm_engine.engine_core.engine_core.scheduler.reset_prefix_cache()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/distributed/test_torchrun_example_moe.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">    llm.llm_engine.model_executor.driver_worker.worker.model_runner.model.parameters()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/distributed/test_torchrun_example.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">    llm.llm_engine.model_executor.driver_worker.worker.model_runner.model.parameters()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/models/language/generation/test_gemma.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">                    lambda self: self.model_runner.model.language_model.model.normalizer.cpu().item()  # noqa: E501</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/models/language/generation/test_gemma.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">                    lambda self: self.model_runner.model.model.normalizer.cpu().item()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/compile/test_aot_compile.py</td>
+                    <td>519</td>
+                    <td class="mono snippet">            vllm.model_executor.layers.activation._ACTIVATION_REGISTRY._dict.clear()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">vllm/v1/spec_decode/eagle.py</td>
+                    <td>1408</td>
+                    <td class="mono snippet">                        self.model.model.embed_tokens.weight.cpu(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">vllm/model_executor/layers/fla/ops/utils.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">            triton.runtime.driver.active.utils.get_device_properties(i)[</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(17 hits · 34 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_kimi_k2_tool_parser.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">                        '{&quot;to&quot;: &quot;user@example.com&quot;, &quot;subject&quot;: &quot;Daily Update&quot;}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_kimi_k2_tool_parser.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">                    {&quot;to&quot;: &quot;user@example.com&quot;, &quot;subject&quot;: &quot;Daily Update&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">            &quot;&quot;&quot;[TOOL_CALLS] [{&quot;arguments&quot;:{&quot;name&quot;: &quot;John Doe&quot;}, &quot;name&quot;: &quot;get_age&quot;}]&quot;&quot;&quot;,  # noqa: E501</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>303</td>
+                    <td class="mono snippet">                                &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>637</td>
+                    <td class="mono snippet">            &quot;&quot;&quot;[TOOL_CALLS] [{&quot;arguments&quot;: {&quot;name&quot;: &quot;John Doe&quot;}, &quot;name&quot;: &quot;get_age&quot;}]&quot;&quot;&quot;,  # noqa: E501</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>644</td>
+                    <td class="mono snippet">                                &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>980</td>
+                    <td class="mono snippet">            &quot;&quot;&quot;[TOOL_CALLS] [{&quot;arguments&quot;: {&quot;name&quot;: &quot;John Doe&quot;}, &quot;name&quot;: &quot;get_age&quot;}]&quot;&quot;&quot;,  # noqa: E501</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_mistral_tool_parser.py</td>
+                    <td>987</td>
+                    <td class="mono snippet">                                &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_olmo3_tool_parser.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    &quot;register_user(name='John Doe', &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_olmo3_tool_parser.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    &quot;register_user(name='John Doe', &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_olmo3_tool_parser.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">    arguments='{&quot;name&quot;: &quot;John Doe&quot;, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_pythonic_tool_parser.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    &quot;register_user(name='John Doe', &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_pythonic_tool_parser.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    arguments='{&quot;name&quot;: &quot;John Doe&quot;, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_hunyuan_a13b_tool_parser.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">            '&lt;tool_calls&gt;[{&quot;name&quot;: &quot;get_weather&quot;, &quot;arguments&quot;: {&quot;city&quot;: &quot;San Francisco&quot;, &quot;metric&quot;: &quot;celsius&quot;}}, {&quot;name&quot;: &quot;register_user&quot;, &quot;arguments&quot;:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tool_parsers/test_hunyuan_a13b_tool_parser.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">                        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/benchmarks/test_txt_slices_dataset.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/benchmarks/test_txt_slices_dataset.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CMakeLists.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet"># When building directly using CMake, make sure you run the install step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CMakeLists.txt</td>
+                    <td>11</td>
+                    <td class="mono snippet"># If you want to only build one target, make sure to install it manually:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/models/multimodal/generation/test_common.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">#     model arch happens to be a substring of another one, you can add a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/models/multimodal/generation/test_common.py</td>
+                    <td>85</td>
+                    <td class="mono snippet"># NOTE you can add --collect-only to any of the above commands to see</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/distributed/kv_transfer/kv_connector/v1/nixl/worker.py</td>
+                    <td>1888</td>
+                    <td class="mono snippet">        # while processing the next batch, we make sure to only set an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">vllm/model_executor/models/interfaces.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        as a language model component.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/contributing/model/multimodal.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">    Below we provide a boilerplate of a typical implementation pattern of [embed_multimodal][vllm.model_executor.models.interfaces.SupportsMultiModal.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/multimodal_inputs.md</td>
+                    <td>563</td>
+                    <td class="mono snippet">Here is a simple example using Phi-3.5-Vision.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/multimodal_inputs.md</td>
+                    <td>697</td>
+                    <td class="mono snippet">Instead of `image_url`, you can pass a video file via `video_url`. Here is a simple example using [LLaVA-OneVision](https://huggingface.co/llava-hf/ll</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/multimodal_inputs.md</td>
+                    <td>800</td>
+                    <td class="mono snippet">Here is a simple example using Ultravox-v0.5-1B.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/structured_outputs.md</td>
+                    <td>227</td>
+                    <td class="mono snippet">Here is a simple example demonstrating how to get structured output using Pydantic models:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/models/pooling_models/embed.md</td>
+                    <td>231</td>
+                    <td class="mono snippet">If the model has a [chat template](../../serving/openai_compatible_server.md#chat-template), you can replace `inputs` with a list of `messages` (same </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/others/lmcache/disagg_prefill_lmcache_v1/disagg_vllm_launcher.sh</td>
+                    <td>24</td>
+                    <td class="mono snippet"># secure random value. This is set to a fixed value for demonstration purposes only.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/rl/rlhf_ipc.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">  for demonstration purposes we simply zero out the weights.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.buildkite/test-amd.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># In this file, you can add more tests to run either by adding a new step or</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(13 hits · 13 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/vllm-rocm/generate-rocm-wheels-root-index.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/docker-bake.hcl</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/run_multi_connector_accuracy_test.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/spec_decode_acceptance_test.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/v1/kv_connector/nixl_integration/run_multi_connector_edge_case_test.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/features/disagg_prefill.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">## Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/offline_inference/mistral-small.py</td>
+                    <td>51</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/offline_inference/chat_with_tools.py</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/online_serving/run_cluster.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/online_serving/multi-node-serving.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmarks/attention_benchmarks/configs/mla_prefill.yaml</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.buildkite/scripts/cache-rocm-base-wheels.sh</td>
+                    <td>10</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.buildkite/scripts/tool_call/run-bfcl-eval.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">examples/offline_inference/automatic_prefix_caching.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># A prompt containing a large markdown table. The table is randomly generated by GPT-4.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/online_serving/disaggregated_serving_p2p_nccl_xpyd/disagg_proxy_p2p_nccl_xpyd.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">async def handle_request():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/online_serving/disaggregated_serving/moriio_toy_proxy_server.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">async def handle_request():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmarks/disagg_benchmarks/disagg_prefill_proxy_server.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">    async def handle_request():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmarks/disagg_benchmarks/round_robin_proxy.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">    async def handle_request(self, request):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [3.4, 3.4];
+        const matches = [2358, 2356];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

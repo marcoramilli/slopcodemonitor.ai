@@ -1,0 +1,2929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — rapid7/metasploit-framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>rapid7/metasploit-framework</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">2.5</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">2.5</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2289</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">5083</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,045,769</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">12526</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(1002 hits · 2004 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/gitlab_file_read_rce.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">#### Creating a user</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/lighthouse_studio_unauth_rce_CVE_2025_34300.md</td>
+                    <td>235</td>
+                    <td class="mono snippet">### Create the Lighthouse Survey</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/unix/http/splunk_xslt_authenticated_rce.md</td>
+                    <td>99</td>
+                    <td class="mono snippet">### Creating a Vulnerable Splunk</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/local/ptrace_traceme_pkexec_helper.md</td>
+                    <td>73</td>
+                    <td class="mono snippet"># Create a payload binary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/local/docker_priviledged_container_escape.md</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Create a bind shell using msfvenom</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/craftcms_ftp_template.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">    # Create the DDEV project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/ivanti_connect_secure_rce_cve_2024_37404.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">#### Create a normal user</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/craftcms_preauth_rce_cve_2025_32432.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">    # Create the DDEV project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/windows/local/unquoted_service_path.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">### Creating a Vulnerable Service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/gladinet_storage_path_traversal_cve_2025_11371.md</td>
+                    <td>193</td>
+                    <td class="mono snippet">    # This file contains the mappings of IP addresses to host names. Each</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/gladinet_storage_access_ticket_forge.md</td>
+                    <td>313</td>
+                    <td class="mono snippet">    # This file contains the mappings of IP addresses to host names. Each</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/admin/ldap/shadow_credentials.md</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Create a basic user account</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/admin/ldap/rbcd.md</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Create a basic user account</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/scanner/kerberos/kerberos_login.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">### Creating a single Kerberos ticket (TGT)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/scanner/http/apache_mod_cgi_bash_env.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">### Creating a Vulnerable Environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/scanner/http/graphql_introspection_scanner.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">### Creating a Vulnerable Environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/password/md5_lookup.rb</td>
+                    <td>132</td>
+                    <td class="mono snippet">  # This class is basically an auxiliary module without relying on msfconsole</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/password/vxmaster.rb</td>
+                    <td>112</td>
+                    <td class="mono snippet"># Create the master password list output file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/exploit/metasm_shell.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">#    This file is part of Metasm, the Ruby assembly manipulation suite</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/dev/detect_dead_reference_links.rb</td>
+                    <td>298</td>
+                    <td class="mono snippet">  # Create the final list of URLs and paths</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/dev/msftidy.rb</td>
+                    <td>372</td>
+                    <td class="mono snippet">    if @source =~ /^# This file is part of the Metasploit Framework and may be subject to/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/modules/payload_lengths.rb</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # Create the payload instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/framework/msfconsole_spec.rb</td>
+                    <td>33</td>
+                    <td class="mono snippet">      ## Create a framework object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/framework/msfconsole_spec.rb</td>
+                    <td>113</td>
+                    <td class="mono snippet">      ## Create the rspec Test Case</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/meterpreter_java_spec.rb</td>
+                    <td>65</td>
+                    <td class="mono snippet">      # Initialize the exploit instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/java_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/windows_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/meterpreter_php_spec.rb</td>
+                    <td>56</td>
+                    <td class="mono snippet">      # Initialize the exploit instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/meterpreter_spec_helper.rb</td>
+                    <td>47</td>
+                    <td class="mono snippet">          # Create a new file and write to it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/meterpreter_win32_spec.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">      # Initialize the exploit instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/ffautoregen.rb</td>
+                    <td>11</td>
+                    <td class="mono snippet">    # This class implements a single edit command.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/ffautoregen.rb</td>
+                    <td>34</td>
+                    <td class="mono snippet">      # This method handles the command.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/wiki.rb</td>
+                    <td>24</td>
+                    <td class="mono snippet">    # This class implements a command dispatcher that provides commands to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/wiki.rb</td>
+                    <td>84</td>
+                    <td class="mono snippet">        # Create a table options hash</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/wiki.rb</td>
+                    <td>483</td>
+                    <td class="mono snippet">    # The following methods are added here to keep the initialize method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/sample.rb</td>
+                    <td>14</td>
+                    <td class="mono snippet">    # This class implements a sample console command dispatcher.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/sample.rb</td>
+                    <td>37</td>
+                    <td class="mono snippet">      # This method handles the sample command.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/fzuse.rb</td>
+                    <td>80</td>
+                    <td class="mono snippet">      # This method handles the fzuse command.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/nexpose.rb</td>
+                    <td>495</td>
+                    <td class="mono snippet">          # Create a temporary site</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/msgrpc.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">  # This class implements the msfd plugin interface.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/pcap_log.rb</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of the Metasploit Framework and may be subject to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/db_tracker.rb</td>
+                    <td>13</td>
+                    <td class="mono snippet">    # This class implements a socket communication tracker</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/ips_filter.rb</td>
+                    <td>14</td>
+                    <td class="mono snippet">    # This class implements a socket communication logger</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/socket_logger.rb</td>
+                    <td>12</td>
+                    <td class="mono snippet">    # This class implements a socket communication logger</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/msfd.rb</td>
+                    <td>12</td>
+                    <td class="mono snippet">  # This class implements the msfd plugin interface.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/build.rb</td>
+                    <td>541</td>
+                    <td class="mono snippet">    # Create a new branch based on the commits from https://github.com/rapid7/metasploit-framework/wiki to move</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/build.rb</td>
+                    <td>549</td>
+                    <td class="mono snippet">        # Create a new folder and branch in the old metasploit wiki for where we'd like it to be inside of the metasploit-framework repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/build.rb</td>
+                    <td>556</td>
+                    <td class="mono snippet">          # Create a new folder to move the wiki contents into</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/build.rb</td>
+                    <td>560</td>
+                    <td class="mono snippet">          # Create a new branch + commit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/build.rb</td>
+                    <td>567</td>
+                    <td class="mono snippet">        # Create a new branch that can be used to create a pull request</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 952 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(125 hits · 1250 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/lucee_admin_imgprocess_file_write.md</td>
+                    <td>86</td>
+                    <td class="mono snippet">	at lucee.runtime.type.util.StructSupport.invalidKey(StructSupport.java:67)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/lucee_admin_imgprocess_file_write.md</td>
+                    <td>125</td>
+                    <td class="mono snippet">	at lucee.runtime.type.util.StructSupport.invalidKey(StructSupport.java:67)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>105</td>
+                    <td class="mono snippet">	at com.vmware.vsan.client.services.ProxygenController.invokeService(ProxygenController.java:130)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>106</td>
+                    <td class="mono snippet">	at com.vmware.vsan.client.services.ProxygenController.invokeServiceWithJson(ProxygenController.java:64)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>111</td>
+                    <td class="mono snippet">	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:205)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:133)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>113</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:97)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>114</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:854)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>115</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:765)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>116</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:85)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:967)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>118</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:901)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>119</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:970)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>120</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:872)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>122</td>
+                    <td class="mono snippet">	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:846)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>125</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.EndpointRegistration.service(EndpointRegistration.java:153)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>126</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:50)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>127</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.WelcomeFileFilter.doFilter(WelcomeFileFilter.java:48)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>131</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>133</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>134</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>135</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>137</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>138</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>139</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>141</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>142</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>143</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>145</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>146</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>147</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>149</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>150</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>151</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>153</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>154</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>155</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>157</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>158</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>159</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>161</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>162</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>163</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>165</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>166</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>167</td>
+                    <td class="mono snippet">	at com.vmware.o6jia.context.web.filter.ContextPathAwareDelegatingFilter.doFilter(ContextPathAwareDelegatingFilter.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>169</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.registration.FilterRegistration.doFilter(FilterRegistration.java:121)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_vcenter_vsan_health_rce.md</td>
+                    <td>170</td>
+                    <td class="mono snippet">	at org.eclipse.equinox.http.servlet.internal.servlet.FilterChainImpl.doFilter(FilterChainImpl.java:45)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 75 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(364 hits · 728 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/skyvern_ssti_cve_2025_49619.md</td>
+                    <td>62</td>
+                    <td class="mono snippet">    # =========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/skyvern_ssti_cve_2025_49619.md</td>
+                    <td>64</td>
+                    <td class="mono snippet">    # =========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/invoiceshelf_unauth_rce_cve_2024_55556.md</td>
+                    <td>25</td>
+                    <td class="mono snippet"> #-------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/invoiceshelf_unauth_rce_cve_2024_55556.md</td>
+                    <td>28</td>
+                    <td class="mono snippet"> #-------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/osticket_arbitrary_file_read.md</td>
+                    <td>965</td>
+                    <td class="mono snippet"># ====================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/osticket_arbitrary_file_read.md</td>
+                    <td>984</td>
+                    <td class="mono snippet"># ---------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/osticket_arbitrary_file_read.md</td>
+                    <td>1005</td>
+                    <td class="mono snippet"># ===================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>123</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>125</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>153</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>155</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>210</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>212</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>268</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>270</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>407</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>409</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>430</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>432</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>452</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>454</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>539</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>541</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>564</td>
+                    <td class="mono snippet">    #------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/openvas.rb</td>
+                    <td>566</td>
+                    <td class="mono snippet">    #------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>77</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>163</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>165</td>
+                    <td class="mono snippet">      #--------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>321</td>
+                    <td class="mono snippet">    #------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">plugins/besecure.rb</td>
+                    <td>323</td>
+                    <td class="mono snippet">    #------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>60</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>77</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>108</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>132</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>156</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>189</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>229</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>281</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/ms_icpr_spec.rb</td>
+                    <td>356</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/http/web_enrollment_spec.rb</td>
+                    <td>52</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/http/web_enrollment_spec.rb</td>
+                    <td>83</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/http/web_enrollment_spec.rb</td>
+                    <td>110</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/http/web_enrollment_spec.rb</td>
+                    <td>174</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/msf/core/exploit/remote/http/web_enrollment_spec.rb</td>
+                    <td>208</td>
+                    <td class="mono snippet">  # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/rex/proto/x509/request_spec.rb</td>
+                    <td>381</td>
+                    <td class="mono snippet">  # ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/rex/proto/x509/request_spec.rb</td>
+                    <td>425</td>
+                    <td class="mono snippet">  # ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/lib/rex/proto/x509/request_spec.rb</td>
+                    <td>550</td>
+                    <td class="mono snippet">  # ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/meterpreter/event_manager.rb</td>
+                    <td>10</td>
+                    <td class="mono snippet">#-------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/meterpreter/event_manager.rb</td>
+                    <td>37</td>
+                    <td class="mono snippet">#-------------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 314 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(229 hits · 334 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/mobileiron_core_log4shell.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">1. Obtain a `mobileiron-##.#.#.#-##.iso` file, the following steps utilize `mobileiron-10.6.0.0-23.iso`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/skyvern_ssti_cve_2025_49619.md</td>
+                    <td>82</td>
+                    <td class="mono snippet">    # In your Microsoft Azure subscription, you will need to provision the OpenAI service and deploy a model, in order to utilize it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/centreon_useralias_exec.md</td>
+                    <td>29</td>
+                    <td class="mono snippet">  5. Install [Nagios Plugins](https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/3/en/quickstart-ubuntu.html) starting at step 6.  The plu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/vmware_view_planner_4_6_uploadlog_rce.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">### VMWare View Planner 4.6.0.0 OVA (viewplanner-harness-4.6.0.0-16995088_OVF10.ova)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/gather/cve_2021_27850_apache_tapestry_hmac_key.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">A vulnerable version of Apache Tapestry can be downloaded from [here](https://downloads.apache.org/tapestry/apache-tapestry-5.7.0-bin.zip). I highly r</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/client/hwbridge/connect.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">This module was also tested with the [Particle](https://Particle.io) Photon board.  To utilize a Particle.io Photon board you</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/exploits/test/egghunter.rb</td>
+                    <td>76</td>
+                    <td class="mono snippet">    # just return otherwise</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/java_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/java_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/windows_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/functional/meterpreter/windows_meterpreter_specs.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">    ## This file is intended to be used in conjunction with a harness,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/lab.rb</td>
+                    <td>103</td>
+                    <td class="mono snippet">          # then you are probably specifying a full path so let's just use normal file completion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/alias.rb</td>
+                    <td>233</td>
+                    <td class="mono snippet">          # don't mess around, just return false in this case, prevents wasted processing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/alias.rb</td>
+                    <td>245</td>
+                    <td class="mono snippet">          # don't mess around, just return false if we match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/acceptance/mssql_spec.rb</td>
+                    <td>149</td>
+                    <td class="mono snippet">  # Run the given block in a 'test harness' which will handle all of the boilerplate for asserting module results, cleanup, and artifact tracking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/acceptance/mysql_spec.rb</td>
+                    <td>125</td>
+                    <td class="mono snippet">  # Run the given block in a 'test harness' which will handle all of the boilerplate for asserting module results, cleanup, and artifact tracking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/acceptance/postgres_spec.rb</td>
+                    <td>133</td>
+                    <td class="mono snippet">  # Run the given block in a 'test harness' which will handle all of the boilerplate for asserting module results, cleanup, and artifact tracking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/acceptance/ldap_spec.rb</td>
+                    <td>150</td>
+                    <td class="mono snippet">  # Run the given block in a 'test harness' which will handle all of the boilerplate for asserting module results, cleanup, and artifact tracking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/acceptance/smb_spec.rb</td>
+                    <td>133</td>
+                    <td class="mono snippet">  # Run the given block in a 'test harness' which will handle all of the boilerplate for asserting module results, cleanup, and artifact tracking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/support/acceptance/countdown.rb</td>
+                    <td>3</td>
+                    <td class="mono snippet">  # A utility class which can be used in conjunction with Timeout mechanisms</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/support/matchers/query_the_database.rb</td>
+                    <td>9</td>
+                    <td class="mono snippet">      # * &lt;tt&gt;with&lt;/tt&gt; - Used in conjunction with &lt;tt&gt;when_calling&lt;/tt&gt; to pass parameters to the method to examine.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/lib/msf/core/rhosts_walker_spec.rb</td>
+                    <td>33</td>
+                    <td class="mono snippet">      # Slice the datastore options that we care about, ignoring other values that just add noise such as VERBOSE/WORKSPACE/etc.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/Python-Extension.md</td>
+                    <td>171</td>
+                    <td class="mono snippet">#### meterpreter.elevate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/GSoC-2022-Project-Ideas.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">For any questions about these projects reach out on the Metasploit Slack in the `#gsoc` channel or DM one of the mentors using the Slack contacts list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/GSoC-2023-Project-Ideas.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">For any questions about these projects reach out on the Metasploit Slack in the `#gsoc` channel or DM one of the mentors using the Slack contacts list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/Handling-Module-Failures-with-fail_with.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">* [Comprehensive list of `fail_with` parameters](#comprehensive-list-of-fail_with-parameters)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/meterpreter/scraper.rb</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Some of this script was developed in conjunction with _MAX_ (max[at]remote-exploit.org)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/ui/console/module_action_commands.rb</td>
+                    <td>11</td>
+                    <td class="mono snippet"># A mixin to enable the ModuleCommandDispatcher to leverage module ACTIONs as commands.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/modules.rb</td>
+                    <td>1794</td>
+                    <td class="mono snippet">                # copying module names in conjunction with the `use &lt;paste-buffer&gt;` command</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/common.rb</td>
+                    <td>102</td>
+                    <td class="mono snippet">      # For short lists, just set it directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/session.rb</td>
+                    <td>238</td>
+                    <td class="mono snippet">              # then you are probably specifying a full path so let's just use normal file completion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/resource.rb</td>
+                    <td>92</td>
+                    <td class="mono snippet">              # then you are probably specifying a full path so let's just use normal file completion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/dns.rb</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Hard to auto-complete a rule with any meaningful value; just return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/db.rb</td>
+                    <td>324</td>
+                    <td class="mono snippet">    # help methods, just use it's &quot;-h&quot; so we don't have to recreating</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit.rb</td>
+                    <td>307</td>
+                    <td class="mono snippet">        # Allow all exploits to leverage context keyed encoding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/payload_set.rb</td>
+                    <td>298</td>
+                    <td class="mono snippet">  # the payload set we simply create an instance of the class and do some</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit_event.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet"># notifications about events pertaining to exploitation.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit/seh.rb</td>
+                    <td>9</td>
+                    <td class="mono snippet"># robust fashion using the Rex::Exploitation::Seh class.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/tincd_exploit_client.rb</td>
+                    <td>246</td>
+                    <td class="mono snippet">    # modified decrypt routine, simply use the cipher as is.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/browser_autopwn2.rb</td>
+                    <td>76</td>
+                    <td class="mono snippet">    # again, it will just return whatever's been stored in the @browser_profile_prefix instance variable.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/socket_server.rb</td>
+                    <td>140</td>
+                    <td class="mono snippet">          # payload. In that case, just use the address of the interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit/remote/jndi_injection.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This is a mixin containing methods to facilitate exploiting JNDI injection flaws (such as Log4Shell) by using a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/unirpc.rb</td>
+                    <td>50</td>
+                    <td class="mono snippet">              # so just use secure mode to cover all bases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http_client.rb</td>
+                    <td>840</td>
+                    <td class="mono snippet">        # Otherwise just return the signature string for compatibility</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http_client.rb</td>
+                    <td>970</td>
+                    <td class="mono snippet">    # Otherwise just return the signature string for compatibility</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit/remote/telnet.rb</td>
+                    <td>82</td>
+                    <td class="mono snippet">  # This hash is defined in order help facilitate easy debug printing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/exchange.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">            # If we already built the exchange builds array, then just return it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/exchange.rb</td>
+                    <td>147</td>
+                    <td class="mono snippet">            # If we reach here we couldn't find the Exchange Server version, so just return nil to indicate this.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/file.rb</td>
+                    <td>864</td>
+                    <td class="mono snippet">      # just use append to finish the rest</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/windows/cli_parse.rb</td>
+                    <td>146</td>
+                    <td class="mono snippet">    if ma = /^error:.*/i.match(results) # if line starts with Error: just pass to regular parser</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 179 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(278 hits · 278 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/avideo_notify_ffmpeg_unauth_rce.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">    # Check if the file has the correct magic header (first 4 bytes should be 01 00 00 00)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">documentation/modules/auxiliary/scanner/http/apache_normalize_path.md</td>
+                    <td>174</td>
+                    <td class="mono snippet">### Read file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/detect_dead_reference_links.rb</td>
+                    <td>101</td>
+                    <td class="mono snippet">    # Check if the URL is valid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/ldap/samba-ad-setup.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Check if samba is setup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/nessus.rb</td>
+                    <td>309</td>
+                    <td class="mono snippet">        # Check if config file exists and load it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">plugins/wmap.rb</td>
+                    <td>784</td>
+                    <td class="mono snippet">                      # Check if an exclusion regex has been defined</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/meterpreter/process_memdump.rb</td>
+                    <td>111</td>
+                    <td class="mono snippet">    # Check if Allocated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/meterpreter/virusscan_bypass.rb</td>
+                    <td>201</td>
+                    <td class="mono snippet">  # Set registry to run executable at startup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/meterpreter/service_manager.rb</td>
+                    <td>60</td>
+                    <td class="mono snippet"># Check if sufficient privileges are present for certain actions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/meterpreter/hashdump.rb</td>
+                    <td>154</td>
+                    <td class="mono snippet">    #Check if hashes exist (if 20, then we've got a hash)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/meterpreter/hostsedit.rb</td>
+                    <td>40</td>
+                    <td class="mono snippet">#Set path to the hosts file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/driver.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">    # Check if files have been modified and force immediate loading if so</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/driver.rb</td>
+                    <td>664</td>
+                    <td class="mono snippet">      # Check if we want to write the log to file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/driver.rb</td>
+                    <td>672</td>
+                    <td class="mono snippet">        # Check if we want to write the log file to a directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/driver.rb</td>
+                    <td>680</td>
+                    <td class="mono snippet">        # Check if the subdirectory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher.rb</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Check if the item is negative, as this will not always be a range</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/auxiliary.rb</td>
+                    <td>64</td>
+                    <td class="mono snippet">      # Check if this is a scanner module or doesn't target remote hosts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/core.rb</td>
+                    <td>2237</td>
+                    <td class="mono snippet">      # Check if we need to append the default filename if user provided an output directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/ui/console/command_dispatcher/db.rb</td>
+                    <td>2302</td>
+                    <td class="mono snippet">          # Check if the stderr text includes 'root', this only happens if the scan requires root privileges</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/plugin_manager.rb</td>
+                    <td>77</td>
+                    <td class="mono snippet">    # Add it to the list of plugins</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/opt_meterpreter_debug_logging.rb</td>
+                    <td>48</td>
+                    <td class="mono snippet">      # Check if we log to rpath</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/laravel_crypto_killer.rb</td>
+                    <td>16</td>
+                    <td class="mono snippet">  # Check if cipher is valid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/file_dropper.rb</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # Check if file_rm method is available (local exploit, mixin support, module support)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/file_dropper.rb</td>
+                    <td>135</td>
+                    <td class="mono snippet">    # Check if dir_rm method is available (local exploit, mixin support, module support)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/file_dropper.rb</td>
+                    <td>278</td>
+                    <td class="mono snippet">  # Check if the path being removed is the same as the working directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/java.rb</td>
+                    <td>154</td>
+                    <td class="mono snippet">    # Check if the keystore exists from previous run.  If it does, delete it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/tincd_exploit_client.rb</td>
+                    <td>264</td>
+                    <td class="mono snippet">  # Check if we already received a newline, meaning we got an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/browser_autopwn2.rb</td>
+                    <td>689</td>
+                    <td class="mono snippet">      # Check if target is on our whitelist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/gitlab/form/authenticate.rb</td>
+                    <td>32</td>
+                    <td class="mono snippet">    # Check if a valid gitlab cookie is returned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/wordpress/login.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">      # Check if a valid wordpress cookie is returned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/manage_engine_adaudit_plus/target_info.rb</td>
+                    <td>248</td>
+                    <td class="mono snippet">  # Check if the GPOWatcherData endpoint is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/manage_engine_adaudit_plus/login.rb</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # Check if we have an initial adapcsrf cookie with the expected format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/manage_engine_adaudit_plus/login.rb</td>
+                    <td>117</td>
+                    <td class="mono snippet">    # Check if we are actually logged in by visiting the home page.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/nagios_xi/login.rb</td>
+                    <td>124</td>
+                    <td class="mono snippet">      # Check if we are perhaps dealing with a Nagios XI app that hasn't been fully installed yet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/nagios_xi/login.rb</td>
+                    <td>236</td>
+                    <td class="mono snippet">      # Check if we need to sign the license agreement</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/hardware/zigbee/utils.rb</td>
+                    <td>53</td>
+                    <td class="mono snippet">  # Verify if a device has been specified.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/hardware/zigbee/utils.rb</td>
+                    <td>156</td>
+                    <td class="mono snippet">    # Check if we are dealing with a beacon frame</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/windows/packrat.rb</td>
+                    <td>219</td>
+                    <td class="mono snippet">            # Check if the applications's base folder exists in user's directory on the remote computer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/windows/accounts.rb</td>
+                    <td>69</td>
+                    <td class="mono snippet">        # Check if host is an Active Directory domain controller</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/post/windows/services.rb</td>
+                    <td>288</td>
+                    <td class="mono snippet">        # Check if the specified Windows service exists.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/module/failure.rb</td>
+                    <td>61</td>
+                    <td class="mono snippet">      # Check if RHOST is a valid IP address to avoid ActiveRecord issues on validation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/module_manager/reloading.rb</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # Check if the namespace module has a loader</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/payload/android.rb</td>
+                    <td>97</td>
+                    <td class="mono snippet">    # Set not_after to a random time 2~ years before the first bad date.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/payload/windows/reverse_tcp.rb</td>
+                    <td>152</td>
+                    <td class="mono snippet">    # Check if a bind port was specified</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/payload/windows/prepend_migrate.rb</td>
+                    <td>105</td>
+                    <td class="mono snippet">    # Check if we can find block_api in the payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/payload/windows/prepend_migrate.rb</td>
+                    <td>282</td>
+                    <td class="mono snippet">    # Check if we can find block_api in the payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/db_manager/host.rb</td>
+                    <td>79</td>
+                    <td class="mono snippet">      # Set host_id to the ID of the host entry in the database that was found.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/web_services/authentication/strategies/user_password.rb</td>
+                    <td>18</td>
+                    <td class="mono snippet">      # Check if request contains valid data and should be authenticated.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/web_services/authentication/strategies/api_token.rb</td>
+                    <td>8</td>
+                    <td class="mono snippet">      # Check if request contains valid data and should be authenticated.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/auxiliary/auth_brute.rb</td>
+                    <td>298</td>
+                    <td class="mono snippet">      # Set noconn to indicate that in this case, each_user_pass</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 228 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(123 hits · 246 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/wp_acf_extended_rce.md</td>
+                    <td>74</td>
+                    <td class="mono snippet">  --admin_email='admin@example.com' \</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/wp_king_addons_privilege_escalation.md</td>
+                    <td>85</td>
+                    <td class="mono snippet">wp core install --path='/var/www/html' --url='http://localhost:5556' --title='Exploit Market' --admin_user='admin' --admin_password='admin' --admin_em</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/multi/http/wp_ai_engine_mcp_rce.md</td>
+                    <td>94</td>
+                    <td class="mono snippet">docker exec wp-ai-engine-lab wp core install --path='/var/www/html' --url='http://localhost:5555' --title='Exploit Market' --admin_user='admin' --admi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/smb/shares/readonly/my_directory/accessible_file.txt</td>
+                    <td>1</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/smb/shares/readonly/my_directory/accessible_file.txt</td>
+                    <td>1</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/smb/shares/modifiable/recursive/admin_root/readme.md</td>
+                    <td>1</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/smb/shares/modifiable/recursive/admin_root/readme.md</td>
+                    <td>1</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kubernetes/secrets/templates/dockerconfigjson.yaml</td>
+                    <td>8</td>
+                    <td class="mono snippet">    '{&quot;auths&quot;:{&quot;https://index.docker.io/v1/&quot;:{&quot;username&quot;:&quot;username&quot;,&quot;password&quot;:&quot;password&quot;,&quot;email&quot;:&quot;admin@example.com&quot;,&quot;auth&quot;:&quot;dXNlcm5hbWU6cGFzc3dvcmQ=</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>58</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>58</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>81</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>81</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>104</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>104</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>130</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>130</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>156</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>156</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>182</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>182</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>207</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>207</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>232</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_enforce_notes_spec.rb</td>
+                    <td>232</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_present_spec.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_present_spec.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_present_spec.rb</td>
+                    <td>40</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_present_spec.rb</td>
+                    <td>40</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>27</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>27</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>48</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>48</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>68</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>68</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>92</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>92</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>112</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/lint/module_disclosure_date_format_spec.rb</td>
+                    <td>112</td>
+                    <td class="mono snippet">              'Description' =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>23</td>
+                    <td class="mono snippet">              'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>23</td>
+                    <td class="mono snippet">              'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>43</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>43</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>63</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>63</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>84</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>84</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>103</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/module_hash_on_new_line_spec.rb</td>
+                    <td>103</td>
+                    <td class="mono snippet">            'Description'   =&gt; 'Lorem ipsum dolor sit amet',</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 73 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(49 hits · 98 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/osx/browser/safari_proxy_object_type_confusion.md</td>
+                    <td>82</td>
+                    <td class="mono snippet">Please don't forget to contribute the offsets back to the framework if you have</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/osx/browser/safari_in_operator_side_effect.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">Please don't forget to contribute the offsets back to the framework if you have</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/misc/asterisk_ami_originate_auth_rce.md</td>
+                    <td>108</td>
+                    <td class="mono snippet">[+] 1.1.1.1:5038 - !!!Don't forget to clean evidence from /etc/asterisk/extensions.conf!!!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/misc/asterisk_ami_originate_auth_rce.md</td>
+                    <td>161</td>
+                    <td class="mono snippet">[+] 1.1.1.1:5038 - !!!Don't forget to clean evidence from /etc/asterisk/extensions.conf!!!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/cisco_asax_sfr_rce.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">Finally, it's worth noting that this attack bypasses the effects of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/dcos_marathon.md</td>
+                    <td>71</td>
+                    <td class="mono snippet">rm ~/.ssh/id_rsa # before doing this make sure you have saved a copy for later</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/skyvern_ssti_cve_2025_49619.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">    # If you are looking to integrate Skyvern with a password manager (eg Bitwarden), you can use the following environment variables.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/linux/http/skyvern_ssti_cve_2025_49619.md</td>
+                    <td>138</td>
+                    <td class="mono snippet">    # If you are looking to integrate Skyvern with 1Password, you can use the following environment variables.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/windows/local/nscp_pe.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">this [installation guide](https://docs.nsclient.org/api/rest/) to complete the installation. Don't forget to enable the web interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/windows/http/northstar_c2_xss_to_agent_rce.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">sudo ./install.sh # mysql answers: root:&lt;empty&gt;, make sure to give a website username/password</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/windows/http/manageengine_servicedesk_plus_cve_2021_44077.md</td>
+                    <td>75</td>
+                    <td class="mono snippet">[!] Yo, don't forget to clean up ..\bin\msiexec.exe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/exploit/windows/http/nscp_authenticated_rce.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">this [installation guide](https://docs.nsclient.org/api/rest/) to complete the installation. Don't forget to enable the web interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/payload/python/meterpreter/reverse_tcp.md</td>
+                    <td>226</td>
+                    <td class="mono snippet">You can also use the #methods method to see what methods you can use:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/payload/php/meterpreter/reverse_tcp.md</td>
+                    <td>158</td>
+                    <td class="mono snippet">  __Don't forget to:__</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/payload/linux/x86/meterpreter/reverse_tcp.md</td>
+                    <td>260</td>
+                    <td class="mono snippet">You can also use the #methods method to see what methods you can use:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/payload/windows/meterpreter/reverse_https.md</td>
+                    <td>373</td>
+                    <td class="mono snippet">You can use the #methods method to see what methods you can use:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/payload/windows/meterpreter/reverse_tcp.md</td>
+                    <td>641</td>
+                    <td class="mono snippet">You can use the #methods method to see what methods you can use:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/admin/networking/cisco_asa_extrabacon.md</td>
+                    <td>108</td>
+                    <td class="mono snippet">[!] Don't forget to run pass-enable after logging in!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">documentation/modules/auxiliary/scanner/gopher/gopher_gophermap.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">*NOTE*: Don't forget to `docker stop` the container ID returned from the `docker run` command just run above:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-parse-an-HTTP-response.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">With a Rex::Proto::Http::Response object, here's how you can retrieve the HTTP body:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-write-a-module-using-HttpServer-and-HttpClient.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">Here is how you can set it up:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/Pivoting-in-Metasploit.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">Pivoting functionality is provided by all Meterpreter and SSH sessions that occur over TCP channels. Whilst Meterpreter is mentioned below, keep in mi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-payloads-work.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">1. The IP address and port you want the payload to connect back to are embedded in the stager. As discussed above, all staged payloads are no more tha</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-Send-an-HTTP-Request-Using-HttpClient.md</td>
+                    <td>128</td>
+                    <td class="mono snippet">Before you send a HTTP request, you will most likely have to do some URI parsing.  This is a tricky task, because sometimes when you join paths, you m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/Landing-Pull-Requests.md</td>
+                    <td>163</td>
+                    <td class="mono snippet">Note that the example above will leave you in a detached HEAD state. This is fine if you just want to test the module in question, however if you want</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metasploit-framework.wiki/ad-certificates/Attacking-AD-CS-ESC-Vulnerabilities.md</td>
+                    <td>593</td>
+                    <td class="mono snippet">- SubCA - Again as mentioned earlier can only be enrolled in by Domain Admins and Enterprise Admins, so not a viable vector.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/net/dns/question.rb</td>
+                    <td>37</td>
+                    <td class="mono snippet">    # To obtain the binary data from a question object you can use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit/laravel_crypto_killer.rb</td>
+                    <td>9</td>
+                    <td class="mono snippet"># The tool requires a valid `APP_KEY` to be used, you can also try to bruteforce them if you think there is a potential key reuse</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http_server/html.rb</td>
+                    <td>117</td>
+                    <td class="mono snippet">  # writing style, so make sure you have the following before using:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/msf/core/post/linux/f5_mcp.rb</td>
+                    <td>19</td>
+                    <td class="mono snippet">      # If you're just reading data, you can use `mcp_simple_query()` to build</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">external/source/exploits/CVE-2019-2215/poc.c</td>
+                    <td>355</td>
+                    <td class="mono snippet">    // clear the TIF_SECCOMP flag and everything else :P (feel free to modify this to just clear the single flag)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/example_webapp.rb</td>
+                    <td>129</td>
+                    <td class="mono snippet">    # since we will check res to see if auth was a success, make sure to capture the return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/osx/mdns/upnp_location.rb</td>
+                    <td>206</td>
+                    <td class="mono snippet">      # And we make sure to put our payload in the USN header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/multi/vpn/tincd_bof.rb</td>
+                    <td>172</td>
+                    <td class="mono snippet">    # Don't forget to stop firewalld for testing, as the port is still closed otherwise</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/unix/local/netbsd_mail_local.rb</td>
+                    <td>276</td>
+                    <td class="mono snippet">      fprintf(stderr, &quot;[+] done! Don't forget to change atrun(1) &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/unix/http/contentkeeperweb_mimencode.rb</td>
+                    <td>119</td>
+                    <td class="mono snippet">      print_status(&quot;Don't forget to clean up afterwards (chmod -s /bin/bash and restore an original copy of the OVERWRITE file).&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/linux/misc/asterisk_ami_originate_auth_rce.rb</td>
+                    <td>202</td>
+                    <td class="mono snippet">    print_good(&quot;!!!Don't forget to clean evidence from #{datastore['CONF']}!!!&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/linux/local/docker_runc_escape.rb</td>
+                    <td>351</td>
+                    <td class="mono snippet">    # shell in the docker container, make sure to restore it now.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/linux/http/cisco_asax_sfr_rce.rb</td>
+                    <td>32</td>
+                    <td class="mono snippet">          Finally, it's worth noting that this attack bypasses the affects of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/windows/http/php_cgi_arg_injection_rce_cve_2024_4577.rb</td>
+                    <td>97</td>
+                    <td class="mono snippet">      # To debug your payloads you can add this:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/exploits/windows/http/manageengine_servicedesk_plus_cve_2021_44077.rb</td>
+                    <td>130</td>
+                    <td class="mono snippet">    print_warning(&quot;Yo, don't forget to clean up ..\\bin\\msiexec.exe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/gather/prometheus_node_exporter_gather.rb</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # since we will check res to see if auth was a success, make sure to capture the return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/admin/networking/cisco_asa_extrabacon.rb</td>
+                    <td>185</td>
+                    <td class="mono snippet">        print_warning(&quot;Don't forget to run PASS_ENABLE after logging in!&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/server/capture/http_javascript_keylogger.rb</td>
+                    <td>211</td>
+                    <td class="mono snippet">      &lt;p&gt;&lt;font color=&quot;red&quot;&gt;&lt;i&gt;This form submits data to the Metasploit listener for demonstration purposes.&lt;/i&gt;&lt;/font&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/scanner/http/http_traversal.rb</td>
+                    <td>336</td>
+                    <td class="mono snippet">    # Ah, don't forget to restore our method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/scanner/http/http_traversal.rb</td>
+                    <td>336</td>
+                    <td class="mono snippet">    # Ah, don't forget to restore our method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/scanner/http/coldfusion_locale_traversal.rb</td>
+                    <td>149</td>
+                    <td class="mono snippet">      # file probably specified by user, make sure to add in actual traversal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/scanner/mysql/mysql_writable_dirs.rb</td>
+                    <td>35</td>
+                    <td class="mono snippet">  # make sure you handle the errors yourself</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/auxiliary/scanner/mysql/mysql_file_enum.rb</td>
+                    <td>38</td>
+                    <td class="mono snippet">  # make sure you handle the errors yourself</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(71 hits · 71 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-write-a-HTTP-LoginScanner-Module.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Step 1: Set up your target environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-write-a-HTTP-LoginScanner-Module.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">## Step 2: Set up a client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-write-a-HTTP-LoginScanner-Module.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">## Step 3: Start with a LoginScanner template</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-write-a-HTTP-LoginScanner-Module.md</td>
+                    <td>236</td>
+                    <td class="mono snippet">## Step 4: Write the auxiliary module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-use-a-reverse-shell-in-Metasploit.md</td>
+                    <td>91</td>
+                    <td class="mono snippet">### Step 1: Generate the executable payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-use-a-reverse-shell-in-Metasploit.md</td>
+                    <td>103</td>
+                    <td class="mono snippet">### Step 2: Copy the executable payload to box B</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-use-a-reverse-shell-in-Metasploit.md</td>
+                    <td>107</td>
+                    <td class="mono snippet">### Step 3: Set up the payload handler on box A</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-use-a-reverse-shell-in-Metasploit.md</td>
+                    <td>126</td>
+                    <td class="mono snippet">### Step 4: Double-click on the malicious executable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-use-a-reverse-shell-in-Metasploit.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">### Step 5: View the meterpreter/payload session on box A</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/Using-ReflectiveDLL-Injection.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">## Step 4: Adding the framework module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http_client.rb</td>
+                    <td>856</td>
+                    <td class="mono snippet">    # This section handles a few simple cases of pattern matching and service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>409</td>
+                    <td class="mono snippet">    # Step 1: fetch the available applications / servers from the Admin server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>509</td>
+                    <td class="mono snippet">    # Step 2: get the current app server configuration variables, such as the current auth method used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>519</td>
+                    <td class="mono snippet">    # Step 3: start the fake CAM server / exploit server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>539</td>
+                    <td class="mono snippet">    # Step 4: send the server config update packet, and ignore what it sends back</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>546</td>
+                    <td class="mono snippet">    # Step 5: send the CAM auth request and obtain the authentication object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>594</td>
+                    <td class="mono snippet">    # Step 6: create a Process object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>628</td>
+                    <td class="mono snippet">    # Step 7: add the commands into the process object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>635</td>
+                    <td class="mono snippet">    # Step 8: register the Process object with a random name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>640</td>
+                    <td class="mono snippet">    # Step 9: execute the Process!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>645</td>
+                    <td class="mono snippet">    # Step 10: restore the auth method and enjoy the shell!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/browser/firefox_webidl_injection.rb</td>
+                    <td>116</td>
+                    <td class="mono snippet">      // Step 2: load the chrome-level window up with a data URI, which</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/opmanager_sumpdu_deserialization.rb</td>
+                    <td>146</td>
+                    <td class="mono snippet">    # Step 1: Establish a valid HTTP session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/opmanager_sumpdu_deserialization.rb</td>
+                    <td>174</td>
+                    <td class="mono snippet">    # Step 2: Add the requestHandler to the HTTP session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/opmanager_sumpdu_deserialization.rb</td>
+                    <td>192</td>
+                    <td class="mono snippet">    # Step 3: Exploit the deserialization vulnerability to run commands</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/oracle_ebs_cve_2025_61882_exploit_rce.rb</td>
+                    <td>180</td>
+                    <td class="mono snippet">    # Step 1 : Start HTTP server for XSL file serving</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/oracle_ebs_cve_2025_61882_exploit_rce.rb</td>
+                    <td>194</td>
+                    <td class="mono snippet">    # Step 2: Get CSRF token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/oracle_ebs_cve_2025_61882_exploit_rce.rb</td>
+                    <td>202</td>
+                    <td class="mono snippet">    # Step 3: Smuggle payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/oracle_ebs_cve_2025_61882_exploit_rce.rb</td>
+                    <td>208</td>
+                    <td class="mono snippet">    # Step 4: Send exploit request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/oracle_ebs_cve_2025_61882_exploit_rce.rb</td>
+                    <td>212</td>
+                    <td class="mono snippet">    # Step 5: Wait for XSLT file download</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>59</td>
+                    <td class="mono snippet">    # Step 1: Retrieve PHPSESSID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>80</td>
+                    <td class="mono snippet">    # Step 2: Attempt File Upload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>106</td>
+                    <td class="mono snippet">    # Step 3: Verify File in Directory Listing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>129</td>
+                    <td class="mono snippet">    # Step 1: Detect the OS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>154</td>
+                    <td class="mono snippet">    # Step 2: Retrieve the actual uploaded filename</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>171</td>
+                    <td class="mono snippet">    # Step 3: Execute the detection script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>183</td>
+                    <td class="mono snippet">    # Step 4: Choose payload based on OS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/multi/http/clinic_pms_fileupload_rce.rb</td>
+                    <td>192</td>
+                    <td class="mono snippet">    # Step 5: Upload the payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/magento_xxe_to_glibc_buf_overflow.rb</td>
+                    <td>531</td>
+                    <td class="mono snippet">      # Step 0: Setup heap</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/magento_xxe_to_glibc_buf_overflow.rb</td>
+                    <td>534</td>
+                    <td class="mono snippet">      # Step 1: Reverse FL order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/magento_xxe_to_glibc_buf_overflow.rb</td>
+                    <td>537</td>
+                    <td class="mono snippet">      # Step 2: Put fake pointer and make FL order back to normal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/magento_xxe_to_glibc_buf_overflow.rb</td>
+                    <td>540</td>
+                    <td class="mono snippet">      # Step 3: Trigger overflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/magento_xxe_to_glibc_buf_overflow.rb</td>
+                    <td>543</td>
+                    <td class="mono snippet">      # Step 4: Allocate at arbitrary address and change zend_mm_heap</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/optergy_bms_backdoor_rce_cve_2019_7276.rb</td>
+                    <td>87</td>
+                    <td class="mono snippet">    # Step 1: get the challenge and compute the response answer for the backdoor execution</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/optergy_bms_backdoor_rce_cve_2019_7276.rb</td>
+                    <td>109</td>
+                    <td class="mono snippet">    # Step 2: execute payload (RCE) using the backdoor and challenge response obtained from step 1.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/persistence/docker_image.rb</td>
+                    <td>88</td>
+                    <td class="mono snippet">    # Step 1: Prepare payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/persistence/docker_image.rb</td>
+                    <td>94</td>
+                    <td class="mono snippet">    # Step 2: Prepare entrypoint script (loops indefinitely)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/persistence/docker_image.rb</td>
+                    <td>115</td>
+                    <td class="mono snippet">    # Step 3: Pull Alpine image</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/persistence/docker_image.rb</td>
+                    <td>118</td>
+                    <td class="mono snippet">    # Step 4: Create a temporary container (stopped) to copy files in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/persistence/docker_image.rb</td>
+                    <td>137</td>
+                    <td class="mono snippet">    # Step 5: Start container with internal entrypoint</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 21 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(30 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/hardware/killerbee_msfrelay.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/splunk/helpers.rb</td>
+                    <td>67</td>
+                    <td class="mono snippet">      except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/modules/external/python/metasploit/login_scanner.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/modules/external/python/metasploit/probe_scanner.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/modules/external/python/metasploit/probe_scanner.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/telephony/modem.rb</td>
+                    <td>43</td>
+                    <td class="mono snippet">      print(&quot;Error opening serial port #{@serialport} : #{e.class} #{e} #{e.backtrace}\r\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/telephony/modem.rb</td>
+                    <td>66</td>
+                    <td class="mono snippet">      print(&quot;Error sending command to modem: #{e.class} #{e} #{e.backtrace}\r\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/telephony/modem.rb</td>
+                    <td>97</td>
+                    <td class="mono snippet">        print(&quot;Error reading from modem: #{e.class} #{e} #{e.backtrace}\r\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/telephony/modem.rb</td>
+                    <td>118</td>
+                    <td class="mono snippet">        print( &quot;Error switching to command state: FAILED\r\n&quot; )</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/telephony/modem.rb</td>
+                    <td>134</td>
+                    <td class="mono snippet">        print( &quot;Error switching to data state: FAILED\r\n&quot; )</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/gather/office365userenum.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/gather/office365userenum.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/gather/mikrotik_winbox_fileread.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/gather/mikrotik_winbox_fileread.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/ssl/bleichenbacher_oracle.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/ssl/bleichenbacher_oracle.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/http/rdp_web_login.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/http/rpyc_rce.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/secretsdump.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/secretsdump.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/secretsdump.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/secretsdump.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/secretsdump.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/_msf_impacket.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/_msf_impacket.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/scanner/smb/impacket/_msf_impacket.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">data/exploits/CVE-2021-38648/cve_2021_38648.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">data/exploits/vmware_view_planner_4_6_uploadlog_rce/log_upload_wsgi.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">data/exploits/CVE-2023-4911/cve_2023_4911.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">    print(&quot;Error: %s&quot; % error_msg)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">data/exploits/CVE-2025-60787/sign_request.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(5 hits · 25 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/rex/proto/ntlm/utils.rb</td>
+                    <td>436</td>
+                    <td class="mono snippet">      # Make those values unicode as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/rex/proto/dhcp/server.rb</td>
+                    <td>338</td>
+                    <td class="mono snippet">    # And now we mark as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">modules/post/multi/manage/screenshare.rb</td>
+                    <td>199</td>
+                    <td class="mono snippet">// required function will instead be invoked 1 second later as requested.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">modules/exploits/multi/misc/ibm_tm1_unauth_rce.rb</td>
+                    <td>504</td>
+                    <td class="mono snippet">      print_status(&quot;Attacking #{app[0]} on #{peer} as requested with TLS #{ssl ? 'on' : 'off'}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">modules/exploits/linux/samba/setinfopolicy_heap.rb</td>
+                    <td>21</td>
+                    <td class="mono snippet">          because of an error on the PIDL auto-generated code. Making a specially crafted</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/generate_mitre_attack_technique_constants.rb</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/generate_mitre_attack_technique_constants.rb</td>
+                    <td>95</td>
+                    <td class="mono snippet"># Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/metasploit-framework.wiki/How-to-zip-files-with-Msf-Util-EXE-to_zip.md</td>
+                    <td>6</td>
+                    <td class="mono snippet">## Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/http/wordpress/sqli.rb</td>
+                    <td>7</td>
+                    <td class="mono snippet">  # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rex/parser/nmap_xml.rb</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">external/source/exploits/CVE-2021-22555/README.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">external/source/exploits/CVE-2021-3490/Linux_LPE_eBPF_CVE-2021-3490/README.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/msf/core/exploit/remote/tincd_exploit_client.rb</td>
+                    <td>133</td>
+                    <td class="mono snippet">  def process_data(data)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/unix/webapp/vicidial_agent_authenticated_rce.rb</td>
+                    <td>149</td>
+                    <td class="mono snippet">  def handle_request(cli, request, response_payload)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/unix/webapp/byob_unauth_rce.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">  def handle_request(cli, request, response_payload)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/exploits/linux/http/xorcom_completepbx_scheduler.rb</td>
+                    <td>130</td>
+                    <td class="mono snippet">  def run_task(sid_cookie, task_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/admin/http/ulterius_file_download.rb</td>
+                    <td>50</td>
+                    <td class="mono snippet">  def process_data(index, parse_data)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/auxiliary/server/capture/http_javascript_keylogger.rb</td>
+                    <td>139</td>
+                    <td class="mono snippet">  def process_data(cli, request, cid, data)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [2.5, 2.5];
+        const matches = [2289, 2289];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

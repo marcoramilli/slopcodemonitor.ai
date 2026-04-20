@@ -1,0 +1,2407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — PrefectHQ/fastmcp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>PrefectHQ/fastmcp</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">9.5</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">9.5</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1085</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1983</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">208,691</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">888</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(527 hits · 1054 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>203</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>205</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>279</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>281</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>382</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>384</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>402</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>404</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>414</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>416</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>566</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps.py</td>
+                    <td>568</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>99</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>101</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>196</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>198</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>313</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>315</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>374</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_apps_prefab.py</td>
+                    <td>376</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>27</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>169</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>171</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>284</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>286</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>319</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>321</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>422</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>424</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>452</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>454</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>581</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>583</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>686</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>688</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>723</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>725</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>734</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>736</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>782</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>784</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>850</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_fastmcp_app.py</td>
+                    <td>852</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/experimental/transforms/test_code_mode.py</td>
+                    <td>95</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/experimental/transforms/test_code_mode.py</td>
+                    <td>97</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 477 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(139 hits · 278 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_mcp_config.py</td>
+                    <td>902</td>
+                    <td class="mono snippet">    # Create a config with multiple servers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tools/test_tool_future_annotations.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    # Create a simple 1x1 white pixel PNG</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tools/test_tool_future_annotations.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">        # Define a tool with modern union syntax</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">        # Create a RefreshToken object that matches what is expected in later code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>829</td>
+                    <td class="mono snippet">        # Create a test client with the token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_auth_integration_errors.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">        # Create a RefreshToken object that matches what is expected in later code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_server.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">        # Create a server with resources</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_server.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">        # Create a main server and mount the resource server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_context.py</td>
+                    <td>344</td>
+                    <td class="mono snippet">        # Create a mock meta object with attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_event_store.py</td>
+                    <td>203</td>
+                    <td class="mono snippet">        # Create a realistic JSON-RPC request wrapped in JSONRPCMessage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/middleware/test_timing.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        # Create a custom logger that writes to a string buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/tasks/test_task_methods.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # Create a task that won't complete until signaled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_oauth_consent_page.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">        # Create a transaction manually</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_oauth_consent_page.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        # Create a transaction</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_oauth_consent_page.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">        # Create a transaction</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_auth_provider.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        # Create a static token verifier with a test token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_oauth_consent_flow.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        # Create a test app with OAuth routes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_oauth_consent_flow.py</td>
+                    <td>673</td>
+                    <td class="mono snippet">            # Create a tampered cookie (invalid signature)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_jwt_provider.py</td>
+                    <td>383</td>
+                    <td class="mono snippet">        # Create a token with a different secret</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_jwt_provider_bearer.py</td>
+                    <td>400</td>
+                    <td class="mono snippet">        # Create a token with a different key pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_ssrf_protection.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">                # Create a dummy token to trigger JWKS fetch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_enhanced_error_responses.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">        # Create a valid token with wrong scopes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/oauth_proxy/test_ui.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        # Create a minimal OAuth proxy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/oauth_proxy/test_tokens.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">        # Create a mock 401 response like the SDK returns for auth failures</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/oauth_proxy/test_tokens.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">        # Create a mock 400 response like the SDK returns for invalid_grant</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/test_skills_provider.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        # Create a simple skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/test_skills_provider.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">        # Create a skill with supporting files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/test_skills_provider.py</td>
+                    <td>648</td>
+                    <td class="mono snippet">        # Create a file outside the skill directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/proxy/test_proxy_client.py</td>
+                    <td>407</td>
+                    <td class="mono snippet">        # Create a disconnected client (should use fresh sessions per request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/openapi/test_openapi_performance.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        # Create a medium-sized synthetic schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/openapi/test_comprehensive.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">        # Create a mock client that tracks requests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_custom_routes.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        # Create the app by calling the constructor function directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_custom_routes.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">        # Create the app by calling the constructor function directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_stale_access_token.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">        # Create a mock request with fresh token in scope</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_stale_access_token.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        # Create a mock RequestContext with the request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    # Create the app with custom middleware</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">    # Create a test client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # Create the app with custom middleware</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">    # Create a test client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">    # Create the app with custom middleware</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">    # Create a test client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">    # Create the app with custom middleware</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">    # Create a test client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    # Create the app with custom middleware</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/http/test_http_middleware.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">    # Create a test client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/mount/test_resources.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        # Create a sub-app with a resource</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/mount/test_resources.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Create main app and mount sub-app with prefix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/mount/test_resources.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">        # Create a sub-app with a resource template</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/mount/test_resources.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        # Create main app and mount sub-app with prefix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/mount/test_mount.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        # Create main app and sub-app</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 89 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(43 hits · 215 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tools/tool/test_content.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">            ([None], &quot;[null]&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tools/tool/test_content.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">            ([None, None], &quot;[null,null]&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/tools/tool/test_content.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">            ([1, &quot;two&quot;, None, {&quot;c&quot;: 3}, False], '[1,&quot;two&quot;,null,{&quot;c&quot;:3},false]'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">                    &quot;payload&quot;: '{&quot;method&quot;:&quot;tools/call&quot;,&quot;params&quot;:{&quot;task&quot;:null,&quot;_meta&quot;:null,&quot;name&quot;:&quot;test_method&quot;,&quot;arguments&quot;:{&quot;param&quot;:&quot;value&quot;}}}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">                '{&quot;event&quot;: &quot;request_start&quot;, &quot;method&quot;: &quot;test_method&quot;, &quot;source&quot;: &quot;client&quot;, &quot;payload&quot;: &quot;{\\&quot;method\\&quot;:\\&quot;resources/read\\&quot;,\\&quot;params\\&quot;:{</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">                '{&quot;event&quot;: &quot;request_start&quot;, &quot;method&quot;: &quot;test_method&quot;, &quot;source&quot;: &quot;client&quot;, &quot;payload&quot;: &quot;{\\&quot;name\\&quot;:\\&quot;tmpl\\&quot;,\\&quot;version\\&quot;:null,\\&quot;titl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>361</td>
+                    <td class="mono snippet">                '{&quot;event&quot;: &quot;request_start&quot;, &quot;method&quot;: &quot;test_method&quot;, &quot;source&quot;: &quot;client&quot;, &quot;payload&quot;: &quot;{\\&quot;method\\&quot;:\\&quot;tools/call\\&quot;,\\&quot;params\\&quot;:{\\&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>536</td>
+                    <td class="mono snippet">                'event=request_start method=tools/call source=client payload={&quot;task&quot;:null,&quot;_meta&quot;:null,&quot;name&quot;:&quot;simple_operation&quot;,&quot;arguments&quot;:{&quot;data&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>559</td>
+                    <td class="mono snippet">                '{&quot;event&quot;: &quot;request_start&quot;, &quot;method&quot;: &quot;tools/call&quot;, &quot;source&quot;: &quot;client&quot;, &quot;payload&quot;: &quot;{\\&quot;task\\&quot;:null,\\&quot;_meta\\&quot;:null,\\&quot;name\\&quot;:\\&quot;si</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/middleware/test_logging.py</td>
+                    <td>652</td>
+                    <td class="mono snippet">event=request_start method=tools/call source=client payload={&quot;task&quot;:null,&quot;_meta&quot;:null,&quot;name&quot;:&quot;simple_operation&quot;,&quot;arguments&quot;:{&quot;data&quot;:&quot;custom_test&quot;}} pa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/utilities/openapi/test_nullable_fields.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test that nullable enum validates null, enum values, and rejects invalid values.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/deprecated/test_tool_injection_middleware.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">                    text='[{&quot;name&quot;:&quot;greeting&quot;,&quot;title&quot;:null,&quot;description&quot;:&quot;Generate a greeting message.&quot;,&quot;arguments&quot;:[{&quot;name&quot;:&quot;name&quot;,&quot;description&quot;:null</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/deprecated/test_tool_injection_middleware.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">                    text='{&quot;_meta&quot;:null,&quot;description&quot;:&quot;Generate a greeting message.&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;Hello</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/deprecated/test_tool_injection_middleware.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">                    text='{&quot;contents&quot;:[{&quot;content&quot;:&quot;debug=true&quot;,&quot;mime_type&quot;:&quot;text/plain&quot;,&quot;meta&quot;:null}],&quot;meta&quot;:null}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">      const transport = new PostMessageTransport(iframe.contentWindow, null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>610</td>
+                    <td class="mono snippet">      if (activeFilters[allFilterKeys[i]]) on.push(allFilterKeys[i]);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>622</td>
+                    <td class="mono snippet">    var qs = params.toString();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>624</td>
+                    <td class="mono snippet">    history.replaceState(null, &quot;&quot;, url);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>693</td>
+                    <td class="mono snippet">    if (fp !== null) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>732</td>
+                    <td class="mono snippet">    if (lv &amp;&amp; levelOrder.indexOf(lv) &lt; minLevel) return false;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>751</td>
+                    <td class="mono snippet">        if (d &amp;&amp; typeof d === &quot;object&quot;) return d.msg || d.message || JSON.stringify(d);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>751</td>
+                    <td class="mono snippet">        if (d &amp;&amp; typeof d === &quot;object&quot;) return d.msg || d.message || JSON.stringify(d);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>752</td>
+                    <td class="mono snippet">        return d || b.params.level || &quot;&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>756</td>
+                    <td class="mono snippet">    if (b.error) return &quot;error: &quot; + (b.error.message || JSON.stringify(b.error));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>757</td>
+                    <td class="mono snippet">    if (b.result &amp;&amp; typeof b.result === &quot;object&quot;) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>763</td>
+                    <td class="mono snippet">        if (first &amp;&amp; first.text) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>782</td>
+                    <td class="mono snippet">      &amp;&amp; (entry.body.error || (entry.body.result &amp;&amp; entry.body.result.isError));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>811</td>
+                    <td class="mono snippet">    if (entry.direction === &quot;notification&quot; &amp;&amp; entry.body &amp;&amp; entry.body.params) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>833</td>
+                    <td class="mono snippet">      navigator.clipboard.writeText(JSON.stringify(entry.body, null, 2));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>853</td>
+                    <td class="mono snippet">    detail.textContent = JSON.stringify(entry.body, null, 2);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>873</td>
+                    <td class="mono snippet">        var atBottom = !panelVisible || entries.scrollHeight - entries.scrollTop - entries.clientHeight &lt; 40;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>880</td>
+                    <td class="mono snippet">        if (atBottom || (firstPoll &amp;&amp; panelVisible)) entries.scrollTop = entries.scrollHeight;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/cli/apps_dev.py</td>
+                    <td>892</td>
+                    <td class="mono snippet">    if (!data || typeof data !== &quot;object&quot;) return;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">- Basic types (string, number, integer, boolean, null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">        # Check if one of the types is None (null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/schemas.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">    # If it's already nullable (type includes null), don't modify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">                    with If(STATE.stored.length()):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">                            STATE.stored.length(),  # ty:ignore[invalid-argument-type]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>334</td>
+                    <td class="mono snippet">                    with If(STATE.pending.length()), Column(gap=2):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>365</td>
+                    <td class="mono snippet">                    with If(STATE.stored.length()):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">                    with If(STATE.stored.length()):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">                            f&quot;{STATE.stored.length()}&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/fastmcp/apps/file_upload.py</td>
+                    <td>393</td>
+                    <td class="mono snippet">                            f&quot; {STATE.stored.length().pluralize('file')}&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(175 hits · 177 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_tests/conftest.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/middleware/test_error_handling.py</td>
+                    <td>486</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/middleware/test_error_handling.py</td>
+                    <td>647</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utilities/json_schema_type/test_real_world_schemas.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utilities/json_schema_type/test_real_world_schemas.py</td>
+                    <td>286</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utilities/json_schema_type/test_real_world_schemas.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/client/test_elicitation.py</td>
+                    <td>503</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/client/client/test_client.py</td>
+                    <td>650</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/in_memory_proxy_example.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_posts.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_posts.py</td>
+                    <td>413</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_read.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_read.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_read.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_profile.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_social.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_social.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_social.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/google_oauth/client.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/discord_oauth/client.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/aws_oauth/client.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/clerk_oauth/client.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/azure_oauth/client.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/workos_oauth/client.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/github_oauth/client.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/mounted/client.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/mounted/client.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/propelauth_oauth/client.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/auth/scalekit_oauth/client.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/smart_home/src/smart_home/hub.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/smart_home/src/smart_home/lights/hue_utils.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/server.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/diagnostics/client_with_tracing.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/auto_close_duplicates.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">                    print(f&quot;Error fetching issues: {response.status_code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/auto_close_needs_mre.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">                print(f&quot;Error fetching issues: {response.status_code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/tool_transform.py</td>
+                    <td>360</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/function_parsing.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/base.py</td>
+                    <td>470</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/resources/types.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/resources/types.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/resources/types.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/server.py</td>
+                    <td>1268</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/server.py</td>
+                    <td>1395</td>
+                    <td class="mono snippet">                    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 125 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(84 hits · 84 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">        # Check if the test is in the integration_tests folder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">        # Check if refresh token exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        # Check if the access token exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">        # Check if the token was issued to this client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">        # Check if token is expired</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration_errors.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">        # Check if refresh token exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration_errors.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        # Check if the access token exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration_errors.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">        # Check if the token was issued to this client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/tasks/test_progress_dependency.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">        # Increment again</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conformance/test_conformance.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">    # Print output for visibility in test results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/review-pr/SKILL.md</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Check if Codex has reviewed that specific commit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/atproto_mcp/src/atproto_mcp/_atproto/_posts.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        # Check if this URL overlaps with any explicit link</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/sampling/structured_output.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">            # Display results in a table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/smart_home/src/smart_home/lights/server.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">                # Check if this scene is associated with the target group ID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/auto_close_needs_mre.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">    # Check if label is old enough (7 days)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/auto_close_needs_mre.py</td>
+                    <td>380</td>
+                    <td class="mono snippet">        # Check if we should close</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-diff.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Check if HEAD has changed since review started (race condition detection)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-diff.sh</td>
+                    <td>81</td>
+                    <td class="mono snippet">  # Check if diff is too large</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-remove-comment.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Check if first argument looks like a comment ID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-review.sh</td>
+                    <td>98</td>
+                    <td class="mono snippet"># Check if HEAD has changed since review started (race condition detection)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/mcp_config.py</td>
+                    <td>293</td>
+                    <td class="mono snippet">            # Check if any values look like server configs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/tool_transform.py</td>
+                    <td>291</td>
+                    <td class="mono snippet">                # Check if this parameter has a default_factory from transform_args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/tool_transform.py</td>
+                    <td>498</td>
+                    <td class="mono snippet">                    # Check if function returns ToolResult (or subclass) - if so, don't fall back to parent.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/tool_transform.py</td>
+                    <td>529</td>
+                    <td class="mono snippet">                # Check if function is missing any parameters required after transformation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/tool_transform.py</td>
+                    <td>649</td>
+                    <td class="mono snippet">            # Check if parameter is in transform_args</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/tools/function_parsing.py</td>
+                    <td>289</td>
+                    <td class="mono snippet">                # Check if schema is an object type, resolving $ref references</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/resources/template.py</td>
+                    <td>608</td>
+                    <td class="mono snippet">        # Check if required parameters are a subset of the path parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/resources/template.py</td>
+                    <td>614</td>
+                    <td class="mono snippet">        # Check if all URI parameters are valid function parameters (skip if **kwargs present)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/elicitation.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">        # Check if items are enum/Literal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/elicitation.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # Check if items are Literal (which Pydantic represents differently)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/elicitation.py</td>
+                    <td>503</td>
+                    <td class="mono snippet">        # Check if it's a primitive type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/dependencies.py</td>
+                    <td>755</td>
+                    <td class="mono snippet">        # Check if we're in a Docket worker context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/middleware/response_limiting.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">        # Check if we should limit this tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/elicitation.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">        # Set status to &quot;waiting&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/elicitation.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">        # Check if there's a pending elicitation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/elicitation.py</td>
+                    <td>334</td>
+                    <td class="mono snippet">        # Push response to list - this wakes up the BLPOP in elicit_for_task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/notifications.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">    # Check if subscriber already running for this session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/notifications.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">        # Check if task is still running AND session is still alive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/tasks/requests.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">        # Check if completed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/redirect_validation.py</td>
+                    <td>236</td>
+                    <td class="mono snippet">    # Check if URI matches any allowed pattern</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/cimd.py</td>
+                    <td>591</td>
+                    <td class="mono snippet">        # Check if JTI was already used (and hasn't expired from cache)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/oauth_proxy/proxy.py</td>
+                    <td>943</td>
+                    <td class="mono snippet">        # Check if code expired</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/discord.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">                # Check if token is expired (Discord returns ISO timestamp)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/oci.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">        # Check if the signer exists for the token ID in memory cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/introspection.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">                # Check if token is active (required field per RFC 7662)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/handlers/authorize.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">        # Check if this is a client not found error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/handlers/authorize.py</td>
+                    <td>229</td>
+                    <td class="mono snippet">                    # Check if response body contains &quot;not found&quot; error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/providers/filesystem_discovery.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    # Check if this file is part of a package</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/providers/filesystem_discovery.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">        # Check if this object is a component type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/providers/skills/skill_provider.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">            # Check if it's a known supporting file</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 34 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(29 hits · 58 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/test_resource_template.py</td>
+                    <td>503</td>
+                    <td class="mono snippet">        quoted_name = quote(&quot;John Doe&quot;, safe=&quot;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/test_resource_template.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">        assert result == {&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/tasks/test_task_elicitation_relay.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">            assert result.data == &quot;Jane Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_workos.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_workos.py</td>
+                    <td>299</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_clerk.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_clerk.py</td>
+                    <td>241</td>
+                    <td class="mono snippet">        assert result.claims[&quot;email&quot;] == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_clerk.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">            json={&quot;email&quot;: &quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_clerk.py</td>
+                    <td>478</td>
+                    <td class="mono snippet">            &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">            extra_authorize_params={&quot;login_hint&quot;: &quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        assert provider._extra_authorize_params[&quot;login_hint&quot;] == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>294</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">        assert result.claims[&quot;email&quot;] == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">                &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/providers/test_google.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">            json={&quot;sub&quot;: &quot;12345&quot;, &quot;email&quot;: &quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/openapi/test_end_to_end_compatibility.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">                &quot;name&quot;: &quot;John Doe&quot;,  # Body parameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utilities/openapi/test_director.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utilities/openapi/test_director.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">        assert body_data[&quot;name&quot;] == &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utilities/openapi/test_director.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utilities/openapi/test_director.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        assert body_data[&quot;name&quot;] == &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utilities/openapi/test_director.py</td>
+                    <td>1016</td>
+                    <td class="mono snippet">        flat_args = {path_param_name: 123, &quot;name&quot;: &quot;John Doe&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/conformance/server.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">    name: str = Field(default=&quot;John Doe&quot;, description=&quot;User name&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/deprecated/test_import_server.py</td>
+                    <td>411</td>
+                    <td class="mono snippet">    quoted_name = quote(&quot;John Doe&quot;, safe=&quot;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/deprecated/test_import_server.py</td>
+                    <td>417</td>
+                    <td class="mono snippet">        assert content[&quot;name&quot;] == &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/apps/demos/dashboard.html</td>
+                    <td>111</td>
+                    <td class="mono snippet">                &quot;account&quot;: &quot;Acme Corp&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/apps/demos/dashboard.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">    {&quot;account&quot;: &quot;Acme Corp&quot;, &quot;value&quot;: &quot;$84,000&quot;, &quot;stage&quot;: &quot;Won&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/fastmcp/server/tasks/requests.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    - &quot;user@example.com@1.0&quot; → (&quot;user@example.com&quot;, &quot;1.0&quot;)  # @ in URI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/formatters.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">            return &quot;user@example.com&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(42 hits · 42 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_tests/auth/test_github_provider_integration.py</td>
+                    <td>220</td>
+                    <td class="mono snippet">        # Step 1: Register OAuth client (DCR)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_tests/auth/test_github_provider_integration.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">        # Step 2: Test authorization endpoint redirects to consent page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_tests/auth/test_github_provider_integration.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">        # Step 3: Visit consent page to get CSRF token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_tests/auth/test_github_provider_integration.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">        # Step 4: Approve consent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>548</td>
+                    <td class="mono snippet">        # Step 1: First, let's create a token and refresh token at the current time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_auth_integration.py</td>
+                    <td>567</td>
+                    <td class="mono snippet">        # Step 2: Time travel forward 4 hours (tokens expire in 1 hour by default)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/test_prefab_roundtrip.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">        # Step 1: call UI tool, get structured_content with hashed ref</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/test_prefab_roundtrip.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # Step 2: call the backend tool by its hashed name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_regex.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # Step 1: list_tools shows only synthetic tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_regex.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        # Step 2: regex patterns discover tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_regex.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">        # Step 3: call discovered tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_bm25.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # Step 1: list_tools shows only synthetic tools + pinned tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_bm25.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        # Step 2: natural language search discovers tools by relevance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/search/client_bm25.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">        # Step 3: call a discovered tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/code_mode/client.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">        # Step 1: list_tools only returns two synthetic meta-tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/code_mode/client.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Step 2: search discovers available tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/code_mode/client.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Step 3: execute chains tool calls in one round-trip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/mention/gh-resolve-review-thread.sh</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Step 1: Post comment if provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/mention/gh-resolve-review-thread.sh</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Step 2: Resolve the thread</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/clerk.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">                # Step 1: Validate token via introspection (RFC 7662).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/clerk.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">                # Step 2: Fetch user profile via userinfo.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/google.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">                # Step 1: Verify token via tokeninfo endpoint.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/google.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">                # Step 2: Fetch user profile from v2 userinfo endpoint.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/contrib/component_manager/component_manager.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">        # We need to check if it's a template (contains {}) and use &quot;template&quot; if so</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>522</td>
+                    <td class="mono snippet">    # Step 1: replace everything except [0-9a-zA-Z_] with underscores</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">    # Step 2: deduplicate underscores</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>526</td>
+                    <td class="mono snippet">    # Step 3: if the first char of original name isn't a letter or underscore, prepend field_</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>529</td>
+                    <td class="mono snippet">    # Step 4: deduplicate again</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>531</td>
+                    <td class="mono snippet">    # Step 5: only strip trailing underscores if they weren't in the original name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>534</td>
+                    <td class="mono snippet">    # Step 6: if result is a Python keyword, append an underscore (PEP 8 convention)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/json_schema_converter.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # Step 1: Handle nullable field conversion (OpenAPI 3.0 only)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/json_schema_converter.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    # Step 2: Convert oneOf to anyOf if requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/json_schema_converter.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # Step 3: Remove OpenAPI-specific fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/json_schema_converter.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    # Step 4: Handle readOnly/writeOnly property removal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/json_schema_converter.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    # Step 5: Recursively process nested schemas</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Step 1: Un-flatten arguments into path, query, body, etc. using parameter map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        # Step 2: Serialize query parameters according to OpenAPI style/explode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">        # Step 3: Build base URL with path parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">        # Step 4: Prepare request data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        # Step 5: Determine the declared content type from the OpenAPI spec.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        # Step 6: Handle request body — dispatch on declared content type.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/openapi/director.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        # Step 7: Create httpx.Request</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(15 hits · 21 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyproject.toml</td>
+                    <td>202</td>
+                    <td class="mono snippet">    &quot;RUF&quot;,  # Ruff-specific: Modern best practices unique to Ruff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Fixture that creates a FastMCP server with comprehensive tool set for provider tests.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/providers/openapi/test_comprehensive.py</td>
+                    <td>371</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test server initialization with comprehensive spec.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/lifespan.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">        # self._fn is already a context manager factory, just call it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/fastmcp/server/middleware/logging.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Middleware that provides comprehensive request and response logging.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/fastmcp/server/auth/ssrf.py</td>
+                    <td>204</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Fetch URL with comprehensive SSRF protection and DNS pinning.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/fastmcp/server/auth/providers/in_memory.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">            # The AuthorizationHandler already does robust validation using client.validate_redirect_uri</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/auth/handlers/authorize.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">                    # If we can't parse the response, just return the original</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/server/providers/filesystem_discovery.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        # If root is a file, just return it (if it's a .py file)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/cli/cli.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">    return &quot;npx&quot;  # On Unix-like systems, just use npx</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/json_schema_type.py</td>
+                    <td>762</td>
+                    <td class="mono snippet">    # Otherwise just use the data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/cli.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">                    # MCPConfig - we don't process these here, just pass through</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/cli.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">                        # Not a valid MCPServerConfig, just pass through</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/utilities/cli.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">                # Not a valid JSON file, just pass through</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/fastmcp/client/tasks.py</td>
+                    <td>421</td>
+                    <td class="mono snippet">                    # Unknown type - just return it</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(2 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/test_mcp_config.py</td>
+                    <td>493</td>
+                    <td class="mono snippet">    assert client.transport.transport.auth.token.get_secret_value() == &quot;test_token&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/test_mcp_config.py</td>
+                    <td>508</td>
+                    <td class="mono snippet">    assert client.transport.transport.auth.token.get_secret_value() == &quot;test_token&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(17 hits · 17 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tools/test_standalone_decorator.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">                def my_method(cls) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_dependencies.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    def process_data(value: int, config: str = Depends(fetch_config)) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_input_validation.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        def process_data(count: int, name: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_input_validation.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">        def process_data(count: int, name: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_icons.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        def my_function(x: int) -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_icons.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">        def my_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_icons.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">        def my_function(id: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/test_icons.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">        def my_function(topic: str):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/tasks/test_server_tasks_parameter.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">    async def my_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/test_local_provider_prompts.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">        def my_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/test_local_provider_prompts.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">            def my_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/local_provider_tools/test_decorator.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">        def my_function(x: int) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/local_provider_tools/test_decorator.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">            def my_function(x: int) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/providers/local_provider_tools/test_decorator.py</td>
+                    <td>324</td>
+                    <td class="mono snippet">            def my_function(x: int) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/sampling/test_sampling_tool.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">        def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utilities/test_typeadapter.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    def do_something(self, x: int) -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/prompts/test_prompt.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">        def process_data(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/apps/demos/hitchhikers.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">                            Text(&quot;Don't forget to bring it.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/apps/demos/hitchhikers.html</td>
+                    <td>124</td>
+                    <td class="mono snippet">                                &quot;content&quot;: &quot;Don't forget to bring it.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/apps/showcase_server.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">                                    f&quot;Thanks, {owner_input.rx}. Don't forget to bring it.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/apps/showcase_server.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">                                Text(&quot;Anonymous, I see? Don't forget to bring it.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/martian-triage-issue.yml</td>
+                    <td>152</td>
+                    <td class="mono snippet">            You may not be able to do all of these things, sometimes you may find that all you can do is provide in-depth context of the issue and rel</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/mention/gh-get-review-threads.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/mention/gh-resolve-review-thread.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-comment.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-diff.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-remove-comment.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/pr-review/pr-existing-comments.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/actions/run-claude/action.yml</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [9.5, 9.5];
+        const matches = [1085, 1085];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

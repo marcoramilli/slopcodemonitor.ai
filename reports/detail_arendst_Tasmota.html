@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — arendst/Tasmota</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>arendst/Tasmota</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">2.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">2.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2315</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">4656</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,086,034</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">5189</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(2068 hits · 4136 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/issue-close-app.yml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/glnames.py</td>
+                    <td>5023</td>
+                    <td class="mono snippet">#     ----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/glnames.py</td>
+                    <td>5035</td>
+                    <td class="mono snippet">#     -----------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/chktrcmp.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># --------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/chktrcmp.py</td>
+                    <td>49</td>
+                    <td class="mono snippet"># --------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/chktrcmp.py</td>
+                    <td>75</td>
+                    <td class="mono snippet"># --------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/chktrcmp.py</td>
+                    <td>99</td>
+                    <td class="mono snippet"># --------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/src/embedded/berry_ctypes.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">#-------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/src/embedded/berry_ctypes.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">#-------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/src/embedded/berry_ctypes.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">#-------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_display/TM1638plus/keywords.txt</td>
+                    <td>1</td>
+                    <td class="mono snippet"># -----------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_display/TM1638plus/keywords.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet"># -----------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>46</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>48</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_sys_module.py</td>
+                    <td>84</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>33</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>35</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>117</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>119</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>202</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>204</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>237</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>239</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>270</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>272</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>305</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>307</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>381</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>383</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>459</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>461</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>550</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>552</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>617</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>619</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>650</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>652</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>692</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_relib_integration.py</td>
+                    <td>694</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>32</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>34</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>81</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>83</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>105</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_re15_compiler.py</td>
+                    <td>107</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 2018 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(45 hits · 225 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/glnames.py</td>
+                    <td>5387</td>
+                    <td class="mono snippet">    if ( name == 0 || name &gt;= limit )</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data.py</td>
+                    <td>462</td>
+                    <td class="mono snippet">      f&quot;  if (strict &amp;&amp; nbits != k{name}Bits)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kFOOBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>698</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kHitachiBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>763</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kHitachiBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>1066</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kFOOBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>1191</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kFOOBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>1437</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/auto_analyse_raw_data_test.py</td>
+                    <td>1486</td>
+                    <td class="mono snippet">        '  if (strict &amp;&amp; nbits != kBits)\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_str2real_overflow.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">        if (e &gt; 0 &amp;&amp; sum &gt; BREAL_MAX / ratio) goto overflow;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vararg.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        &quot;def f(*l) l.push(99) print(l) end f(1,2)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">        &quot;assert(y == 1970 || y == 1969)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>204</td>
+                    <td class="mono snippet">        &quot;assert(d['year'] &gt;= 1970 &amp;&amp; d['year'] &lt;= 9999)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">        &quot;assert(d['month'] &gt;= 1 &amp;&amp; d['month'] &lt;= 12)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">        &quot;assert(d['day'] &gt;= 1 &amp;&amp; d['day'] &lt;= 31)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">        &quot;assert(d['hour'] &gt;= 0 &amp;&amp; d['hour'] &lt;= 23)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        &quot;assert(d['min'] &gt;= 0 &amp;&amp; d['min'] &lt;= 59)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">        &quot;assert(d['sec'] &gt;= 0 &amp;&amp; d['sec'] &lt;= 60)\n&quot;   # 60 allowed for leap sec</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">        &quot;assert(d['weekday'] &gt;= 0 &amp;&amp; d['weekday'] &lt;= 6)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_time_module.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">        &quot;assert(d['weekday'] &gt;= 0 &amp;&amp; d['weekday'] &lt;= 6)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_exception_in_nested_vm_exec.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">l1.push(l1)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    (&quot;and true&quot;, &quot;print(true &amp;&amp; true)&quot;, &quot;true\n&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    (&quot;and false&quot;, &quot;print(true &amp;&amp; false)&quot;, &quot;false\n&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">    (&quot;or true&quot;, &quot;print(false || true)&quot;, &quot;true\n&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    (&quot;or false&quot;, &quot;print(false || false)&quot;, &quot;false\n&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>499</td>
+                    <td class="mono snippet">     &quot;var l = []\nl.push(1)\nl.push(2)\nl.push(3)\nprint(l)\nprint(l.size())&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>523</td>
+                    <td class="mono snippet">     &quot;var r = false &amp;&amp; side()\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>529</td>
+                    <td class="mono snippet">     &quot;var r = true || side()\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        run_json_test(&quot;assert_load('[1, null]', [1, nil])&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">            &quot;assert(o['key'] == 1 &amp;&amp; o.size() == 1)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>236</td>
+                    <td class="mono snippet">            &quot;\&quot;str\&quot;: \&quot;abc\&quot;, \&quot;n\&quot;: null, \&quot;arr\&quot;: [1, 2, 3]}'\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">            &quot;    last_arr.push(pushed)\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">            r&quot;&quot;&quot;assert(r != nil &amp;&amp; r['test'] == &quot;hello\nworld&quot;)&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>385</td>
+                    <td class="mono snippet">            r&quot;&quot;&quot;assert(r != nil &amp;&amp; r['test'] == &quot;hello\tworld&quot;)&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">            r&quot;&quot;&quot;assert(r != nil &amp;&amp; r['test'] == &quot;hello\rworld&quot;)&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>447</td>
+                    <td class="mono snippet">            &quot;assert(r != nil &amp;&amp; r['empty'] == '')&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>454</td>
+                    <td class="mono snippet">            &quot;assert(r != nil &amp;&amp; r['unicode'] == 'Hello')&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_json_module.py</td>
+                    <td>461</td>
+                    <td class="mono snippet">            r&quot;&quot;&quot;assert(r != nil &amp;&amp; r['escapes'] == &quot;\n\t\r\\\&quot;&quot;)&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_libs.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">solidify, introspect, global, debug, gc, strict, undefined).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_libs.py</td>
+                    <td>109</td>
+                    <td class="mono snippet"># dedicated Python file (debug, gc, introspect, global, strict, undefined).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_libs.py</td>
+                    <td>1033</td>
+                    <td class="mono snippet">    # &amp;be_native_module(undefined),  /* always registered */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_strlib.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">            s = args[arg_idx] if arg_idx &lt; len(args) else &quot;(null)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_strlib.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">                s = &quot;(null)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_code.py</td>
+                    <td>1056</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Pre-process binary operator (short-circuit for &amp;&amp; and ||).&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_string.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">#         if (cs-&gt;hash) {  /* if hash is null we need to compute it */</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(46 hits · 75 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/decode-status.py</td>
+                    <td>423</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">         print(&quot;Error: Aborted&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">         print(&quot;Error: MD5 mismatch&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">         if &quot;1&quot; in rcv_code: print(&quot;Error: Wrong password&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">            if &quot;2&quot; in rcv_code: print(&quot;Error: Bad chunk size&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">               if &quot;3&quot; in rcv_code: print(&quot;Error: Invalid file type&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">               else: print(&quot;Error: &quot;+rcv_code)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">         print(&quot;Error: Command error&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-ota.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">      print(&quot;Error: Timeout&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">               print(&quot;Error: Aborted&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">               if &quot;1&quot; in rcv_code: print(&quot;Error: Wrong password&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">                  if &quot;2&quot; in rcv_code: print(&quot;Error: Bad chunk size&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">                     if &quot;3&quot; in rcv_code: print(&quot;Error: Invalid file type&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">                     else: print(&quot;Error: &quot;+rcv_code)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">               print(&quot;Error: Command error&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">         print(&quot;Error: MD5 mismatch&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/download-settings.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">      print(&quot;Error: Timeout&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">         print(&quot;Error: Aborted&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">         print(&quot;Error: MD5 mismatch&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">         if &quot;1&quot; in rcv_code: print(&quot;Error: Wrong password&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">            if &quot;2&quot; in rcv_code: print(&quot;Error: Bad chunk size&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">               if &quot;3&quot; in rcv_code: print(&quot;Error: Invalid file type&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">               else: print(&quot;Error: &quot;+rcv_code)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">         print(&quot;Error: Command error&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/mqtt-file/upload-settings.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">      print(&quot;Error: Timeout&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ota_server/fw-server.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ota_server/fw-server.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/lv_gpio/gpio_convert.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">      print(f&quot;Error: cannot match {l_raw}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/lv_gpio/gpio_convert.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">      print(f&quot;Error: {k} is not an identifier&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/convert.py</td>
+                    <td>741</td>
+                    <td class="mono snippet">      print(f&quot;Error: cannot match {l_raw}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/convert.py</td>
+                    <td>754</td>
+                    <td class="mono snippet">      print(f&quot;Error: {k} is not an identifier&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/preprocessor.py</td>
+                    <td>305</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/preprocessor.py</td>
+                    <td>331</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/preprocessor.py</td>
+                    <td>566</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_comptr_semantics.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_module_class_constructor.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vararg.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_vm_execution.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_solidification_output.py</td>
+                    <td>484</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_solidification_output.py</td>
+                    <td>530</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_solidification_output.py</td>
+                    <td>554</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_virtual_init.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_module_init_substitution.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_filelib.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_filelib.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pio-tools/gen-berry-structures.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">        print(&quot;Error while deleting file : &quot;, filePath)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(36 hits · 72 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/afblue.pl</td>
+                    <td>11</td>
+                    <td class="mono snippet"># This file is part of the FreeType project, and may only be used,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/make_distribution_archives.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">        # Create a temporary directory, and ensure it is removed on exit.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/src/tools/glnames.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This file is part of the FreeType project, and may only be used, modified,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/convert.py</td>
+                    <td>237</td>
+                    <td class="mono snippet"># The following class takes a C++ type and returns all information about Berry type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_display/Display_Renderer-gemu-1.0/docs/conf.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_div/esp-nimble-cpp/docs/New_user_guide.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">## Creating a Server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_div/esp-nimble-cpp/docs/New_user_guide.md</td>
+                    <td>135</td>
+                    <td class="mono snippet">## Creating a Client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Examples.md</td>
+                    <td>390</td>
+                    <td class="mono snippet"># Define a reusable blinking template</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Dsl_Reference.md</td>
+                    <td>304</td>
+                    <td class="mono snippet"># Define the function in a berry block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Dsl_Reference.md</td>
+                    <td>475</td>
+                    <td class="mono snippet"># Define a user function that creates dynamic palettes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Dsl_Transpilation.md</td>
+                    <td>72</td>
+                    <td class="mono snippet"># Create a DSL file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>205</td>
+                    <td class="mono snippet"># Define a color that cycles over time, cycle is 5 seconds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>236</td>
+                    <td class="mono snippet"># Define a palette of rainbow colors including white</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>248</td>
+                    <td class="mono snippet"># Define a color that cycles over time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>303</td>
+                    <td class="mono snippet"># Define a color that cycles over time with smooth transitions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>335</td>
+                    <td class="mono snippet"># Define a palette with period=0 (no time-based change, only spatial)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>338</td>
+                    <td class="mono snippet"># Create a gradient across the whole strip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>434</td>
+                    <td class="mono snippet"># Define a VU-meter palette with position-based colors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>451</td>
+                    <td class="mono snippet"># Create the meter animation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>687</td>
+                    <td class="mono snippet"># Define a red-blue-red gradient palette</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>1175</td>
+                    <td class="mono snippet"># Define a custom palette</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>1200</td>
+                    <td class="mono snippet"># Define a template to package the shutter in-out-in from 6.40</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>45</td>
+                    <td class="mono snippet"># Define a sunset palette</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>167</td>
+                    <td class="mono snippet"># Define a template animation with constraints</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/User_Functions.md</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Define a custom breathing effect</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/User_Functions.md</td>
+                    <td>261</td>
+                    <td class="mono snippet">  # Create a palette with variations of the base color</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_upvalue_lifecycle.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">    # Create an enclosing closure on the call frame</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_upvalue_lifecycle.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">    # Create a proto with one instack upvalue at idx=0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_upvalue_lifecycle.py</td>
+                    <td>345</td>
+                    <td class="mono snippet">    # Create the closure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_upvalue_lifecycle.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">    # Create a closed upvalue to inherit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_cli_repl.py</td>
+                    <td>252</td>
+                    <td class="mono snippet">        # Create a simple Berry module file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_bytecode.py</td>
+                    <td>1122</td>
+                    <td class="mono snippet">    # Create a new list on the stack (equivalent to be_newlist(vm))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_class.py</td>
+                    <td>457</td>
+                    <td class="mono snippet">    # Initialize member variable slots to nil</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_relib.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        # Create an instance of re_pattern class and store the compiled ByteProg</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_vm.py</td>
+                    <td>1350</td>
+                    <td class="mono snippet">    # Initialize global variables</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_vm.py</td>
+                    <td>2505</td>
+                    <td class="mono snippet">        # Create a proper list instance via be_newobject (mirrors C impl).</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(45 hits · 55 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lv_binding_berry/tools/convert.py</td>
+                    <td>638</td>
+                    <td class="mono snippet">        # if the type is a single letter, we just add it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>453</td>
+                    <td class="mono snippet">#define CMD_SYNC             0xFFFFFF42     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_SYNC) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>454</td>
+                    <td class="mono snippet">#define CMD_FLASHERASE       0xFFFFFF44     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHERASE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>458</td>
+                    <td class="mono snippet">#define CMD_FLASHDETACH      0xFFFFFF48     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHDETACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>459</td>
+                    <td class="mono snippet">#define CMD_FLASHATTACH      0xFFFFFF49     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHATTACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>461</td>
+                    <td class="mono snippet">#define CMD_FLASHSPIDESEL    0xFFFFFF4B     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHSPIDESEL) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>465</td>
+                    <td class="mono snippet">#define CMD_CLEARCACHE       0xFFFFFF4F     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_CLEARCACHE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>468</td>
+                    <td class="mono snippet">#define CMD_RESETFONTS       0xFFFFFF52     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_RESETFONTS) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/display/ft81x/lv_ft81x_defines.h</td>
+                    <td>477</td>
+                    <td class="mono snippet">#define CMD_VIDEOSTARTF      0xFFFFFF5F     /* does not need a dedicated function, just use EVE_cmd_dl(CMD_VIDEOSTARTF) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1041</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_SYNC             ((uint32_t) 0xFFFFFF42UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_SYNC) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1042</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_FLASHERASE       ((uint32_t) 0xFFFFFF44UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHERASE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1046</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_FLASHDETACH      ((uint32_t) 0xFFFFFF48UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHDETACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1047</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_FLASHATTACH      ((uint32_t) 0xFFFFFF49UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHATTACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1049</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_FLASHSPIDESEL    ((uint32_t) 0xFFFFFF4BUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHSPIDESEL) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1053</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_CLEARCACHE       ((uint32_t) 0xFFFFFF4FUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_CLEARCACHE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1056</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_RESETFONTS       ((uint32_t) 0xFFFFFF52UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_RESETFONTS) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1065</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_VIDEOSTARTF      ((uint32_t) 0xFFFFFF5FUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_VIDEOSTARTF) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1166</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_ENDLIST        ((uint32_t) 0xFFFFFF69UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_ENDLIST) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1175</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_RETURN         ((uint32_t) 0xFFFFFF66UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_RETURN) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/drivers/draw/eve/lv_draw_eve_display_defines.h</td>
+                    <td>1177</td>
+                    <td class="mono snippet">#define LV_EVE_CMD_TESTCARD       ((uint32_t) 0xFFFFFF61UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_TESTCARD) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1105</td>
+                    <td class="mono snippet">#define CMD_SYNC             ((uint32_t) 0xFFFFFF42UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_SYNC) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1106</td>
+                    <td class="mono snippet">#define CMD_FLASHERASE       ((uint32_t) 0xFFFFFF44UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHERASE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1110</td>
+                    <td class="mono snippet">#define CMD_FLASHDETACH      ((uint32_t) 0xFFFFFF48UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHDETACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1111</td>
+                    <td class="mono snippet">#define CMD_FLASHATTACH      ((uint32_t) 0xFFFFFF49UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHATTACH) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1113</td>
+                    <td class="mono snippet">#define CMD_FLASHSPIDESEL    ((uint32_t) 0xFFFFFF4BUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_FLASHSPIDESEL) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1117</td>
+                    <td class="mono snippet">#define CMD_CLEARCACHE       ((uint32_t) 0xFFFFFF4FUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_CLEARCACHE) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1120</td>
+                    <td class="mono snippet">#define CMD_RESETFONTS       ((uint32_t) 0xFFFFFF52UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_RESETFONTS) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1129</td>
+                    <td class="mono snippet">#define CMD_VIDEOSTARTF      ((uint32_t) 0xFFFFFF5FUL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_VIDEOSTARTF) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1230</td>
+                    <td class="mono snippet">#define CMD_ENDLIST        ((uint32_t) 0xFFFFFF69UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_ENDLIST) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1239</td>
+                    <td class="mono snippet">#define CMD_RETURN         ((uint32_t) 0xFFFFFF66UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_RETURN) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/FT800-FT813/EVE.h</td>
+                    <td>1241</td>
+                    <td class="mono snippet">#define CMD_TESTCARD       ((uint32_t) 0xFFFFFF61UL) /* does not need a dedicated function, just use EVE_cmd_dl(CMD_TESTCARD) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/gltf/gltf_view/assets/lv_gltf_view_shader.c</td>
+                    <td>2968</td>
+                    <td class="mono snippet">                // Sampling +Y or -Y, so we need a more robust bitangent.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/gif/AnimatedGIF.h</td>
+                    <td>51</td>
+                    <td class="mono snippet">// dictionary. For larger GIFs, the en(!)coder can &quot;voluntarily&quot; choose not to utilize the entire dictionary. I.e.,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/third_party/flatbuffers/include/flatbuffers/vector_downward.h</td>
+                    <td>31</td>
+                    <td class="mono snippet">// Essentially, this supports 2 std::vectors in a single buffer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/tensorflow/lite/micro/micro_interpreter.h</td>
+                    <td>159</td>
+                    <td class="mono snippet">  // utilize the space. If it's not the case, the optimial arena size would be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/tensorflow/lite/micro/kernels/micro_tensor_utils.h</td>
+                    <td>41</td>
+                    <td class="mono snippet">// TODO(b/230666277): consider removing this since micro does not utilize it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/tensorflow/lite/kernels/internal/optimized/neon_check.h</td>
+                    <td>18</td>
+                    <td class="mono snippet">// TFLM does not need to utilize any Neon optimizations.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Development.md</td>
+                    <td>352</td>
+                    <td class="mono snippet"># Method chaining is not needed - just set parameters directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/AsyncHttpClientLight/src/AsyncHttpClientLight.cpp</td>
+                    <td>388</td>
+                    <td class="mono snippet">// ---------- robust write (1× reconnect 0-sent headers) ------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_int64/README.md</td>
+                    <td>84</td>
+                    <td class="mono snippet"># The library provides comprehensive error handling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_toidentifier.py</td>
+                    <td>319</td>
+                    <td class="mono snippet">        # require a custom C test harness exposing toidentifier.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_baselib.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">    # if arg 1 is a class, simply return super</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_byteslib.py</td>
+                    <td>635</td>
+                    <td class="mono snippet">    # In Python, we just create a new bytearray of the right size</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_solidifylib.py</td>
+                    <td>1114</td>
+                    <td class="mono snippet">        # allocate a proper ktab (in Python, just use the list)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_rf/RadioLib/uncrustify.cfg</td>
+                    <td>3484</td>
+                    <td class="mono snippet"># Whether to apply special formatting for Qt SIGNAL/SLOT macros. Essentially,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tasmota/include/tasmota_globals.h</td>
+                    <td>592</td>
+                    <td class="mono snippet"> * So don't forget to NOT put pointers in the functions pointers list.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/include/freetype/fterrors.h</td>
+                    <td>78</td>
+                    <td class="mono snippet">   *   Here is a simple example.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/include/freetype/freetype.h</td>
+                    <td>1381</td>
+                    <td class="mono snippet">   *     for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/freetype/include/freetype/internal/ftrfork.h</td>
+                    <td>35</td>
+                    <td class="mono snippet">  /* Don't forget to increment the number if you add a new guessing rule. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/lodepng/lodepng.c</td>
+                    <td>74</td>
+                    <td class="mono snippet">lodepng source code. Don't forget to remove &quot;static&quot; if you copypaste them</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/libs/nanovg/nanovg_gl.h</td>
+                    <td>222</td>
+                    <td class="mono snippet">// don't forget to also update the fragment shader source!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/Sensirion_I2C_SEN5X/README.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">Don't forget to **install the dependencies** listed below the same way via `Add</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/Sensirion_I2C_SEN6X_Tasmota/README.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">Don't forget to **install the dependencies** listed below the same way via library</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/Sensirion_Core/README.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">Stream object (Serial,UART,...) to talk to your sensor. Don't forget to also</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/Sensirion_Core/README.md</td>
+                    <td>103</td>
+                    <td class="mono snippet">Don't forget to also call the `.begin()` function with the right configuration.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/arduino-i2c-sgp41/README.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">Don't forget to **install the dependencies** listed below the same way via `Add</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/lib_i2c/Sensirion_i2c_stcc4/README.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">Don't forget to **install the dependencies** listed below the same way via library</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Dsl_Reference.md</td>
+                    <td>711</td>
+                    <td class="mono snippet">- `rand_demo()` - Returns random values for demonstration purposes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/libesp32_eink/epdiy/README.md</td>
+                    <td>48</td>
+                    <td class="mono snippet">Don't forget to oder adapters if the board doesn't have connectors for your specific display.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(27 hits · 27 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_div/rfid-1.4.7/src/MFRC522.cpp</td>
+                    <td>978</td>
+                    <td class="mono snippet">	// Step 1: Tell the PICC we want to write to block blockAddr.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_div/rfid-1.4.7/src/MFRC522.cpp</td>
+                    <td>987</td>
+                    <td class="mono snippet">	// Step 2: Transfer the data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_div/rfid-1.4.7/src/MFRC522.cpp</td>
+                    <td>1081</td>
+                    <td class="mono snippet">	// Step 1: Tell the PICC the command and block address</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_div/rfid-1.4.7/src/MFRC522.cpp</td>
+                    <td>1089</td>
+                    <td class="mono snippet">	// Step 2: Transfer the data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_lvgl/lvgl/src/widgets/arc/lv_arc.c</td>
+                    <td>1054</td>
+                    <td class="mono snippet"> * outside of the arc background we need to check if the angle (of the clicked point)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>24</td>
+                    <td class="mono snippet">    // Step 1: Initialize LDO for display power (from config)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>41</td>
+                    <td class="mono snippet">    // Step 2: Create DSI bus (from config)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>55</td>
+                    <td class="mono snippet">    // Step 3: Create DBI IO for commands</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>68</td>
+                    <td class="mono snippet">    // Step 4: Configure DPI panel (from config)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>90</td>
+                    <td class="mono snippet">    // Step 5: Create DPI panel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>98</td>
+                    <td class="mono snippet">    // Step 6: Reset via GPIO (from config)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>116</td>
+                    <td class="mono snippet">    // Step 7: Initialize DPI panel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>124</td>
+                    <td class="mono snippet">    // Step 8: Get framebuffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_display/UDisplay/src/uDisplay_DSI_panel.cpp</td>
+                    <td>135</td>
+                    <td class="mono snippet">    // Step 9: Send init commands from INI file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/TasmotaLED/TASMOTALED_DOCUMENTATION.md</td>
+                    <td>777</td>
+                    <td class="mono snippet">#### Step 1: Include Headers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/TasmotaLED/TASMOTALED_DOCUMENTATION.md</td>
+                    <td>784</td>
+                    <td class="mono snippet">#### Step 2: Create Strip Instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/TasmotaLED/TASMOTALED_DOCUMENTATION.md</td>
+                    <td>798</td>
+                    <td class="mono snippet">#### Step 3: Create and Assign Pusher</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/TasmotaLED/TASMOTALED_DOCUMENTATION.md</td>
+                    <td>813</td>
+                    <td class="mono snippet">#### Step 4: Initialize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/TasmotaLED/TASMOTALED_DOCUMENTATION.md</td>
+                    <td>822</td>
+                    <td class="mono snippet">#### Step 5: Use the Strip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>475</td>
+                    <td class="mono snippet"># Step 1: Embed native Berry code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>485</td>
+                    <td class="mono snippet"># Step 2: Declare the function for DSL use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Tutorial.md</td>
+                    <td>500</td>
+                    <td class="mono snippet"># Step 3: Use the custom function as a parameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Step 1: Your First Animation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Step 2: Color Cycling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">## Step 3: Custom Palettes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>64</td>
+                    <td class="mono snippet">## Step 4: Sequences</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Quick_Start.md</td>
+                    <td>106</td>
+                    <td class="mono snippet">## Step 5: Dynamic Effects</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(24 hits · 24 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>230</td>
+                    <td class="mono snippet">gpio.pin_used(gpio.REL1)        # Check if GPIO is used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>253</td>
+                    <td class="mono snippet">wire1.enabled() -&gt; bool             # Check if bus initialized</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>255</td>
+                    <td class="mono snippet">wire1.detect(addr:int) -&gt; bool      # Check if device present</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>322</td>
+                    <td class="mono snippet">persist.has(&quot;key&quot;)              # Check if key exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>427</td>
+                    <td class="mono snippet">path.isdir(name:string) -&gt; bool         # Check if directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>480</td>
+                    <td class="mono snippet">display.started()              # Check if initialized</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Troubleshooting.md</td>
+                    <td>791</td>
+                    <td class="mono snippet">   # Check if CPU is overloaded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Troubleshooting.md</td>
+                    <td>853</td>
+                    <td class="mono snippet"># Check if handler is registered</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/Animation_Development.md</td>
+                    <td>379</td>
+                    <td class="mono snippet"># Check if parameter is a value_provider</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_animation/animation_docs/User_Functions.md</td>
+                    <td>616</td>
+                    <td class="mono snippet"># Check if a function is registered</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_int64/README.md</td>
+                    <td>147</td>
+                    <td class="mono snippet">.isint()                  # Check if value fits in int32</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/tests/property/test_toidentifier.py</td>
+                    <td>265</td>
+                    <td class="mono snippet">            # Check if this is an escape sequence (_XHH) vs escape-the-escape (_X_)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_func.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">            # Check if closed (self-reference sentinel) and unreferenced</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_int64lib.py</td>
+                    <td>676</td>
+                    <td class="mono snippet">    # Check if other is an int64 instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_int64lib.py</td>
+                    <td>685</td>
+                    <td class="mono snippet">    # Check if other is a plain int or nil (nil treated as 0)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_int64lib.py</td>
+                    <td>694</td>
+                    <td class="mono snippet">    # Check if other is bytes — compare raw 8-byte LE representation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_solidifylib.py</td>
+                    <td>528</td>
+                    <td class="mono snippet">    # Check if it's a bytes instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_lexer.py</td>
+                    <td>1673</td>
+                    <td class="mono snippet">    # Check if there's a value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_vm.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">    # Push the method to stack top</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_module.py</td>
+                    <td>605</td>
+                    <td class="mono snippet">    # Check if top-of-stack is a module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_module.py</td>
+                    <td>856</td>
+                    <td class="mono snippet">                # Check if the module is named 'undefined'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry/berry_port/be_string.py</td>
+                    <td>692</td>
+                    <td class="mono snippet">    # Check if we should resize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pio-tools/post_esp32.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">    # Write filesystem image</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pio-tools/port-vsc.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">    # Check if pioarduino IDE &gt;= 1.3.6 is installed (handles port natively)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(8 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/TASMOTA_SUPPORT_DEEP_ANALYSIS.md</td>
+                    <td>1739</td>
+                    <td class="mono snippet">// Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_div/arduino-mcp2515-1.0.1/README.md</td>
+                    <td>21</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/default/jsmn-shadinger-1.0/README.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## How to use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_basic/IRremoteESP8266/IRremoteESP8266/tools/mode2_decode.cpp</td>
+                    <td>5</td>
+                    <td class="mono snippet">// Usage example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/tensorflow/lite/micro/micro_profiler.h</td>
+                    <td>107</td>
+                    <td class="mono snippet">// Usage example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32_ml/tf_lite_esp32/src/tensorflow/lite/c/common.h</td>
+                    <td>816</td>
+                    <td class="mono snippet">  // Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/lib_i2c/Mutichannel_Gas_Sensor/README.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/libesp32/berry_mapping/DEEP_REPOSITORY_ANALYSIS.md</td>
+                    <td>283</td>
+                    <td class="mono snippet">// Usage example:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">lib/lib_rf/RF24/RF24.cpp</td>
+                    <td>1448</td>
+                    <td class="mono snippet">	  level = (level &lt;&lt; 1) + 1;	 		// Else set level as requested</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.doc_for_ai/BERRY_TASMOTA.md</td>
+                    <td>656</td>
+                    <td class="mono snippet">  def run_task()</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [2.1, 2.2];
+        const matches = [2218, 2315];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

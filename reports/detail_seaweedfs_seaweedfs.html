@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — seaweedfs/seaweedfs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>seaweedfs/seaweedfs</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">502</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">715</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">734,245</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2701</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(231 hits · 231 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/WEED-MOUNT-CODE-PATH.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">    // Step 1: Lookup volume location from master</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/WEED-MOUNT-CODE-PATH.md</td>
+                    <td>120</td>
+                    <td class="mono snippet">    // Step 2: Find best server (local preferred)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/WEED-MOUNT-CODE-PATH.md</td>
+                    <td>123</td>
+                    <td class="mono snippet">    // Step 3: Make HTTP request to target server's RDMA sidecar</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>290</td>
+                    <td class="mono snippet">			// Step 1: Sign a request targeting the client-facing URL using real AWS SDK signer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>298</td>
+                    <td class="mono snippet">			// Step 2: Create a separate request as the proxy would deliver it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>308</td>
+                    <td class="mono snippet">			// Step 3: Verify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>450</td>
+                    <td class="mono snippet">			// Step 1: Sign a request using the real AWS SDK v2 signer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>459</td>
+                    <td class="mono snippet">			// Step 2: Build the request as the proxy would deliver it to SeaweedFS.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>479</td>
+                    <td class="mono snippet">			// Step 3: Verify extractHostHeader returns the expected value.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/auth_security_test.go</td>
+                    <td>486</td>
+                    <td class="mono snippet">			// Step 4: Verify the full signature matches.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_handlers_put.go</td>
+                    <td>523</td>
+                    <td class="mono snippet">	// Step 3: Calculate MD5 hash and add SSE metadata to chunks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_handlers_put.go</td>
+                    <td>622</td>
+                    <td class="mono snippet">	// Step 4: Create metadata entry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_handlers_put.go</td>
+                    <td>781</td>
+                    <td class="mono snippet">	// Step 4: Save metadata to filer via gRPC</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_handlers_copy.go</td>
+                    <td>1849</td>
+                    <td class="mono snippet">	// Step 1: Decrypt source data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_handlers_copy.go</td>
+                    <td>1946</td>
+                    <td class="mono snippet">	// Step 2: Re-encrypt with destination encryption (if any)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_sse_s3_integration_test.go</td>
+                    <td>43</td>
+                    <td class="mono snippet">			// Step 1: Encrypt (simulates what happens during PUT)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_sse_s3_integration_test.go</td>
+                    <td>68</td>
+                    <td class="mono snippet">			// Step 2: Simulate storage (inline file - no chunks)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_sse_s3_integration_test.go</td>
+                    <td>79</td>
+                    <td class="mono snippet">			// Step 3: Decrypt (simulates what happens during GET)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_retention.go</td>
+                    <td>551</td>
+                    <td class="mono snippet">	// Step 1: Check if governance bypass was requested via header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3api_object_retention.go</td>
+                    <td>558</td>
+                    <td class="mono snippet">	// Step 2: Validate user has permission to bypass governance retention</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_list_parts_action_test.go</td>
+                    <td>200</td>
+                    <td class="mono snippet">		// Step 1: Initiate multipart upload (POST with uploads query)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_list_parts_action_test.go</td>
+                    <td>210</td>
+                    <td class="mono snippet">		// Step 2: List existing parts (GET with uploadId query) - THIS WAS THE MISSING MAPPING</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_list_parts_action_test.go</td>
+                    <td>220</td>
+                    <td class="mono snippet">		// Step 3: Upload a part (PUT with uploadId and partNumber)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/s3api/s3_list_parts_action_test.go</td>
+                    <td>231</td>
+                    <td class="mono snippet">		// Step 4: Complete multipart upload (POST with uploadId)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/util/chunk_cache/chunk_cache.go</td>
+                    <td>226</td>
+                    <td class="mono snippet">	// Step 1: Read and validate header (volume ID + cookie)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/util/chunk_cache/chunk_cache.go</td>
+                    <td>252</td>
+                    <td class="mono snippet">	// Step 2: Read actual data from the offset position (after header)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_volume_replica_check.go</td>
+                    <td>95</td>
+                    <td class="mono snippet">	// Step 1: Find the largest replica (highest file count) that's not excluded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_volume_replica_check.go</td>
+                    <td>117</td>
+                    <td class="mono snippet">	// Step 2: Read index database from the best replica</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_volume_replica_check.go</td>
+                    <td>128</td>
+                    <td class="mono snippet">	// Step 3: For each other replica (including excluded), find entries missing from best and copy them</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>109</td>
+                    <td class="mono snippet">	// Step 1: Collect all remote files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>123</td>
+                    <td class="mono snippet">	// Step 2: Collect all local files (only if we need to delete local extra files)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>141</td>
+                    <td class="mono snippet">	// Step 3: Determine actions needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>179</td>
+                    <td class="mono snippet">			// For caching, we need to check if the local file exists and needs caching</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>221</td>
+                    <td class="mono snippet">	// Step 4: Execute actions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_s3_user_provision.go</td>
+                    <td>121</td>
+                    <td class="mono snippet">		// Step 0: Check if user already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_s3_user_provision.go</td>
+                    <td>130</td>
+                    <td class="mono snippet">		// Step 1: Create policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_s3_user_provision.go</td>
+                    <td>164</td>
+                    <td class="mono snippet">			// Step 2: Create new user with credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_copy_local.go</td>
+                    <td>102</td>
+                    <td class="mono snippet">	// Step 1: Collect all local files that are part of the remote mount</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_copy_local.go</td>
+                    <td>118</td>
+                    <td class="mono snippet">	// Step 2: Check which files exist on remote storage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_copy_local.go</td>
+                    <td>132</td>
+                    <td class="mono snippet">	// Step 3: Determine files to copy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/shell/command_remote_copy_local.go</td>
+                    <td>170</td>
+                    <td class="mono snippet">	// Step 4: Copy files to remote storage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/admin/topology/storage_slot_test.go</td>
+                    <td>555</td>
+                    <td class="mono snippet">	// Step 1: Add pending task (should reserve capacity via StorageSlotChange)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/admin/topology/storage_slot_test.go</td>
+                    <td>579</td>
+                    <td class="mono snippet">	// Step 2: Assign task (capacity already reserved by pending task)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/admin/topology/storage_slot_test.go</td>
+                    <td>592</td>
+                    <td class="mono snippet">	// Step 3: Complete task (should release reserved capacity)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/admin/topology/storage_slot_test.go</td>
+                    <td>601</td>
+                    <td class="mono snippet">	// Step 4: Apply actual storage change (simulates master topology update)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/iam/integration/iam_integration_test.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">			// Step 1: Attempt role assumption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/iam/integration/iam_integration_test.go</td>
+                    <td>84</td>
+                    <td class="mono snippet">			// Step 2: Test policy enforcement with assumed credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/iam/integration/iam_integration_test.go</td>
+                    <td>138</td>
+                    <td class="mono snippet">			// Step 1: Attempt role assumption with LDAP credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/iam/integration/iam_integration_test.go</td>
+                    <td>158</td>
+                    <td class="mono snippet">			// Step 2: Test policy enforcement</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/iam/policy/policy_engine.go</td>
+                    <td>1211</td>
+                    <td class="mono snippet">	// Step 1: Substitute policy variables (e.g., ${aws:username}, ${saml:username})</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 181 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(75 hits · 80 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/test.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/test.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        print(f&quot;Error listing files: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/fix_s3_tests_bucket_conflicts.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">        print(f&quot;Error: File {file_path} not found&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>151</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Intentionally broad for compatibility testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Top-level exception handler for test orchestration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>339</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001 - Top-level exception handler for test orchestration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>352</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>199</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>319</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>342</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/s3_parquet_test.py</td>
+                    <td>410</td>
+                    <td class="mono snippet">    print(f&quot;Error details logged to: {ERROR_LOG_FILE}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/debug_write_dataset.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/debug_write_dataset.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/debug_write_dataset.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/debug_write_dataset.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>174</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_sse_s3_compatibility.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_sse_s3_compatibility.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_sse_s3_compatibility.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/spark/issue_8234_repro_test.go</td>
+                    <td>47</td>
+                    <td class="mono snippet">except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3tables/catalog/test_rest_catalog_auth.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 25 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(34 hits · 68 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/auth_credentials.go</td>
+                    <td>122</td>
+                    <td class="mono snippet">		EmailAddress: &quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/auth_sts_identity_test.go</td>
+                    <td>334</td>
+                    <td class="mono snippet">		&quot;email&quot;:              &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/auth_sts_identity_test.go</td>
+                    <td>353</td>
+                    <td class="mono snippet">	assert.Equal(t, &quot;user@example.com&quot;, sessionInfo.RequestContext[&quot;email&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/auth_sts_identity_test.go</td>
+                    <td>363</td>
+                    <td class="mono snippet">	assert.Equal(t, &quot;user@example.com&quot;, identity.Claims[&quot;email&quot;], &quot;email should be in Claims&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>128</td>
+                    <td class="mono snippet">			&quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>140</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;user@example.com&quot;, email)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>353</td>
+                    <td class="mono snippet">			&quot;email&quot;:  &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>362</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;user@example.com&quot;, identity.Email)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>376</td>
+                    <td class="mono snippet">			&quot;email&quot;:              &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>454</td>
+                    <td class="mono snippet">				&quot;email&quot;:  &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>486</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;user@example.com&quot;, identity.Email)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>538</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;user@example.com&quot;, identity.Email)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider_test.go</td>
+                    <td>646</td>
+                    <td class="mono snippet">				&quot;email&quot;:  &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/reconstruction_test.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">		&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/reconstruction_test.go</td>
+                    <td>111</td>
+                    <td class="mono snippet">	if finalDecodedMsg.RecordValue.Fields[&quot;name&quot;].GetStringValue() != &quot;John Doe&quot; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/reconstruction_test.go</td>
+                    <td>112</td>
+                    <td class="mono snippet">		t.Errorf(&quot;Expected name='John Doe', got %v&quot;, finalDecodedMsg.RecordValue.Fields[&quot;name&quot;].GetStringValue())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/reconstruction_test.go</td>
+                    <td>314</td>
+                    <td class="mono snippet">		&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/manager_test.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">		&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/manager_test.go</td>
+                    <td>106</td>
+                    <td class="mono snippet">	if nameValue == nil || nameValue.GetStringValue() != &quot;John Doe&quot; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/manager_test.go</td>
+                    <td>107</td>
+                    <td class="mono snippet">		t.Errorf(&quot;Expected name='John Doe', got %v&quot;, nameValue)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/decode_encode_test.go</td>
+                    <td>50</td>
+                    <td class="mono snippet">				&quot;name&quot;:  &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/decode_encode_test.go</td>
+                    <td>212</td>
+                    <td class="mono snippet">						&quot;street&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>106</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>132</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>140</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>149</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>519</td>
+                    <td class="mono snippet">	jsonData := []byte(`{&quot;id&quot;: 123, &quot;name&quot;: &quot;John Doe&quot;}`)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/json_schema_decoder_test.go</td>
+                    <td>538</td>
+                    <td class="mono snippet">	jsonData := []byte(`{&quot;id&quot;: 123, &quot;name&quot;: &quot;John Doe&quot;}`)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/integration_test.go</td>
+                    <td>454</td>
+                    <td class="mono snippet">			&quot;email&quot;: map[string]interface{}{&quot;string&quot;: &quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/avro_decoder_test.go</td>
+                    <td>87</td>
+                    <td class="mono snippet">		&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/avro_decoder_test.go</td>
+                    <td>110</td>
+                    <td class="mono snippet">	if result[&quot;name&quot;] != &quot;John Doe&quot; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/avro_decoder_test.go</td>
+                    <td>111</td>
+                    <td class="mono snippet">		t.Errorf(&quot;Expected name='John Doe', got %v&quot;, result[&quot;name&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/mq/kafka/schema/avro_decoder_test.go</td>
+                    <td>519</td>
+                    <td class="mono snippet">		&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/query/engine/test_sample_data_test.go</td>
+                    <td>125</td>
+                    <td class="mono snippet">					&quot;data&quot;:       {Kind: &amp;schema_pb.Value_StringValue{StringValue: `{&quot;field&quot;: &quot;email&quot;, &quot;new_value&quot;: &quot;user@example.com&quot;}`}},</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(63 hits · 63 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/test-rdma-integration.sh</td>
+                    <td>92</td>
+                    <td class="mono snippet">    # Check if it has the expected fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/performance-benchmark.sh</td>
+                    <td>107</td>
+                    <td class="mono snippet">        # Display result with color coding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/performance-benchmark.sh</td>
+                    <td>167</td>
+                    <td class="mono snippet">    # Check if connection pooling is working</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/performance-benchmark.sh</td>
+                    <td>186</td>
+                    <td class="mono snippet">    # Check if sidecar is ready</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/test-complete-optimizations.sh</td>
+                    <td>181</td>
+                    <td class="mono snippet">    # Check if socket was created</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/mount-helper.sh</td>
+                    <td>65</td>
+                    <td class="mono snippet">        # Check if RDMA is actually enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/mount-helper.sh</td>
+                    <td>118</td>
+                    <td class="mono snippet"># Check if already mounted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/mount-health-check.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Check if mount point exists and is mounted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/test-zero-copy-mechanism.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">    # Check if file is in page cache (approximation)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/run-integration-tests.sh</td>
+                    <td>159</td>
+                    <td class="mono snippet">    # Read file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/run-integration-tests.sh</td>
+                    <td>202</td>
+                    <td class="mono snippet">    # Check if response contains expected fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/demo-mount-rdma.sh</td>
+                    <td>151</td>
+                    <td class="mono snippet"># Check if mount is successful</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/demo-mount-rdma.sh</td>
+                    <td>239</td>
+                    <td class="mono snippet">    # Check if mount is still active</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/admin_integration/check_volumes.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Check if master is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/admin_integration/demo_vacuum_testing.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Check if SeaweedFS is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kms/setup_openbao.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Check if we can connect</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kms/README.md</td>
+                    <td>274</td>
+                    <td class="mono snippet"># Check if port 8200 is in use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/retention/README.md</td>
+                    <td>180</td>
+                    <td class="mono snippet"># Check if port is in use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_keycloak.sh</td>
+                    <td>145</td>
+                    <td class="mono snippet">      # Check if it exists now (might have been created by another process)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_keycloak.sh</td>
+                    <td>215</td>
+                    <td class="mono snippet">  # Check if role already assigned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_keycloak.sh</td>
+                    <td>236</td>
+                    <td class="mono snippet">  # Check if a realm roles mapper already exists for this client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_keycloak.sh</td>
+                    <td>277</td>
+                    <td class="mono snippet">  # Check if an audience mapper already exists for this client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/README.md</td>
+                    <td>304</td>
+                    <td class="mono snippet"># Check if ports are available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_all_tests.sh</td>
+                    <td>57</td>
+                    <td class="mono snippet">    # Check if LDAP container is already running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/iam/setup_all_tests.sh</td>
+                    <td>176</td>
+                    <td class="mono snippet">    # Check if Keycloak is responding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">        # Check if bucket exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">        # Check if bucket exists by trying to list it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/java/spark/run-tests.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Check if SeaweedFS is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/java/spark/quick-start.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Check if SeaweedFS is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/java/spark/quick-start.sh</td>
+                    <td>92</td>
+                    <td class="mono snippet">    # Check if Docker is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/java/spark/quick-start.sh</td>
+                    <td>98</td>
+                    <td class="mono snippet">    # Check if Maven is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/java/spark/quick-start.sh</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # Check if SeaweedFS is running, if not start it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/postgres/validate-setup.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Check if running from correct directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/postgres/validate-setup.sh</td>
+                    <td>65</td>
+                    <td class="mono snippet"># Check if services are running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/test-schema-bypass.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Check if Kafka gateway is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/loadtest/run_million_record_test.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Check if SeaweedFS infrastructure is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/scripts/test_schema_registry.sh</td>
+                    <td>10</td>
+                    <td class="mono snippet"># Check if we have a real schema registry URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/scripts/test_schema_registry.sh</td>
+                    <td>46</td>
+                    <td class="mono snippet"># Check if services are running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/wait-for-services.sh</td>
+                    <td>39</td>
+                    <td class="mono snippet"># Check if a service is reachable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/wait-for-services.sh</td>
+                    <td>71</td>
+                    <td class="mono snippet">        # Check if we have at least one volume server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/wait-for-services.sh</td>
+                    <td>96</td>
+                    <td class="mono snippet">    # Check if Schema Registry container is running first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/wait-for-services.sh</td>
+                    <td>185</td>
+                    <td class="mono snippet">        # Check if it's still starting up (healthcheck start_period)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/run-loadtest.sh</td>
+                    <td>181</td>
+                    <td class="mono snippet"># Check if Docker and Docker Compose are available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Check if it's a consumer lag timeout (error_code 50002)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/mq/README.md</td>
+                    <td>207</td>
+                    <td class="mono snippet"># Check if broker is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/mq/README.md</td>
+                    <td>210</td>
+                    <td class="mono snippet"># Check if agent is running (if running as server)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/s3-keycloak-tests.yml</td>
+                    <td>62</td>
+                    <td class="mono snippet">          # Set WEED_BINARY to use the installed version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/deploy_telemetry.yml</td>
+                    <td>137</td>
+                    <td class="mono snippet">          # Check if service exists and deploy accordingly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/s3-policy-tests.yml</td>
+                    <td>113</td>
+                    <td class="mono snippet">          # Set WEED_BINARY to use the installed version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/s3-policy-tests.yml</td>
+                    <td>422</td>
+                    <td class="mono snippet">          # Set WEED_BINARY to use the installed version (though test uses 'weed' command)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 13 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(31 hits · 62 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/weed-sql/sqlcmd.go</td>
+                    <td>185</td>
+                    <td class="mono snippet">	// Split file content into individual queries (robust approach).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/test-fixes-standalone.go</td>
+                    <td>86</td>
+                    <td class="mono snippet">	// NEW (robust):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/s3api_sts.go</td>
+                    <td>218</td>
+                    <td class="mono snippet">		// Use typed errors for robust error checking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/s3_iam_middleware.go</td>
+                    <td>117</td>
+                    <td class="mono snippet">	// Determine token type by issuer claim (more robust than checking role claim)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/s3api/s3_metadata_util.go</td>
+                    <td>55</td>
+                    <td class="mono snippet">		// Use url.ParseQuery for robust parsing and automatic URL decoding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/kms/gcp/gcp_kms.go</td>
+                    <td>300</td>
+                    <td class="mono snippet">// This is a simplified implementation - in production, you might want a more robust serialization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/util/sqlutil/splitter.go</td>
+                    <td>8</td>
+                    <td class="mono snippet">// This robust implementation handles SQL comments, quoted strings, and escaped characters.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_remote_cache.go</td>
+                    <td>37</td>
+                    <td class="mono snippet">	# comprehensive sync and cache: update metadata, cache content, and remove deleted files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_ec_decode.go</td>
+                    <td>198</td>
+                    <td class="mono snippet">	// Keep this robust against wording tweaks while still being specific.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/server/postgres/protocol.go</td>
+                    <td>25</td>
+                    <td class="mono snippet">	// Use typed errors for robust error mapping</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/storage/disk_location_ec.go</td>
+                    <td>320</td>
+                    <td class="mono snippet">// checkDatFileExists checks if .dat file exists with robust error handling.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/providers/errors.go</td>
+                    <td>6</td>
+                    <td class="mono snippet">// These enable robust error checking with errors.Is() throughout the stack</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/oidc/oidc_provider.go</td>
+                    <td>408</td>
+                    <td class="mono snippet">		// Use JWT library's typed errors for robust error checking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/utils/arn_utils_test.go</td>
+                    <td>13</td>
+                    <td class="mono snippet">// format to ensure robust handling of both legacy and modern AWS ARN formats.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/sts/sts_service.go</td>
+                    <td>713</td>
+                    <td class="mono snippet">		// Map provider errors to STS errors using errors.Is() for robust error checking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/sts/session_claims.go</td>
+                    <td>68</td>
+                    <td class="mono snippet">// This enables seamless integration with existing code expecting SessionInfo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/iam/sts/constants.go</td>
+                    <td>86</td>
+                    <td class="mono snippet">// Typed errors for robust error checking with errors.Is()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/filer/filer_deletion.go</td>
+                    <td>480</td>
+                    <td class="mono snippet">// TODO: Consider these improvements for more robust error handling:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/query/engine/hybrid_message_scanner.go</td>
+                    <td>239</td>
+                    <td class="mono snippet">// Uses SeaweedFS MQ's GenMergedReadFunc for seamless integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/sse/README_KMS.md</td>
+                    <td>212</td>
+                    <td class="mono snippet">make test-with-kms       # Run comprehensive tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/remote_cache/command_edge_cases_test.go</td>
+                    <td>102</td>
+                    <td class="mono snippet">			// This is a simplified check; a more robust test would check if the file is *actually* gone from local cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/remote_cache/command_edge_cases_test.go</td>
+                    <td>105</td>
+                    <td class="mono snippet">			// The instruction implies just adding the test, not necessarily making it fully robust for all pattern scenarios.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/iam/s3_iam_distributed_test.go</td>
+                    <td>114</td>
+                    <td class="mono snippet">		// Test concurrent operations across distributed instances with robust retry mechanisms</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/cors/README.md</td>
+                    <td>34</td>
+                    <td class="mono snippet"># Run comprehensive CORS tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/README.md</td>
+                    <td>224</td>
+                    <td class="mono snippet">make test-sse-s3-compat   # Run comprehensive SSE-S3 encryption compatibility tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/postgres/SETUP_OVERVIEW.md</td>
+                    <td>170</td>
+                    <td class="mono snippet">./run-tests.sh test           # Run comprehensive tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/README.md</td>
+                    <td>120</td>
+                    <td class="mono snippet">export TEST_MODE=comprehensive        # producer, consumer, comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/README.md</td>
+                    <td>382</td>
+                    <td class="mono snippet">make test                    # Run default comprehensive test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/docker-compose.yml</td>
+                    <td>65</td>
+                    <td class="mono snippet">      # Enable comprehensive Kafka client DEBUG logging to trace offset management</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/config/loadtest.yaml</td>
+                    <td>4</td>
+                    <td class="mono snippet">test_mode: &quot;comprehensive&quot;  # producer, consumer, comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/run-loadtest.sh</td>
+                    <td>81</td>
+                    <td class="mono snippet">  # Run comprehensive test for 5 minutes</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(6 hits · 60 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">weed/static/javascript/jquery-3.6.0.min.js</td>
+                    <td>2</td>
+                    <td class="mono snippet">!function(e,t){&quot;use strict&quot;;&quot;object&quot;==typeof module&amp;&amp;&quot;object&quot;==typeof module.exports?module.exports=e.document?t(e,!0):function(e){if(!e.document)thro</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/java/spark/src/test/java/seaweed/spark/SparkTestBase.java</td>
+                    <td>108</td>
+                    <td class="mono snippet">                org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.get(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/java/spark/src/test/java/seaweed/spark/ParquetOperationComparisonTest.java</td>
+                    <td>308</td>
+                    <td class="mono snippet">        try (ParquetWriter&lt;Group&gt; writer = org.apache.parquet.hadoop.example.ExampleParquetWriter.builder(path)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/java/spark/src/test/java/seaweed/spark/ParquetOperationComparisonTest.java</td>
+                    <td>347</td>
+                    <td class="mono snippet">        try (ParquetWriter&lt;Group&gt; writer = org.apache.parquet.hadoop.example.ExampleParquetWriter.builder(path)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/java/spark/src/test/java/seaweed/spark/SparkReadDirectParquetTest.java</td>
+                    <td>157</td>
+                    <td class="mono snippet">        try (ParquetWriter&lt;Group&gt; writer = org.apache.parquet.hadoop.example.ExampleParquetWriter.builder(path)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/java/spark/src/test/java/seaweed/spark/SimpleOneColumnTest.java</td>
+                    <td>27</td>
+                    <td class="mono snippet">            org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.get(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(25 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/rdma-engine/src/lib.rs</td>
+                    <td>10</td>
+                    <td class="mono snippet">//! ┌─────────────────────┐    IPC     ┌─────────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/rdma-engine/src/lib.rs</td>
+                    <td>11</td>
+                    <td class="mono snippet">//! │   Go Control Plane  │◄─────────►│  Rust Data Plane    │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/rdma-engine/src/lib.rs</td>
+                    <td>17</td>
+                    <td class="mono snippet">//! └─────────────────────┘            └─────────────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>39</td>
+                    <td class="mono snippet">// ── shortName ────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>56</td>
+                    <td class="mono snippet">// ── relevantNodes ────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>70</td>
+                    <td class="mono snippet">// ── computeOwnerTarget ───────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>110</td>
+                    <td class="mono snippet">// ── buildDistributionCounts ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>156</td>
+                    <td class="mono snippet">// ── selectActiveNodes ────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>181</td>
+                    <td class="mono snippet">// ── planOwnerMoves ───────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>223</td>
+                    <td class="mono snippet">// ── planDistribution: primary ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>287</td>
+                    <td class="mono snippet">// ── planDistribution: round-robin ─────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>361</td>
+                    <td class="mono snippet">// ── planDistribution: replica ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/shell/command_fs_distribute_chunks_test.go</td>
+                    <td>410</td>
+                    <td class="mono snippet">// ── printRedistributionPlan ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/container_latest.yml</td>
+                    <td>61</td>
+                    <td class="mono snippet">  # ── Pre-build Rust volume server binaries natively ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/container_release_unified.yml</td>
+                    <td>43</td>
+                    <td class="mono snippet">  # ── Pre-build Rust volume server binaries natively ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/container_release_unified.yml</td>
+                    <td>115</td>
+                    <td class="mono snippet">  # ── Build Docker containers ─────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/container_dev.yml</td>
+                    <td>12</td>
+                    <td class="mono snippet">  # ── Pre-build Rust volume server binaries natively ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>32</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>73</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>75</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>143</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>149</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>236</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/spark-integration-tests.yml</td>
+                    <td>238</td>
+                    <td class="mono snippet">    # ========================================</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(10 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">    if not read.schema.equals(original.schema):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">    if not read_sorted.equals(original_sorted):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_cross_filesystem_compatibility.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">            if not col_original.equals(col_read):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        if not table_read.schema.equals(table.schema):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">        if not table_read_sorted.equals(table_sorted):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">                if not col_original.equals(col_read):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">        if not table_dataset_sorted.equals(table_sorted):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">                if not col_original.equals(col_read):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>254</td>
+                    <td class="mono snippet">        if not table_pads_sorted.equals(table_sorted):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/s3/parquet/test_pyarrow_native_s3.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">                if not col_original.equals(col_read):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">seaweedfs-rdma-sidecar/scripts/demo-mount-rdma.sh</td>
+                    <td>169</td>
+                    <td class="mono snippet"># Create a larger test file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">weed/command/mini.go</td>
+                    <td>833</td>
+                    <td class="mono snippet">	sb.WriteString(&quot;# This file is loaded on startup if it exists\n\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kms/setup_openbao.sh</td>
+                    <td>60</td>
+                    <td class="mono snippet">    # Create the encryption key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/debug_write_dataset.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Create a simple test table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # Create a dataset using PyArrow (creates implicit directory)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    # Create an explicit directory marker</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3/parquet/test_implicit_directory_fix.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    # Create an empty file with text/plain mime type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3tables/catalog/test_rest_catalog_auth.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # Define a simple schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/s3tables/catalog/test_rest_catalog.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # Define a simple schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">    # Create the schema registration payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>181</td>
+                    <td class="mono snippet">    # Define the Avro schema for load test messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>197</td>
+                    <td class="mono snippet">    # Define the JSON schema for load test messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>217</td>
+                    <td class="mono snippet">    # Define the Protobuf schema for load test messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/kafka/kafka-client-loadtest/scripts/register-schemas.sh</td>
+                    <td>232</td>
+                    <td class="mono snippet">    # Define the key schema (simple string)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/foundationdb/test_fdb_s3.sh</td>
+                    <td>114</td>
+                    <td class="mono snippet"># Create a directory</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">weed/server/volume_grpc_tier_upload.go</td>
+                    <td>46</td>
+                    <td class="mono snippet">	// check whether the existing backend storage is the same as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.github/pull_request_template.md</td>
+                    <td>17</td>
+                    <td class="mono snippet"># Checks for AI generated PRs</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(9 hits · 9 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">install.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/filer/filer.go</td>
+                    <td>490</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/wdclient/vidmap_client.go</td>
+                    <td>131</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">weed/worker/tasks/base/volume_utils.go</td>
+                    <td>14</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/compose/test-git-on-mount.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3/proxy_signature/test.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/s3tables/catalog/docker-compose.test.yaml</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/pjdfstest/run.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">k8s/charts/seaweedfs/openshift-values.yaml</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">k8s/charts/seaweedfs/values.yaml</td>
+                    <td>351</td>
+                    <td class="mono snippet">  # If these don't meet your needs, you can use &quot;custom&quot; here along with extraVolumes and extraVolumeMounts</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [1.0, 1.0];
+        const matches = [492, 502];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

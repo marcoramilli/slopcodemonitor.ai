@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — infiniflow/ragflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>infiniflow/ragflow</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.9</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.9</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1846</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">2211</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">568,335</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2492</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1487 hits · 1499 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">run_tests.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">run_tests.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_connector.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_connector.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_connector.py</td>
+                    <td>211</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_connector.py</td>
+                    <td>254</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_connector.py</td>
+                    <td>261</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/example_usage.py</td>
+                    <td>199</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/firecrawl/example_usage.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">        print(f&quot;Error occurred: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/integration.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/integration.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/integration.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/integration.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_processor.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/firecrawl_processor.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/ragflow_integration.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>331</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>345</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>387</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>431</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>344</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>460</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>497</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>518</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/cli.py</td>
+                    <td>565</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/es_client.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/es_client.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/progress.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/progress.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>368</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/ragflow_chat.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/ragflow_chat.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">memory/utils/infinity_conn.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">                        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">memory/utils/infinity_conn.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">                    except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1437 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(54 hits · 270 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>387</td>
+                    <td class="mono snippet">          if (auth &amp;&amp; auth.length) return auth;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">          if (token &amp;&amp; token.length) return token;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>991</td>
+                    <td class="mono snippet">          return Boolean((token &amp;&amp; token.length) || (auth &amp;&amp; auth.length));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1305</td>
+                    <td class="mono snippet">            while (node &amp;&amp; node !== document.body) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1307</td>
+                    <td class="mono snippet">              if (style &amp;&amp; style.backfaceVisibility === 'hidden') {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1316</td>
+                    <td class="mono snippet">            while (node &amp;&amp; node !== document.body) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1318</td>
+                    <td class="mono snippet">              if (style &amp;&amp; style.transformStyle === 'preserve-3d') {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1323</td>
+                    <td class="mono snippet">            return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1331</td>
+                    <td class="mono snippet">            return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1353</td>
+                    <td class="mono snippet">              flipTransform: flip ? window.getComputedStyle(flip).transform : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1354</td>
+                    <td class="mono snippet">              flipTransformStyle: flip ? window.getComputedStyle(flip).transformStyle : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1380</td>
+                    <td class="mono snippet">          if (!el) return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1465</td>
+                    <td class="mono snippet">            return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1585</td>
+                    <td class="mono snippet">                            return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1599</td>
+                    <td class="mono snippet">                              : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1633</td>
+                    <td class="mono snippet">                  return top &amp;&amp; (top === el || el.contains(top));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1694</td>
+                    <td class="mono snippet">                    while (node &amp;&amp; node !== document.body) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1696</td>
+                    <td class="mono snippet">                      if (style &amp;&amp; style.backfaceVisibility === 'hidden') {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1705</td>
+                    <td class="mono snippet">                    while (node &amp;&amp; node !== document.body) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1707</td>
+                    <td class="mono snippet">                      if (style &amp;&amp; style.transformStyle === 'preserve-3d') {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1712</td>
+                    <td class="mono snippet">                    return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1715</td>
+                    <td class="mono snippet">                    if (!transform || transform === 'none') return 1;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1745</td>
+                    <td class="mono snippet">                      const state = window.__qa_flip_state || { transform: null, time: 0 };</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1758</td>
+                    <td class="mono snippet">                      if (!rect.width || !rect.height) return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1763</td>
+                    <td class="mono snippet">                  let pick = null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1766</td>
+                    <td class="mono snippet">                  } else if (candidates.length &gt; 1 &amp;&amp; candidates[0].facing !== candidates[1].facing) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/conftest.py</td>
+                    <td>1776</td>
+                    <td class="mono snippet">                      return top &amp;&amp; el.contains(top);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/auth/test_register_then_login_flow.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">            return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/auth/test_register_then_login_flow.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">          if (successByUrl || successMarker) return { state: 'success' };</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/auth/test_login_success_optional.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">            return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/auth/test_login_success_optional.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">          if (successByUrl || successMarker) return {{ state: 'success' }};</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/e2e/test_next_apps_agent.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">                return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/e2e/test_next_apps_agent.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">                return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/e2e/test_dataset_upload_parse.py</td>
+                    <td>523</td>
+                    <td class="mono snippet">              return !!node &amp;&amp; String(node.value) !== String(previous);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/e2e/test_next_apps_search.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">          const body = (document.body &amp;&amp; document.body.innerText || '').toLowerCase();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/_auth_helpers.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">          return Boolean((token &amp;&amp; token.length) || (auth &amp;&amp; auth.length));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/_auth_helpers.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">          return Boolean((token &amp;&amp; token.length) || (auth &amp;&amp; auth.length));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/auth_waits.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">          return Boolean((token &amp;&amp; token.length) || (auth &amp;&amp; auth.length));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">                &quot;(() =&gt; (document.body &amp;&amp; document.body.innerText) || '')()&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">                        return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">          const txt = (document.body &amp;&amp; document.body.innerText || '').toLowerCase();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">                &quot;(() =&gt; (document.body &amp;&amp; document.body.innerText) || '')()&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>423</td>
+                    <td class="mono snippet">                    &quot;(() =&gt; (document.body &amp;&amp; document.body.innerText) || '')()&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">test/playwright/helpers/datasets.py</td>
+                    <td>437</td>
+                    <td class="mono snippet">                    &quot;(() =&gt; (document.body &amp;&amp; document.body.innerText) || '')()&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">agent/sandbox/providers/aliyun_codeinterpreter.py</td>
+                    <td>400</td>
+                    <td class="mono snippet">    console.error(err instanceof Error ? err.stack || err.message : String(err));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">agent/sandbox/tests/test_security.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">        &quot;async function main(args) { return { answer: args.value ?? null }; }&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">agent/sandbox/executor_manager/services/execution.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">    return Boolean(value &amp;&amp; typeof value.then === 'function');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">agent/sandbox/executor_manager/services/execution.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">    if (typeof args === 'object' &amp;&amp; args !== null) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">rag/utils/es_conn.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">  if (v != null) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">rag/utils/es_conn.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">      try { cur = Double.parseDouble(v.toString()); } catch (Exception e) { cur = 0.0; }</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 4 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(84 hits · 168 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>10</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>55</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>59</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>154</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>156</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>181</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>183</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>202</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>204</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>263</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker/entrypoint.sh</td>
+                    <td>265</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>74</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>76</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>142</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>144</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>210</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>212</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>245</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>247</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>378</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/deepdoc/parser/test_pdf_garbled_detection.py</td>
+                    <td>380</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>42</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>48</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>84</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>111</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>113</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>140</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>142</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>234</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>236</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>284</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/graphrag/test_checkpoint_resume.py</td>
+                    <td>286</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>69</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>71</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>83</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>85</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>129</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>131</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>145</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>147</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/db/services/test_document_service_get_parsing_status.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 34 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(88 hits · 88 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">build.sh</td>
+                    <td>80</td>
+                    <td class="mono snippet">    # Check if C++ library exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/firecrawl/INSTALLATION.md</td>
+                    <td>109</td>
+                    <td class="mono snippet"># Check if the plugin directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/tests/test_progress.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">        # Read file directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/ob_client.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">        # Check if column exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/es_client.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">            # Check if there are more results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/schema.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">            # Check if it's a known RAGFlow field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/schema.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">            # Check if it's a vector field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">        # Check if source table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">        # Check if there's data to migrate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>291</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>385</td>
+                    <td class="mono snippet">        # Check if source table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">        # Check if tenant_model_provider exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>400</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">        # Check if there's data to migrate (distinct by tenant_id, llm_factory, api_key)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>436</td>
+                    <td class="mono snippet">        # Check if tenant_model_provider exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>442</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>550</td>
+                    <td class="mono snippet">        # Check if source table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>555</td>
+                    <td class="mono snippet">        # Check if tenant_model_provider exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>565</td>
+                    <td class="mono snippet">        # Check if tenant_model_instance exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>575</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>584</td>
+                    <td class="mono snippet">        # Check if there's data to migrate (only status='0' records)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>612</td>
+                    <td class="mono snippet">        # Check if tenant_model_provider exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>618</td>
+                    <td class="mono snippet">        # Check if tenant_model_instance exists (dependency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>624</td>
+                    <td class="mono snippet">        # Check if target table exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/scripts/mysql_migration.py</td>
+                    <td>769</td>
+                    <td class="mono snippet">                # Check if migration is needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>100</td>
+                    <td class="mono snippet">        # Check if any of our target volumes are used by this container</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>160</td>
+                    <td class="mono snippet">    # Check if any containers are using the volumes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>211</td>
+                    <td class="mono snippet">    # Check if any containers are using the volumes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>214</td>
+                    <td class="mono snippet">    # Check if backup folder exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>220</td>
+                    <td class="mono snippet">    # Check if all backup files exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/migration.sh</td>
+                    <td>297</td>
+                    <td class="mono snippet">    # Check if Docker is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/launch_backend_service.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet">    # Check if .env file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">deepdoc/parser/tcadp_parser.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">                                # Check if there is a download link</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/unit_test/common/test_time_utils.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Check if timestamps are monotonically increasing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/testcases/test_sdk_api/test_file_management_within_dataset/test_update_document.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">                # Check if empty string raises an exception or not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/testcases/test_sdk_api/test_file_management_within_dataset/test_update_document.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">                # Check if this case raises an exception or not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/testcases/test_sdk_api/test_file_management_within_dataset/test_update_document.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">                # Check if empty string raises an exception or not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/testcases/test_http_api/test_session_management/test_session_sdk_routes_unit.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">        # Check if tenant exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">admin/server/services.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        # Check if the email address is already used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">admin/client/parser.py</td>
+                    <td>823</td>
+                    <td class="mono snippet">            # Check if item is a DATASET token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">admin/client/parser.py</td>
+                    <td>835</td>
+                    <td class="mono snippet">        # Check if it's &quot;REMOVE ALL CHUNKS&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">admin/client/ragflow_client.py</td>
+                    <td>1246</td>
+                    <td class="mono snippet">                # Check if it's the final message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/component/message.py</td>
+                    <td>397</td>
+                    <td class="mono snippet">                            # Check if this could be a table title</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/component/message.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">                            # Check if this is a separator line (|---|---|)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/component/message.py</td>
+                    <td>439</td>
+                    <td class="mono snippet">                            # Check if this line could be a title for the next table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/sandbox/sandbox_spec.md</td>
+                    <td>859</td>
+                    <td class="mono snippet">    # Check if provider is configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/sandbox/sandbox_spec.md</td>
+                    <td>1694</td>
+                    <td class="mono snippet">    # Check if configuration has changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/sandbox/providers/self_managed.py</td>
+                    <td>343</td>
+                    <td class="mono snippet">            # Check if it's a valid HTTP/HTTPS URL or localhost</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/sandbox/providers/aliyun_codeinterpreter.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">                    # Check if template exists</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 38 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(71 hits · 71 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">### Step 1: Start RAGFlow with Elasticsearch Backend</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>46</td>
+                    <td class="mono snippet">### Step 2: Create Test Data in RAGFlow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>54</td>
+                    <td class="mono snippet">### Step 3: Verify ES Data (Optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>82</td>
+                    <td class="mono snippet">### Step 4: Start OceanBase for Migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>97</td>
+                    <td class="mono snippet">### Step 5: Run Migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>161</td>
+                    <td class="mono snippet">### Step 6: Stop RAGFlow and Switch to OceanBase Backend</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>176</td>
+                    <td class="mono snippet">### Step 7: Start RAGFlow with OceanBase Backend</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>190</td>
+                    <td class="mono snippet">### Step 8: Data Integrity Verification (Optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/README.md</td>
+                    <td>226</td>
+                    <td class="mono snippet">### Step 9: Verify RAGFlow Works with OceanBase</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/verify.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">        # Step 1: Verify document counts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/verify.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">        # Step 2: Sample verification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/verify.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">        # Step 3: Determine overall result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">            # Step 1: Check connections</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">            # Step 2: Analyze ES index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">            # Step 3: Get total document count</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">            # Step 4: Handle resume or fresh start</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">            # Step 5: Create table if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">            # Step 6: Migrate data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">            # Step 7: Mark completed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/es-to-oceanbase-migration/src/es_ob_migration/migrator.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">            # Step 8: Verify (optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/ragflow_chat.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        # Step 1: Get or create conversation_id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/ragflow_chat.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">        # Step 2: Send the message and get a reply</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">admin/client/ragflow_client.py</td>
+                    <td>1605</td>
+                    <td class="mono snippet">        # Step 1: Get document info to find kb_id (dataset_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/dao/time_record.go</td>
+                    <td>77</td>
+                    <td class="mono snippet">	// Step 1: Get the maximum ID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/dao/time_record.go</td>
+                    <td>88</td>
+                    <td class="mono snippet">	// Step 2: Calculate the threshold ID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/dao/time_record.go</td>
+                    <td>96</td>
+                    <td class="mono snippet">	// Step 3: Delete records with ID &lt;= threshold</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/cli/crypt.go</td>
+                    <td>60</td>
+                    <td class="mono snippet">	// Step 1: Base64 encode the password</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/cli/crypt.go</td>
+                    <td>63</td>
+                    <td class="mono snippet">	// Step 2: Encrypt using RSA PKCS1v15</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/cli/crypt.go</td>
+                    <td>69</td>
+                    <td class="mono snippet">	// Step 3: Base64 encode the encrypted data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>194</td>
+                    <td class="mono snippet">	// Step 1: Get user tenants (same as Python UserTenantService.query(user_id=current_user.id))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>200</td>
+                    <td class="mono snippet">	// Step 2: Check if user has permission to access this search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>218</td>
+                    <td class="mono snippet">	// Step 3: Get search detail (same as Python SearchService.get_detail(search_id))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>229</td>
+                    <td class="mono snippet">	// Step 1: Check deletion permission (same as Python SearchService.accessible4deletion)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>241</td>
+                    <td class="mono snippet">	// Step 2: Execute delete (same as Python SearchService.delete_by_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>262</td>
+                    <td class="mono snippet">	// Step 1: Check update permission (same as delete - uses accessible4deletion)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>274</td>
+                    <td class="mono snippet">	// Step 2: Get existing search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>281</td>
+                    <td class="mono snippet">	// Step 3: Check for duplicate name (if name changed)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>291</td>
+                    <td class="mono snippet">	// Step 4: Merge search_config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>307</td>
+                    <td class="mono snippet">	// Step 5: Prepare updates (excluding immutable fields)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>318</td>
+                    <td class="mono snippet">	// Step 6: Execute update</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/search.go</td>
+                    <td>324</td>
+                    <td class="mono snippet">	// Step 7: Fetch updated search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/chat.go</td>
+                    <td>650</td>
+                    <td class="mono snippet">	// Step 1: Get user tenants (same as Python UserTenantService.query(user_id=current_user.id))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/chat.go</td>
+                    <td>656</td>
+                    <td class="mono snippet">	// Step 2: Check if user has permission to access this chat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/chat.go</td>
+                    <td>674</td>
+                    <td class="mono snippet">	// Step 3: Get chat detail (same as Python DialogService.get_by_id(chat_id))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/chat.go</td>
+                    <td>680</td>
+                    <td class="mono snippet">	// Step 4: Build response with kb_names (same as Python _build_chat_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/nlp/term_weight_test.go</td>
+                    <td>644</td>
+                    <td class="mono snippet">	// Step 1: Split</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/nlp/term_weight_test.go</td>
+                    <td>650</td>
+                    <td class="mono snippet">	// Step 2: Pretoken</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/nlp/term_weight_test.go</td>
+                    <td>657</td>
+                    <td class="mono snippet">	// Step 3: Token merge</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">internal/service/nlp/term_weight_test.go</td>
+                    <td>660</td>
+                    <td class="mono snippet">	// Step 4: Calculate weights</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/sandbox/tests/QUICKSTART.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">#### Step 1: Configure Environment Variables</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 21 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(25 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/firecrawl/firecrawl_processor.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        # Create a hash based on URL and content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/ragflow_chat.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">            # Create a new conversation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/rag/llm/conftest.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">    # Create a stub rag.llm package that does NOT run the real __init__</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/common/test_token_utils.py</td>
+                    <td>270</td>
+                    <td class="mono snippet">        # Create a string that encodes to exactly 5 tokens</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/unit_test/api/utils/test_oceanbase_health.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">        # Create a simple object and bind the real methods to it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_document_app/test_upload_documents.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">        # Create a file with empty name by using filename_override</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_document_app/test_upload_documents.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">        # Create a file and try to upload to a dataset we don't have access to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_document_app/test_upload_documents.py</td>
+                    <td>309</td>
+                    <td class="mono snippet">        # Create an empty file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_http_api/test_chat_management/test_table_parser_dataset_chat.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">            # Create a single chat assistant and session for all tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">example/http/dataset_example.sh</td>
+                    <td>17</td>
+                    <td class="mono snippet"># Create a dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">admin/server/services.py</td>
+                    <td>632</td>
+                    <td class="mono snippet">            # Create a temporary sandbox instance for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">agent/sandbox/client.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    # Create a sandbox instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/guides/dataset/use_tag_sets.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">### Create a tag set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/guides/dataset/add_data_source/add_notion.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Create an internal integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/guides/agent/agent_introduction.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Create an agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/guides/agent/agent_quickstarts/build_ecommerce_customer_support_agent.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">### Create an Agent app</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/discord_connector.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">                    # Create a coroutine by calling anext with the async iterator</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/confluence_connector.py</td>
+                    <td>1558</td>
+                    <td class="mono snippet">            # Create the main section for the page content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/confluence_connector.py</td>
+                    <td>1595</td>
+                    <td class="mono snippet">            # Create the document</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/google_util/util_threadpool_concurrency.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">        # Create a thread-safe dictionary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/github/connector.py</td>
+                    <td>997</td>
+                    <td class="mono snippet">    # Create a time range from epoch to now</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/bitbucket/utils.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">    # Create a concise summary of key PR info</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api/db/db_models.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">        # This function is obsolete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api/db/services/file_service.py</td>
+                    <td>267</td>
+                    <td class="mono snippet">        # Create a new file from dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api/db/services/connector_service.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">        # Create a mapping from filename to metadata for later use</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_sdk_api/test_dataset_mangement/test_auto_metadata.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">                        &quot;examples&quot;: [&quot;John Doe&quot;, &quot;Jane Smith&quot;],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_auth_app/test_oidc_client_unit.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">            &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_auth_app/test_oidc_client_unit.py</td>
+                    <td>324</td>
+                    <td class="mono snippet">        &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_auth_app/test_oauth_client_unit.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">        return _FakeResponse({&quot;email&quot;: &quot;user@example.com&quot;, &quot;picture&quot;: &quot;id-picture&quot;})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/testcases/test_web_api/test_auth_app/test_oauth_client_unit.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">        &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/stories/ragflow-avatar.stories.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">      name=&quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/stories/ragflow-avatar.stories.ts</td>
+                    <td>78</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/stories/ragflow-avatar.stories.ts</td>
+                    <td>89</td>
+                    <td class="mono snippet">    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/stories/ragflow-avatar.stories.ts</td>
+                    <td>102</td>
+                    <td class="mono snippet">  name=&quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/pages/user-setting/data-source/constant/index.tsx</td>
+                    <td>438</td>
+                    <td class="mono snippet">      placeholder: 'admin@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/pages/user-setting/data-source/constant/index.tsx</td>
+                    <td>532</td>
+                    <td class="mono snippet">      placeholder: 'admin@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/cli/README.md</td>
+                    <td>126</td>
+                    <td class="mono snippet">LOGIN USER 'admin@example.com';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/cli/README.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">REGISTER USER 'john' AS 'John Doe' PASSWORD 'secret';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rag/prompts/structured_output_prompt.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">    {&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api/apps/auth/README.md</td>
+                    <td>71</td>
+                    <td class="mono snippet">    &quot;email&quot;: &quot;user@example.com&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(13 hits · 21 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/firecrawl/firecrawl_processor.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Create comprehensive metadata for RAGFlow document.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/chatgpt-on-wechat/plugins/README.md</td>
+                    <td>4</td>
+                    <td class="mono snippet">This folder contains the source code for the `ragflow_chat` plugin, which extends the core functionality of the RAGFlow API to support conversational </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/cpp/re2/prefilter_tree.h</td>
+                    <td>112</td>
+                    <td class="mono snippet">    // These are all the nodes formed by Compile. Essentially, there is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/utility/embedding_lru.go</td>
+                    <td>51</td>
+                    <td class="mono snippet">	// If needed, a more robust key generation can be implemented.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agent/tools/searxng.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        # In try-run, if no URL configured, just return empty instead of raising</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">agent/sandbox/README.md</td>
+                    <td>145</td>
+                    <td class="mono snippet">At its core, we use [gVisor](https://gvisor.dev/docs/architecture_guide/security/), a user-space kernel, to isolate code execution from the host syste</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">agent/templates/market_seo_article_writer.json</td>
+                    <td>132</td>
+                    <td class="mono snippet">                            &quot;sys_prompt&quot;: &quot;# Role\n\nYou are the **Parse_And_Keyword_Agent**, responsible for interpreting a user's blog writing reque</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">agent/templates/market_seo_article_writer.json</td>
+                    <td>442</td>
+                    <td class="mono snippet">                                &quot;sys_prompt&quot;: &quot;# Role\n\nYou are the **Parse_And_Keyword_Agent**, responsible for interpreting a user's blog writing r</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rag/graphrag/light/graph_prompt.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">PROMPTS[&quot;summarize_entity_descriptions&quot;] = &quot;&quot;&quot;You are a helpful assistant responsible for generating a comprehensive summary of the data provided belo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/confluence_connector.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">        # If it's not a method, just return it after ensuring token validity</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/confluence_connector.py</td>
+                    <td>863</td>
+                    <td class="mono snippet">            # For now, we'll just return None and log a warning. This means</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/confluence_connector.py</td>
+                    <td>866</td>
+                    <td class="mono snippet">            # We may want to just return a string that indicates failure so we don't</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api/apps/sdk/session.py</td>
+                    <td>484</td>
+                    <td class="mono snippet">        # For non-streaming, just return the response directly</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/cpp/opencc/opencc.h</td>
+                    <td>70</td>
+                    <td class="mono snippet"> * Note: Don't forget to assign **outbuf to L'\0' after called.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">internal/cpp/opencc/opencc.h</td>
+                    <td>85</td>
+                    <td class="mono snippet"> * DON'T FORGET TO CALL free() to recycle memory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/references/http_api_reference.md</td>
+                    <td>4677</td>
+                    <td class="mono snippet">            &quot;content&quot;: &quot;\nTo install Neovim, the process varies depending on your operating system:\n\n### For macOS:\nUsing Homebrew:\n```bash\nbrew </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/references/http_api_reference.md</td>
+                    <td>4691</td>
+                    <td class="mono snippet">                &quot;content&quot;: &quot;\nTo install Neovim, the process varies depending on your operating system:\n\n### For macOS:\nUsing Homebrew:\n```bash\nb</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">common/data_source/google_drive/section_extraction.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">    # Don't forget to add the last section</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/blob_connector.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/slack_connector.py</td>
+                    <td>641</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/dingtalk_ai_table_connector.py</td>
+                    <td>403</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">common/data_source/imap_connector.py</td>
+                    <td>126</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [3.9, 3.9];
+        const matches = [1846, 1846];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

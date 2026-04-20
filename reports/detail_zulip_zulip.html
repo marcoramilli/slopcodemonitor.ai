@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — zulip/zulip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>zulip/zulip</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1764</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">4055</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,180,526</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">6346</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-20</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(1258 hits · 2516 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>526</td>
+                    <td class="mono snippet">                &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>528</td>
+                    <td class="mono snippet">                    &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>5858</td>
+                    <td class="mono snippet">            remote_server=remote_server, email=&quot;admin@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>7468</td>
+                    <td class="mono snippet">            remote_realm=remote_realm, email=&quot;admin@example.com&quot;, user_uuid=uuid.uuid4()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>7471</td>
+                    <td class="mono snippet">            remote_server=remote_server, email=&quot;admin@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_payment_succeeded_event_with_uncaught_exception--Customer.retrieve.2.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_payment_succeeded_event_with_uncaught_exception--Customer.retrieve.2.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_by_card_with_outdated_seat_count--Charge.list.1.json</td>
+                    <td>15</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_by_card_with_outdated_seat_count--Charge.list.1.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/customer_has_credit_card_as_default_payment_method--Customer.retrieve.3.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/customer_has_credit_card_as_default_payment_method--Customer.retrieve.3.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.1.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.1.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_plans_as_needed_server--Customer.retrieve.4.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_plans_as_needed_server--Customer.retrieve.4.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/check_upgrade_parameters--Customer.retrieve.7.json</td>
+                    <td>22</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/check_upgrade_parameters--Customer.retrieve.7.json</td>
+                    <td>28</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/switch_realm_from_standard_to_plus_plan--Event.list.2.json</td>
+                    <td>95</td>
+                    <td class="mono snippet">              &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/switch_realm_from_standard_to_plus_plan--Event.list.2.json</td>
+                    <td>101</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/schedule_upgrade_to_fixed_price_annual_business_plan--Customer.retrieve.1.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/schedule_upgrade_to_fixed_price_annual_business_plan--Customer.retrieve.1.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.16.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.16.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.3.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/switch_from_monthly_plan_to_annual_plan_for_automatic_license_management--Customer.retrieve.3.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_race_condition_during_card_upgrade--Customer.retrieve.5.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_race_condition_during_card_upgrade--Customer.retrieve.5.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/billing_page_permissions--Event.list.2.json</td>
+                    <td>19</td>
+                    <td class="mono snippet">              &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/billing_page_permissions--Event.list.2.json</td>
+                    <td>25</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/replace_payment_method--PaymentMethod.create.2.json</td>
+                    <td>7</td>
+                    <td class="mono snippet">      &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/replace_payment_method--PaymentMethod.create.2.json</td>
+                    <td>13</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.41.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_license_counts--Customer.retrieve.41.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/check_upgrade_parameters--Customer.retrieve.25.json</td>
+                    <td>22</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/check_upgrade_parameters--Customer.retrieve.25.json</td>
+                    <td>28</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_plan_bundle_additional_licenses--Customer.retrieve.4.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/invoice_plan_bundle_additional_licenses--Customer.retrieve.4.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_by_card_to_plus_plan--PaymentMethod.create.1.json</td>
+                    <td>7</td>
+                    <td class="mono snippet">      &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_by_card_to_plus_plan--PaymentMethod.create.1.json</td>
+                    <td>13</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/add_minimum_licenses--Event.list.2.json</td>
+                    <td>95</td>
+                    <td class="mono snippet">              &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/add_minimum_licenses--Event.list.2.json</td>
+                    <td>101</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/non_sponsorship_billing--Customer.retrieve.2.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/non_sponsorship_billing--Customer.retrieve.2.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/redirect_for_remote_realm_billing_page_downgrade_at_free_trial_end--Customer.retrieve.6.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/redirect_for_remote_realm_billing_page_downgrade_at_free_trial_end--Customer.retrieve.6.json</td>
+                    <td>27</td>
+                    <td class="mono snippet">        &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json</td>
+                    <td>95</td>
+                    <td class="mono snippet">              &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json</td>
+                    <td>101</td>
+                    <td class="mono snippet">            &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/customer_minimum_licenses_for_plan--PaymentMethod.create.1.json</td>
+                    <td>7</td>
+                    <td class="mono snippet">      &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/customer_minimum_licenses_for_plan--PaymentMethod.create.1.json</td>
+                    <td>13</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/stripe_fixtures/switch_from_annual_plan_to_monthly_plan_for_automatic_license_management--Customer.retrieve.3.json</td>
+                    <td>21</td>
+                    <td class="mono snippet">          &quot;line1&quot;: &quot;123 Main St&quot;,</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1208 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(83 hits · 830 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">corporate/views/support.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zilencer/views.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zilencer/migrations/0067_remotepushdevicetoken_apns_case_insensitive.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(models.F(&quot;token&quot;)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zilencer/migrations/0067_remotepushdevicetoken_apns_case_insensitive.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(models.F(&quot;token&quot;)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/forms.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0693_add_conditional_indexes_for_topic.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0693_add_conditional_indexes_for_topic.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0439_fix_deleteduser_email.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0472_add_message_realm_id_indexes.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0472_add_message_realm_id_indexes.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0740_pushdevicetoken_apns_case_insensitive.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(models.F(&quot;token&quot;)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_initial.py</td>
+                    <td>729</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;email&quot;), name=&quot;upper_userprofile_email_idx&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_initial.py</td>
+                    <td>735</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;email&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_initial.py</td>
+                    <td>748</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;), name=&quot;upper_subject_idx&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_initial.py</td>
+                    <td>754</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;name&quot;), name=&quot;upper_stream_name_idx&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0373_fix_deleteduser_dummies.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0746_alter_channelfolder_unique_together_and_more.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(&quot;name&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0429_user_topic_case_insensitive_unique_toghether.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(&quot;topic_name&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3161</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3171</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;subject&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3205</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;name&quot;), name=&quot;upper_stream_name_idx&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3227</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;email&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3242</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;email&quot;), name=&quot;upper_userprofile_email_idx&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3374</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(models.F(&quot;email&quot;)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3382</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(models.F(&quot;delivery_email&quot;)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3390</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Upper(&quot;topic_name&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/migrations/0001_squashed_0569.py</td>
+                    <td>3413</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower(&quot;topic_name&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_realm_creation.py</td>
+                    <td>9</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_integrations_dev_panel.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_subs.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_import_export.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_realm_domains.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_validators.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_typed_endpoint.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError as DjangoValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_widgets.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_users.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/tests/test_realm_linkifiers.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/management/commands/import.py</td>
+                    <td>9</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/management/commands/change_password.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/management/commands/change_realm_subdomain.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/management/commands/create_realm.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/management/commands/realm_domain.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/models/custom_profile_fields.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/models/linkifiers.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/models/realm_playgrounds.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/models/realms.py</td>
+                    <td>9</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/data_import/import_util.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/data_import/slack_message_conversion.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">zerver/actions/realm_emoji.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 33 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(128 hits · 256 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>519</td>
+                    <td class="mono snippet">        # Create a PaymentMethod using the token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/tests/test_stripe.py</td>
+                    <td>3168</td>
+                    <td class="mono snippet">        # Create an open invoice</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>3818</td>
+                    <td class="mono snippet">        # Create a new renewal invoice with updated licenses so that this becomes the last</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>4020</td>
+                    <td class="mono snippet">        # Create a ledger entry for the complimentary access plan for tracking purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>4074</td>
+                    <td class="mono snippet">        # Create a ledger entry for the community plan for tracking purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/setup/emoji/emoji_setup_utils.py</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file contains various helper functions used by `build_emoji` tool.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/droplets/README.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create a remote Zulip dev server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/droplets/README.md</td>
+                    <td>169</td>
+                    <td class="mono snippet"># Creating a production droplet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/lib/provision_inner.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        # The following block is skipped when we just need the development</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/populate_billing_realms.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">        # Create a realm for each plan type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/populate_billing_realms.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">    # Create a card payment method and attach it to the customer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/populate_billing_realms.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">    # Create a user with billing access</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/populate_db.py</td>
+                    <td>962</td>
+                    <td class="mono snippet">        # Create a test realm emoji.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/video-calls.md</td>
+                    <td>210</td>
+                    <td class="mono snippet">### Create a custom Webex integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/gif-picker-integrations.md</td>
+                    <td>63</td>
+                    <td class="mono snippet">### Create a Tenor API key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/gif-picker-integrations.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">### Create a KLIPY API key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorials/new-feature-tutorial.md</td>
+                    <td>226</td>
+                    <td class="mono snippet">     # Define the types of the various automatically managed properties</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorials/new-feature-tutorial.md</td>
+                    <td>247</td>
+                    <td class="mono snippet">### Create the migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/git/pull-requests.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">## Create a pull request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api_docs/create-scheduled-message.md</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Create a scheduled channel message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api_docs/create-scheduled-message.md</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Create a scheduled direct message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api_docs/create-stream.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create a channel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/zerver/integrations/webex.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">### Create a custom Webex integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/migrations/0700_fix_user_role_system_groups.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">        # Create the RealmAuditLog that must be missing in these situations as well.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/migrations/0525_userpresence_last_update_id.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">        # Create a new column, making it NULLable to avoid locking the table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_push_registration.py</td>
+                    <td>982</td>
+                    <td class="mono snippet">        # Create a legacy token with a different value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_channel_fetch.py</td>
+                    <td>1451</td>
+                    <td class="mono snippet">        # Create a stream for which Hamlet is the only subscriber.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_channel_fetch.py</td>
+                    <td>1532</td>
+                    <td class="mono snippet">        # Create a private stream for which Hamlet is the only subscriber.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_email_mirror.py</td>
+                    <td>1072</td>
+                    <td class="mono snippet">        # Create an invalid attachment:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_push_notifications.py</td>
+                    <td>636</td>
+                    <td class="mono snippet">            # Create a duplicate, newer uuid-based registration for the same user to verify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_push_notifications.py</td>
+                    <td>1047</td>
+                    <td class="mono snippet">        # Create a simulated second server. We will take user's RemoteRealm registration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_push_notifications.py</td>
+                    <td>1187</td>
+                    <td class="mono snippet">            # Create the expected RemoteRealm registration and proceed with testing with a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_push_notifications.py</td>
+                    <td>1928</td>
+                    <td class="mono snippet">        # Create a message to self using PERSONAL recipient type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_drafts.py</td>
+                    <td>322</td>
+                    <td class="mono snippet">        # Create a draft.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_drafts.py</td>
+                    <td>380</td>
+                    <td class="mono snippet">        # Create a draft.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_drafts.py</td>
+                    <td>428</td>
+                    <td class="mono snippet">        # Create a draft.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_drafts.py</td>
+                    <td>473</td>
+                    <td class="mono snippet">        # Create a draft.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_channel_creation.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">        # Creating an existing channel should return an error.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_presence.py</td>
+                    <td>549</td>
+                    <td class="mono snippet">        # Create a first presence for the user. It's the first one and has status idle,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_subs.py</td>
+                    <td>4344</td>
+                    <td class="mono snippet">        # Create a private stream with Hamlet subscribed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_subs.py</td>
+                    <td>4761</td>
+                    <td class="mono snippet">        # Create a whole bunch of streams</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_subs.py</td>
+                    <td>5597</td>
+                    <td class="mono snippet">        # Creating an invite-only stream is allowed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_import_export.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;This class is a container for shared helper functions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_bots.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">        # Create a bot.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_bots.py</td>
+                    <td>726</td>
+                    <td class="mono snippet">        # Create a bot and then deactivate it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_scheduled_messages.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        # Create a direct message group for the sender.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_signup.py</td>
+                    <td>264</td>
+                    <td class="mono snippet">        # Create a user who hasn't had historical messages added</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">        # Create a direct message group between users</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>456</td>
+                    <td class="mono snippet">        # Create a direct message group between users</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>481</td>
+                    <td class="mono snippet">        # Create a direct message group with the user</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 78 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(26 hits · 130 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>428</td>
+                    <td class="mono snippet">                # As noted above, remote_id may be null, so we only</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>430</td>
+                    <td class="mono snippet">                # technically necessary, since null != null, but it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>489</td>
+                    <td class="mono snippet">                # be null; since null != null, this condition is not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_presence.py</td>
+                    <td>598</td>
+                    <td class="mono snippet">        The data model now supports them being null, but the API should still return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_validators.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">        x = to_wild_value(&quot;x&quot;, '{&quot;a&quot;: 1, &quot;b&quot;: [&quot;c&quot;, false, null]}')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>3054</td>
+                    <td class="mono snippet">            subject || rendered_content)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1366</td>
+                    <td class="mono snippet">        queue.push(in_dict)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1402</td>
+                    <td class="mono snippet">            queue.push(event)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1428</td>
+                    <td class="mono snippet">        queue.push(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1459</td>
+                    <td class="mono snippet">        queue.push(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1470</td>
+                    <td class="mono snippet">        queue.push(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1500</td>
+                    <td class="mono snippet">        queue.push(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1511</td>
+                    <td class="mono snippet">        queue.push(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1559</td>
+                    <td class="mono snippet">        queue.push(event)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tests/test_event_queue.py</td>
+                    <td>1565</td>
+                    <td class="mono snippet">        queue.push({&quot;type&quot;: &quot;unknown&quot;, &quot;timestamp&quot;: &quot;1&quot;})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/management/commands/audit_fts_indexes.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">                to_tsvector('zulip.english_us_search', subject || rendered_content)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/management/commands/audit_fts_indexes.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">                WHERE to_tsvector('zulip.english_us_search', subject || rendered_content) != search_tsvector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/models/realms.py</td>
+                    <td>513</td>
+                    <td class="mono snippet">    # When non-null, all but the latest this many messages in the organization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">        self.event_queue.push(event)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/actions/realm_linkifiers.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">    # None means unchanged. Empty string means null, normalize_optional_text</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/lib/retention.py</td>
+                    <td>522</td>
+                    <td class="mono snippet">        #  if stream.message_retention_days is null, use the realm's policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/lib/markdown/fenced_code.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">        processor.push(handler)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/lib/markdown/fenced_code.py</td>
+                    <td>459</td>
+                    <td class="mono snippet">        self.push(handler)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/webhooks/raygun/view.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">    # Contains list of tags for the error. Can be empty (null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zerver/webhooks/sentry/tests.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">:orange_circle: **New exception:** [TypeError: can't access property &quot;bar&quot;, x.foo is undefined](https://sentry.io/organizations/foo-bar-org/issues/198</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">zproject/computed_settings.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">            # The default is null, which means no timeout; 2 is the</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(62 hits · 88 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/setup/emoji/custom_emoji_names.py</td>
+                    <td>677</td>
+                    <td class="mono snippet">    # potentially fun emoji to have in conjunction with ice_cream. Put in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/linter_lib/custom_check.py</td>
+                    <td>832</td>
+                    <td class="mono snippet">        # version of the tab-based whitespace rule (we can't just use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">web/src/user_group_edit_members.ts</td>
+                    <td>364</td>
+                    <td class="mono snippet">            // add member request as the endpoint is not so robust and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">    # are stats we track on the bouncer server itself, pertaining to the remote server.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/models.py</td>
+                    <td>453</td>
+                    <td class="mono snippet">    # stats pertaining to a realm on a remote server. For such objects, we will link to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/corporate/security.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">- [Zulip's robust 100% open-source system](#robust-100-open-source-system)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/corporate/security.md</td>
+                    <td>181</td>
+                    <td class="mono snippet">### Custom permissions with comprehensive audit log</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/decorator.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">    # more robust to just key off whether it was a browser view</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/middleware.py</td>
+                    <td>407</td>
+                    <td class="mono snippet">                # just return the response without logging further.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0796_fix_corrupted_named_user_group_creator.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">    # just set the creator to None for any group where the realm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_webhooks_common.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">            # we just return a fixed dictionary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_presence.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        # here in the response - but it's still good to test the code is robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_subs.py</td>
+                    <td>4229</td>
+                    <td class="mono snippet">        streams_to_sub = streams[:1]  # just add one, to make the message easier to check</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_import_export.py</td>
+                    <td>1393</td>
+                    <td class="mono snippet">        # More general assertions on the entire sets of audit logs pertaining to our users.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>1385</td>
+                    <td class="mono snippet">        # Definitely forbid seeing history on private channels.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>1505</td>
+                    <td class="mono snippet">        # Definitely, a guest user can't access the unsubscribed private channel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_auth_backends.py</td>
+                    <td>2086</td>
+                    <td class="mono snippet">        # and we simply use one loaded from a fixture file.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_auth_backends.py</td>
+                    <td>4320</td>
+                    <td class="mono snippet">    # This URL isn't used in the Apple auth flow, so we just set a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_message_flags.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">        # we should get the old message we just set to unread</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/models/messages.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">    # Certain additional flags are just set once when the UserMessage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/models/realms.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">    # We include a prefix to facilitate scanning for accidental</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/models/realms.py</td>
+                    <td>1378</td>
+                    <td class="mono snippet">    # that the previous enum setting allowed, then just return the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tornado/django_api.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">        # Tornado process, we simply call the process_notification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/data_import/slack.py</td>
+                    <td>1820</td>
+                    <td class="mono snippet">            # We're not using pagination, so we don't want to loop and should just return the result.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/user_settings.py</td>
+                    <td>681</td>
+                    <td class="mono snippet">                # their presence state intact - so just return without</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/streams.py</td>
+                    <td>982</td>
+                    <td class="mono snippet">        # we can just return early.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/reactions.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">        # deactivated custom emoji, so we just use the emoji name from</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/actions/realm_settings.py</td>
+                    <td>790</td>
+                    <td class="mono snippet">            # more robust for ensuring no messages belonging to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/event_schema.py</td>
+                    <td>252</td>
+                    <td class="mono snippet"># robust.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/event_schema.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">#       simplify our types or make them more robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/generate_test_data.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">            # this is the hacky version where we just use inline image</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/users.py</td>
+                    <td>971</td>
+                    <td class="mono snippet">        # just set bot_owner_id=None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/users.py</td>
+                    <td>993</td>
+                    <td class="mono snippet">    # We just set date_joined field to UNIX epoch.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/users.py</td>
+                    <td>1142</td>
+                    <td class="mono snippet">            # in row object, so we can just add it to result directly.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/narrow.py</td>
+                    <td>1661</td>
+                    <td class="mono snippet">        # just return `None`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/events.py</td>
+                    <td>1800</td>
+                    <td class="mono snippet">        # from scratch.  Definitely don't need to re-query everything,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/rest.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        # view function logic and just return the response.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/presence.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">    # just set it to a fixed value for API format compatibility.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/scim.py</td>
+                    <td>742</td>
+                    <td class="mono snippet">            # we just add a hacky approach for detecting and handling this single, specific</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/retention.py</td>
+                    <td>194</td>
+                    <td class="mono snippet"># We can simply use LIMIT without worrying about OFFSETs and ordering</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/soft_deactivation.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">        # a message, we just use the overall max message ID.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/i18n.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # browser/request associated with them, and should just use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/test_helpers.py</td>
+                    <td>395</td>
+                    <td class="mono snippet">        # get rid of this abstraction entirely and just use the HTTP</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/test_helpers.py</td>
+                    <td>594</td>
+                    <td class="mono snippet">        var_dir = &quot;var&quot;  # TODO make sure path is robust here</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/email_notifications.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">        # structure of the URL to leverage. We can't use `relative_to_full_url()`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/mention.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # In particular, user_cache is not robust to message_sender</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/send_email.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">        # out; as such, they just use a STATIC_URL prefix.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/push_notifications.py</td>
+                    <td>1123</td>
+                    <td class="mono snippet">    # just use a colon to indicate this is the sender.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/markdown/__init__.py</td>
+                    <td>820</td>
+                    <td class="mono snippet">            # just use open graph image.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/markdown/tabbed_sections.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">            # Otherwise, just use the end of the entire section</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 12 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(71 hits · 74 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>1218</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>1546</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>5848</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe_event_handler.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/webhook.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/remote_billing_page.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">    except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/upgrade.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/upgrade.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">    except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/upgrade.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">    except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/views/installation_activity.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/lib/provision_inner.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zilencer/views.py</td>
+                    <td>469</td>
+                    <td class="mono snippet">    except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/manage_push_registration_encryption_keys.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">            print(&quot;Error: Please provide either --add or --remove-key &lt;public-key&gt;.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zilencer/management/commands/manage_push_registration_encryption_keys.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">                print(&quot;Error: No key pair found for the given public key.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/decorator.py</td>
+                    <td>381</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/decorator.py</td>
+                    <td>810</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/forms.py</td>
+                    <td>407</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0553_copy_emoji_images.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0553_copy_emoji_images.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tests/test_docs.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        print(&quot;Error processing URL:&quot;, url)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_openapi.py</td>
+                    <td>484</td>
+                    <td class="mono snippet">            except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_queue.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/management/commands/register_server.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/management/commands/sync_ldap_user_data.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/management/commands/process_queue.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tornado/handlers.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>716</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>1862</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/data_import/mattermost.py</td>
+                    <td>541</td>
+                    <td class="mono snippet">        except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/data_import/microsoft_teams.py</td>
+                    <td>419</td>
+                    <td class="mono snippet">            except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/data_import/slack.py</td>
+                    <td>1053</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/scheduled_messages.py</td>
+                    <td>446</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/data_import.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/event_schema.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">        except Exception as e:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/widget.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/widget.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/export.py</td>
+                    <td>823</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/export.py</td>
+                    <td>3082</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/logging_util.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/import_realm.py</td>
+                    <td>589</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/attachments.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/zulip_update_announcements.py</td>
+                    <td>763</td>
+                    <td class="mono snippet">        except Exception as e:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/mobile_auth_otp.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/soft_deactivation.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">            except Exception:  # nocoverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/email_notifications.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/parallel.py</td>
+                    <td>38</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/send_email.py</td>
+                    <td>476</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/markdown/__init__.py</td>
+                    <td>2732</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/markdown/fenced_code.py</td>
+                    <td>515</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 21 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(56 hits · 56 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/droplets/README.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Step 1: Join Zulip DigitalOcean team</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/droplets/README.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">## Step 2: Create your DigitalOcean API token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/droplets/README.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 3: Configure create.py</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_list_tooltips.ts</td>
+                    <td>155</td>
+                    <td class="mono snippet">    // Thus, we need to check if the date string contains a digit or not using regex,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/popover_menus.ts</td>
+                    <td>391</td>
+                    <td class="mono snippet">                            // For other browsers, we need to check if the focused element is an text field and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_view.ts</td>
+                    <td>496</td>
+                    <td class="mono snippet">    // we need to check if the narrow is allowed for spectator here too.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_parser.ts</td>
+                    <td>6</td>
+                    <td class="mono snippet">// We need to check if the message content contains the specified HTML</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/inbox_ui.ts</td>
+                    <td>348</td>
+                    <td class="mono snippet">    // Before we set the filter, we need to check if the inbox view is already visible.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_util.ts</td>
+                    <td>90</td>
+                    <td class="mono snippet">    // If not, we need to check if the current filter matches the DM view we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_notifications.ts</td>
+                    <td>324</td>
+                    <td class="mono snippet">    // And then we need to check if the message is a direct message,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_notifications.ts</td>
+                    <td>396</td>
+                    <td class="mono snippet">    // And then we need to check if the message is a direct message,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">web/src/message_list.ts</td>
+                    <td>190</td>
+                    <td class="mono snippet">        // TODO: For supporting other narrows, we need to check if we have fetched the first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/debug-node-coverage/SKILL.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">## Step 1: Read the uncovered lines</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/debug-node-coverage/SKILL.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">## Step 2: Find the test file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/debug-node-coverage/SKILL.md</td>
+                    <td>50</td>
+                    <td class="mono snippet">## Step 3: Add tests for testable code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/debug-node-coverage/SKILL.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 4: Handle unreachable assertions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/debug-node-coverage/SKILL.md</td>
+                    <td>62</td>
+                    <td class="mono snippet">## Step 5: Verify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>84</td>
+                    <td class="mono snippet">### Step 0: Set up Git &amp; GitHub</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>95</td>
+                    <td class="mono snippet">### Step 1: Install prerequisites</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>232</td>
+                    <td class="mono snippet">### Step 2: Get Zulip code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>266</td>
+                    <td class="mono snippet">### Step 3: Start the development environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>392</td>
+                    <td class="mono snippet">### Step 4: Developing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/request-remote.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">## Step 1: Join GitHub and create SSH keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/request-remote.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">## Step 2: Create a fork of zulip/zulip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/development/request-remote.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Step 3: Make request via chat.zulip.org</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/subsystems/onboarding-steps.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">### Step 1: Add the Onboarding Step Name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/subsystems/onboarding-steps.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">### Step 2: Display the Onboarding Step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/subsystems/onboarding-steps.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">### Step 3: Mark the Onboarding Step as Read</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/install.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">## Step 0: Set up a base server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/install.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 1: Download the latest release</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/install.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 2: Install Zulip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/install.md</td>
+                    <td>165</td>
+                    <td class="mono snippet">## Step 3: Create a Zulip organization, and log in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">#### Step 1: Choose database name and username</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">#### Step 1: Set up Zulip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">#### Step 3: Create the PostgreSQL database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>68</td>
+                    <td class="mono snippet">#### Step 4: Configure Zulip to use the PostgreSQL database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>103</td>
+                    <td class="mono snippet">#### Step 1: Set up Zulip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>114</td>
+                    <td class="mono snippet">#### Step 2: Create the PostgreSQL database server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>133</td>
+                    <td class="mono snippet">#### Step 3: Configure Zulip to use the PostgreSQL database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">## Step 0: Create fixtures</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 1: Initialize the python package</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>65</td>
+                    <td class="mono snippet">## Step 2: Write the main webhook code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>175</td>
+                    <td class="mono snippet">## Step 3: Create an API endpoint for the webhook</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>215</td>
+                    <td class="mono snippet">## Step 4: Manually test the webhook</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>295</td>
+                    <td class="mono snippet">## Step 5: Create automated tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>387</td>
+                    <td class="mono snippet">## Step 6: Document the integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/webhooks/incoming-webhooks-walkthrough.md</td>
+                    <td>421</td>
+                    <td class="mono snippet">## Step 7: Prepare a pull request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/git/pull-requests.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">### Step 0: Make sure you're on a feature branch (not `main`)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/git/pull-requests.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">### Step 1: Update your branch with git rebase</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/git/pull-requests.md</td>
+                    <td>66</td>
+                    <td class="mono snippet">### Step 2: Push your updated branch to your remote fork</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 6 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(53 hits · 53 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/tests/test_remote_billing.py</td>
+                    <td>808</td>
+                    <td class="mono snippet">        # Check if zephyr and lear were deactivated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>782</td>
+                    <td class="mono snippet">        # Check if customer has any $0 invoices.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>1809</td>
+                    <td class="mono snippet">            # Check if the customer is scheduled for an upgrade.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>2348</td>
+                    <td class="mono snippet">                # Check if user has already paid for the plan by invoice.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">corporate/lib/stripe.py</td>
+                    <td>2798</td>
+                    <td class="mono snippet">        # Check if user was successful in adding a card and we are rendering the page again.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zilencer/views.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">    # Check if the domain has an MX record</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zilencer/views.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">        # Check if the A/AAAA exist, for better error reporting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/production/postgresql.md</td>
+                    <td>154</td>
+                    <td class="mono snippet"># Set this to match the version running on your remote PostgreSQL server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/puppet_cache.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">    # Check if a cached version already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/context_processors.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # Check if view function is in corporate app.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0290_remove_night_mode_add_color_scheme.py</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Set color_scheme to night mode, if night_mode is True.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0413_set_presence_enabled_false_for_user_status_away.py</td>
+                    <td>10</td>
+                    <td class="mono snippet"># Set presence_enabled to False for all users with a UserStatus.status of AWAY.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0544_copy_avatar_images.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">                # Check if we've already uploaded this one; if so, continue.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/migrations/0617_remove_prefix_from_archived_streams.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">        # Check if there's an active stream or another archived stream with the new name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_status.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        # Set Hamlet to in a meeting.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_realm_playgrounds.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        # Check if the actual object exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_audit_log.py</td>
+                    <td>1994</td>
+                    <td class="mono snippet">        # Set workplace_users_group to an anonymous group containing the group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_audit_log.py</td>
+                    <td>2163</td>
+                    <td class="mono snippet">        # Set workplace_users_group to an anonymous group containing the group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_topics.py</td>
+                    <td>352</td>
+                    <td class="mono snippet">        # Verify if events are sent properly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_topics.py</td>
+                    <td>420</td>
+                    <td class="mono snippet">        # Verify if events are sent properly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_topics.py</td>
+                    <td>571</td>
+                    <td class="mono snippet">        # Verify if events are sent properly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_topics.py</td>
+                    <td>639</td>
+                    <td class="mono snippet">        # Verify if events are sent properly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_tutorial.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">        # Check if Welcome bot still replies for bot commands</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_groups.py</td>
+                    <td>2647</td>
+                    <td class="mono snippet">        # Check if members of a NamedUserGroup are allowed to create user groups.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_groups.py</td>
+                    <td>2658</td>
+                    <td class="mono snippet">        # Check if members of an anonymous group are allowed to create user groups.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_groups.py</td>
+                    <td>2996</td>
+                    <td class="mono snippet">        # Check if members of a NamedUserGroup are allowed to add/remove members.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_groups.py</td>
+                    <td>3012</td>
+                    <td class="mono snippet">        # Check if members of an anonymous group are allowed to add/remove members.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_user_groups.py</td>
+                    <td>3311</td>
+                    <td class="mono snippet">        # Set permissions to manage the group and adding others to group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_scheduled_messages.py</td>
+                    <td>607</td>
+                    <td class="mono snippet">        # Check if another user can access these scheduled messages.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_queue_worker.py</td>
+                    <td>295</td>
+                    <td class="mono snippet">                # Set ourself to stop at the top of the next loop, but</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_signup.py</td>
+                    <td>1896</td>
+                    <td class="mono snippet">        # Check if user is subscribed to the streams of default</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_signup.py</td>
+                    <td>2035</td>
+                    <td class="mono snippet">        # Check if user is subscribed to the streams of default</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_message_fetch.py</td>
+                    <td>4543</td>
+                    <td class="mono snippet">        # Check if the anchor value in response is correct for different</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_slack_importer.py</td>
+                    <td>2519</td>
+                    <td class="mono snippet">        # Check if we cannot find the realm, preregistration_realm is revoked.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_slack_importer.py</td>
+                    <td>2545</td>
+                    <td class="mono snippet">        # Check if we render a form for user to select a user if there</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_auth_backends.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        # Verify if a realm has password auth disabled, correct password is rejected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_example.py</td>
+                    <td>528</td>
+                    <td class="mono snippet">        # Set limit to edit message content.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/openapi/test_curl_examples.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">            # Set AUTHENTICATION_LINE to default_authentication_line.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/data_import/slack_message_conversion.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        # Check if there's a pipe with text after it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/message_send.py</td>
+                    <td>1306</td>
+                    <td class="mono snippet">        # Check if this is a 1:1 DM between a user and the Welcome Bot,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/actions/presence.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">                # Check if the row was actually created or if we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/narrow.py</td>
+                    <td>1653</td>
+                    <td class="mono snippet">    # Check if channel exists.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/import_realm.py</td>
+                    <td>2125</td>
+                    <td class="mono snippet">        # Set it to the latest level to avoid receiving older update messages.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/test_runner.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">        # Check if we are in serial mode to avoid unnecessarily making a directory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/lib/markdown/__init__.py</td>
+                    <td>1261</td>
+                    <td class="mono snippet">        # Set text to initial input, so simple clients translating</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/webhooks/teamcity/view.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">    # Check if this is a personal build, and if so try to direct message the user who triggered it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/views/auth.py</td>
+                    <td>529</td>
+                    <td class="mono snippet">    # Check if the mobile URL is overridden in settings, if so, replace it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/views/upload.py</td>
+                    <td>293</td>
+                    <td class="mono snippet">        # Check if this is something that we thumbnail at all</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/views/tusd.py</td>
+                    <td>322</td>
+                    <td class="mono snippet">    # Check if unauthenticated requests are for realm creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zproject/default_settings.py</td>
+                    <td>100</td>
+                    <td class="mono snippet"># Set this to True to enforce that any configured IdP needs to specify</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 3 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(20 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/screenshots/for-events.json</td>
+                    <td>15</td>
+                    <td class="mono snippet">                &quot;content&quot;: &quot;Welcome everyone! Here are the slides for the keynote talk: [keynote-slides.ppt](#). Don't forget to join for a live prese</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">locale/en_GB/translations.json</td>
+                    <td>969</td>
+                    <td class="mono snippet">  &quot;Linkifiers make it easy to refer to issues or tickets in third party issue trackers, like GitHub, Salesforce, Zendesk, and others. For instance, yo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/documentation/helpcenter.md</td>
+                    <td>124</td>
+                    <td class="mono snippet">`starlight_help/astro.config.mjs`. Don't forget to `git add` your new</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/development/setup-recommended.md</td>
+                    <td>251</td>
+                    <td class="mono snippet">Don't forget to replace `YOURUSERNAME` with your Git username. You will see</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/contributing/reporting-bugs.md</td>
+                    <td>154</td>
+                    <td class="mono snippet">  - Don't forget to cross-link between the issue and the discussion.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/subsystems/performance.md</td>
+                    <td>131</td>
+                    <td class="mono snippet">It's worth noting that most (~80%) Tornado requests end the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/subsystems/billing.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">- Feel free to modify `populate_billing_realms` to add more states if they</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/subsystems/icons.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">   `web/icons/` directory to be used (don't forget to `git add` new</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/subsystems/events-system.md</td>
+                    <td>297</td>
+                    <td class="mono snippet">Before we move on to the next step, it's worth noting that `verify_action`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/reverse-proxies.md</td>
+                    <td>126</td>
+                    <td class="mono snippet">   Don't forget to update `server_name`, `ssl_certificate`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/reverse-proxies.md</td>
+                    <td>191</td>
+                    <td class="mono snippet">   Don't forget to update `ServerName`, `RewriteRule`, `ProxyPass`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/production/reverse-proxies.md</td>
+                    <td>223</td>
+                    <td class="mono snippet">   Don't forget to update `bind *:443 ssl crt` and `server` as is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/outreach/experience.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">Don't forget to have fun! Spending a few months coding on open source is an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">        # If you add a new key to this dict, make sure you add appropriate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tornado/event_queue.py</td>
+                    <td>370</td>
+                    <td class="mono snippet">        # If you add a new key to this dict, make sure you add appropriate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/tornado/django_api.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    # We make sure to pre-fill the narrow user cache, to save</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/export.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">    # you can add your new table to `ALL_ZULIP_TABLES` and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/import_realm.py</td>
+                    <td>150</td>
+                    <td class="mono snippet"># make sure to reload related tables AFTER we re-map the ids.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">puppet/kandra/files/nagios4/nagios.cfg</td>
+                    <td>717</td>
+                    <td class="mono snippet"># patches to Nagios.  Nagios is critical to you - make sure you keep it in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">puppet/kandra/files/nagios4/nagios.cfg</td>
+                    <td>994</td>
+                    <td class="mono snippet"># rescheduled, make sure you have orphaned service checks enabled.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/testing/testing-with-django.md</td>
+                    <td>305</td>
+                    <td class="mono snippet">  def my_function(my_mock):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/testing/mypy.md</td>
+                    <td>175</td>
+                    <td class="mono snippet">    def helper(self) -&gt; &quot;TestHttpResponse&quot;:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_decorators.py</td>
+                    <td>1397</td>
+                    <td class="mono snippet">        def test_function(request: HttpRequest) -&gt; HttpResponse:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_decorators.py</td>
+                    <td>1413</td>
+                    <td class="mono snippet">        def test_function(request: HttpRequest) -&gt; HttpResponse:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">zerver/tests/test_outgoing_webhook_system.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">        def helper(side_effect: Any, error_text: str) -&gt; None:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">analytics/lib/counts.py</td>
+                    <td>1012</td>
+                    <td class="mono snippet">    # mobile devices, as requested by the remote server. Therefore</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">zerver/lib/markdown/__init__.py</td>
+                    <td>2331</td>
+                    <td class="mono snippet">        # ---------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20"];
+        const scores = [3.4, 3.4];
+        const matches = [1762, 1764];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-04-20 03:04 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
