@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — eyaltoledano/claude-task-master</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>eyaltoledano/claude-task-master</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">157</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">283</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">283,251</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1121</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-24</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(46 hits · 91 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>1889</td>
+                    <td class="mono snippet">  Built using the [grok-cli](https://github.com/superagent-ai/grok-cli) by Superagent AI for seamless integration with xAI's Grok models.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2462</td>
+                    <td class="mono snippet">- [#1032](https://github.com/eyaltoledano/claude-task-master/pull/1032) [`4423119`](https://github.com/eyaltoledano/claude-task-master/commit/4423119a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2507</td>
+                    <td class="mono snippet">- [#1032](https://github.com/eyaltoledano/claude-task-master/pull/1032) [`4423119`](https://github.com/eyaltoledano/claude-task-master/commit/4423119a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2551</td>
+                    <td class="mono snippet">- [#1009](https://github.com/eyaltoledano/claude-task-master/pull/1009) [`444aa5a`](https://github.com/eyaltoledano/claude-task-master/commit/444aa5ae</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2602</td>
+                    <td class="mono snippet">- [#1009](https://github.com/eyaltoledano/claude-task-master/pull/1009) [`4629128`](https://github.com/eyaltoledano/claude-task-master/commit/46291289</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2618</td>
+                    <td class="mono snippet">- [#1011](https://github.com/eyaltoledano/claude-task-master/pull/1011) [`3eb050a`](https://github.com/eyaltoledano/claude-task-master/commit/3eb050aa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2669</td>
+                    <td class="mono snippet">- [#968](https://github.com/eyaltoledano/claude-task-master/pull/968) [`7b4803a`](https://github.com/eyaltoledano/claude-task-master/commit/7b4803a479</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2766</td>
+                    <td class="mono snippet">- [#840](https://github.com/eyaltoledano/claude-task-master/pull/840) [`b40139c`](https://github.com/eyaltoledano/claude-task-master/commit/b40139ca05</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2872</td>
+                    <td class="mono snippet">- [#460](https://github.com/eyaltoledano/claude-task-master/pull/460) [`a09a2d0`](https://github.com/eyaltoledano/claude-task-master/commit/a09a2d0967</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2969</td>
+                    <td class="mono snippet">- [#460](https://github.com/eyaltoledano/claude-task-master/pull/460) [`a09a2d0`](https://github.com/eyaltoledano/claude-task-master/commit/a09a2d0967</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>3062</td>
+                    <td class="mono snippet">- [#779](https://github.com/eyaltoledano/claude-task-master/pull/779) [`c0b3f43`](https://github.com/eyaltoledano/claude-task-master/commit/c0b3f432a6</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>3621</td>
+                    <td class="mono snippet">- [#567](https://github.com/eyaltoledano/claude-task-master/pull/567) [`09add37`](https://github.com/eyaltoledano/claude-task-master/commit/09add37423</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>3702</td>
+                    <td class="mono snippet">- [#567](https://github.com/eyaltoledano/claude-task-master/pull/567) [`09add37`](https://github.com/eyaltoledano/claude-task-master/commit/09add37423</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>219</td>
+                    <td class="mono snippet"># Final comprehensive checks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>236</td>
+                    <td class="mono snippet"># Create comprehensive PR description</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>156</td>
+                    <td class="mono snippet">[Emacs Mcp](https://github.com/lizqwerscott/mcp.el) is an Emacs client designed to interface with MCP servers, enabling seamless connections and inter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">`You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task for a software devel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">			const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new tas</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>63</td>
+                    <td class="mono snippet">			const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new tas</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>224</td>
+                    <td class="mono snippet">const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task f</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>288</td>
+                    <td class="mono snippet">const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task f</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>570</td>
+                    <td class="mono snippet">		const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>1611</td>
+                    <td class="mono snippet">const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task f</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/add-task-dependencies-1.md</td>
+                    <td>1626</td>
+                    <td class="mono snippet">const userPrompt = `You are generating the details for Task #${newTaskId}. Based on the user's request: &quot;${prompt}&quot;, create a comprehensive new task f</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/max-min-tokens.txt.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">      // Simplified; ideally use a robust getter from config-manager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/chats/max-min-tokens.txt.md</td>
+                    <td>221</td>
+                    <td class="mono snippet">// Simplified; ideally use a robust getter from config-manager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/scripts/modules/task-manager/update-subtask-by-id.test.js</td>
+                    <td>120</td>
+                    <td class="mono snippet">// Import mocked utils to leverage mocks later</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>37</td>
+                    <td class="mono snippet">      # For now, just pass it along in case --analyze-log needs it later</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorial.md</td>
+                    <td>274</td>
+                    <td class="mono snippet"># OR, if research is needed to find best practices for MongoDB:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>237</td>
+                    <td class="mono snippet"># Final comprehensive checks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>254</td>
+                    <td class="mono snippet"># Create comprehensive PR description</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-core/src/utils/time.utils.ts</td>
+                    <td>16</td>
+                    <td class="mono snippet">	// Use date-fns for robust formatting with proper edge case handling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/extension/CHANGELOG.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">- [#1200](https://github.com/eyaltoledano/claude-task-master/pull/1200) [`fce8414`](https://github.com/eyaltoledano/claude-task-master/commit/fce84149</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/extension/CHANGELOG.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">- [#1200](https://github.com/eyaltoledano/claude-task-master/pull/1200) [`fce8414`](https://github.com/eyaltoledano/claude-task-master/commit/fce84149</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/cli/src/utils/auto-update/restart.ts</td>
+                    <td>21</td>
+                    <td class="mono snippet">		stdio: 'inherit', // Inherit stdin/stdout/stderr so it looks seamless</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/analyze-complexity.json</td>
+                    <td>48</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before analyzi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/add-task.json</td>
+                    <td>64</td>
+                    <td class="mono snippet">			&quot;system&quot;: &quot;You are a helpful assistant that creates well-structured tasks for a software development project. Generate a single new task based on t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/add-task.json</td>
+                    <td>65</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before generat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/add-task.json</td>
+                    <td>65</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before generat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/research.json</td>
+                    <td>49</td>
+                    <td class="mono snippet">			&quot;system&quot;: &quot;You are an expert AI research assistant helping with a software development project. You have access to project context including tasks,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/parse-prd.json</td>
+                    <td>59</td>
+                    <td class="mono snippet">			&quot;system&quot;: &quot;You are an AI assistant specialized in analyzing Product Requirements Documents (PRDs) and generating a structured, logically ordered, d</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/parse-prd.json</td>
+                    <td>60</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before generat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/update-task.json</td>
+                    <td>62</td>
+                    <td class="mono snippet">			&quot;system&quot;: &quot;You are an AI assistant helping to update a software development task based on new context.{{#if useResearch}} You have access to curren</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/update-task.json</td>
+                    <td>63</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before updatin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/update-subtask.json</td>
+                    <td>63</td>
+                    <td class="mono snippet">			&quot;system&quot;: &quot;You are an AI assistant helping to update a subtask. You will be provided with the subtask's existing details, context about its parent </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/prompts/update-subtask.json</td>
+                    <td>64</td>
+                    <td class="mono snippet">			&quot;user&quot;: &quot;{{#if hasCodebaseAnalysis}}## IMPORTANT: Codebase Analysis Required\n\nYou have access to powerful codebase analysis tools. Before generat</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(12 hits · 60 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>1932</td>
+                    <td class="mono snippet">  Tasks and subtasks generated by Claude Code are now informed by actual codebase analysis, resulting in more accurate and contextual outputs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>1985</td>
+                    <td class="mono snippet">  Tasks and subtasks generated by Claude Code are now informed by actual codebase analysis, resulting in more accurate and contextual outputs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2135</td>
+                    <td class="mono snippet">  - Tasks and subtasks generated by Claude Code are now informed by actual codebase analysis, resulting in more accurate and contextual outputs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>2233</td>
+                    <td class="mono snippet">  - Tasks and subtasks generated by Claude Code are now informed by actual codebase analysis, resulting in more accurate and contextual outputs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/modules/task-manager/update-task-by-id.js</td>
+                    <td>509</td>
+                    <td class="mono snippet">					// Fix AI-generated subtask IDs that might be strings or use parent ID as prefix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/modules/task-manager/update-task-by-id.js</td>
+                    <td>512</td>
+                    <td class="mono snippet">						id: currentSubtaskId, // Override AI-generated ID with correct sequential ID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/modules/task-manager/list-tasks.js</td>
+                    <td>510</td>
+                    <td class="mono snippet">		// Increase priority column width as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">scripts/modules/task-manager/list-tasks.js</td>
+                    <td>513</td>
+                    <td class="mono snippet">		// Make dependencies column smaller as requested (-20%)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">packages/tm-core/tests/integration/ai-operations/metadata-preservation.test.ts</td>
+                    <td>206</td>
+                    <td class="mono snippet">					description: 'First step generated by AI',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">packages/tm-core/tests/integration/ai-operations/metadata-preservation.test.ts</td>
+                    <td>218</td>
+                    <td class="mono snippet">					description: 'Second step generated by AI',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">packages/tm-core/tests/integration/ai-operations/metadata-preservation.test.ts</td>
+                    <td>378</td>
+                    <td class="mono snippet">					// AI-generated fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.github/workflows/claude-docs-updater.yml</td>
+                    <td>110</td>
+                    <td class="mono snippet">            *This PR was automatically generated by Claude Code GitHub Action*</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(24 hits · 48 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Create a single branch for the entire brief (e.g., hamster-brief-YYYY-MM-DD or brief-specific name)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>3318</td>
+                    <td class="mono snippet">    ## Creating the Client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>3764</td>
+                    <td class="mono snippet">    ## Creating the Client</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>4330</td>
+                    <td class="mono snippet">      # Create a new directory for our project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>4346</td>
+                    <td class="mono snippet">      # Create a new directory for our project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>4606</td>
+                    <td class="mono snippet">      # Create a new directory for our project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>4623</td>
+                    <td class="mono snippet">      # Create a new directory for our project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>5246</td>
+                    <td class="mono snippet">    ### Create a MCP Client manually</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>188</td>
+                    <td class="mono snippet"># Create the log directory if it doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_fallback_verification.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet">    # Define a placeholder if not found, so the script doesn't break immediately,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/command-reference.md</td>
+                    <td>260</td>
+                    <td class="mono snippet"># Create a new empty tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/command-reference.md</td>
+                    <td>263</td>
+                    <td class="mono snippet"># Create a new tag with a description</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/command-reference.md</td>
+                    <td>266</td>
+                    <td class="mono snippet"># Create a tag based on current git branch name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/command-reference.md</td>
+                    <td>269</td>
+                    <td class="mono snippet"># Create a new tag by copying tasks from the current tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/command-reference.md</td>
+                    <td>272</td>
+                    <td class="mono snippet"># Create a new tag by copying from a specific tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorial.md</td>
+                    <td>503</td>
+                    <td class="mono snippet"># Create a tag based on your current git branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create-worktree.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Create a git worktree for parallel Claude Code development</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/create-worktree.sh</td>
+                    <td>48</td>
+                    <td class="mono snippet">  # Create a local branch from the remote and attach worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-bridge/src/add-tag-bridge.ts</td>
+                    <td>75</td>
+                    <td class="mono snippet">				header: '# Create a Brief in Hamster Studio',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>51</td>
+                    <td class="mono snippet"># Create a single branch for the entire brief (e.g., hamster-brief-YYYY-MM-DD or brief-specific name)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/solo/install-taskmaster.ts</td>
+                    <td>80</td>
+                    <td class="mono snippet">   # Create a test PRD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/claude-code-plugin/commands/install-taskmaster.md</td>
+                    <td>65</td>
+                    <td class="mono snippet">   # Create a test PRD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/forward-port.yml</td>
+                    <td>135</td>
+                    <td class="mono snippet">          # Create the PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.taskmaster/docs/research/2025-06-14_should-i-be-using-any-specific-libraries-for-this.md</td>
+                    <td>47</td>
+                    <td class="mono snippet"># Create a new issue</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(47 hits · 47 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">llms-install.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">### Step 1: Add MCP Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">llms-install.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">### Step 2: API Key Requirements</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">llms-install.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">### Step 3: Initialize Project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">llms-install.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">### Step 4: Create Initial Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Step 1: Verify Connection &amp; Authentication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">## Step 2: List Available Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">## Step 3: Initialize Git Branch for Brief</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 4: Task Loop (Repeat for Each Task)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>201</td>
+                    <td class="mono snippet">## Step 5: Complete All Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>205</td>
+                    <td class="mono snippet">## Step 6: Final Verification &amp; PR Creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/goham.md</td>
+                    <td>270</td>
+                    <td class="mono snippet">## Step 7: Cleanup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>148</td>
+                    <td class="mono snippet"># Step 1: Initialize project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>151</td>
+                    <td class="mono snippet"># Step 2: Set up Codex CLI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>155</td>
+                    <td class="mono snippet"># Step 3: Create PRD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>167</td>
+                    <td class="mono snippet"># Step 4: Parse PRD into tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>170</td>
+                    <td class="mono snippet"># Step 5: Analyze complexity</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>173</td>
+                    <td class="mono snippet"># Step 6: Expand complex tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>176</td>
+                    <td class="mono snippet"># Step 7: Start working</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>180</td>
+                    <td class="mono snippet"># Step 8: Mark completed as you work</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>183</td>
+                    <td class="mono snippet"># Step 9: Continue to next task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>23</td>
+                    <td class="mono snippet">## Step 1: Verify Connection &amp; Authentication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>35</td>
+                    <td class="mono snippet">## Step 2: List Available Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>44</td>
+                    <td class="mono snippet">## Step 3: Initialize Git Branch for Brief</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>60</td>
+                    <td class="mono snippet">## Step 4: Task Loop (Repeat for Each Task)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>219</td>
+                    <td class="mono snippet">## Step 5: Complete All Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>223</td>
+                    <td class="mono snippet">## Step 6: Final Verification &amp; PR Creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/team/goham.ts</td>
+                    <td>288</td>
+                    <td class="mono snippet">## Step 7: Cleanup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/tests/integration/auth/auth-token-refresh-singleton.test.ts</td>
+                    <td>239</td>
+                    <td class="mono snippet">			// Step 1: AuthManager creates its singleton</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/tests/integration/auth/auth-token-refresh-singleton.test.ts</td>
+                    <td>243</td>
+                    <td class="mono snippet">			// Step 2: StorageFactory creates API storage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/tests/integration/auth/auth-token-refresh-singleton.test.ts</td>
+                    <td>247</td>
+                    <td class="mono snippet">			// Step 3: Get the singleton client directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/tasks/services/task-loader.service.ts</td>
+                    <td>75</td>
+                    <td class="mono snippet">		// Step 1: Load task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/tasks/services/task-loader.service.ts</td>
+                    <td>87</td>
+                    <td class="mono snippet">		// Step 2: Validate task status</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/tasks/services/task-loader.service.ts</td>
+                    <td>93</td>
+                    <td class="mono snippet">		// Step 3: Check for subtasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/tasks/services/task-loader.service.ts</td>
+                    <td>99</td>
+                    <td class="mono snippet">		// Step 4: Validate subtask structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/tasks/services/task-loader.service.ts</td>
+                    <td>105</td>
+                    <td class="mono snippet">		// Step 5: Analyze dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/auth/services/oauth-service.ts</td>
+                    <td>154</td>
+                    <td class="mono snippet">		// Step 1: Generate keypair for E2E encryption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/auth/services/oauth-service.ts</td>
+                    <td>158</td>
+                    <td class="mono snippet">		// Step 2: Start the flow on the backend with our public key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/auth/services/oauth-service.ts</td>
+                    <td>178</td>
+                    <td class="mono snippet">		// Step 3: Open browser with verification URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-core/src/modules/auth/services/oauth-service.ts</td>
+                    <td>196</td>
+                    <td class="mono snippet">		// Step 4: Poll for completion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/extension/docs/extension-development-guide.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">### Step 1: Build Clean Package</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/extension/docs/extension-development-guide.md</td>
+                    <td>83</td>
+                    <td class="mono snippet">### Step 2: Create VSIX</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>250</td>
+                    <td class="mono snippet">### Step 1: WorkflowOrchestrator Skeleton</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>256</td>
+                    <td class="mono snippet">### Step 2: Work Unit Generation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>262</td>
+                    <td class="mono snippet">### Step 3: Git/Test Adapters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>268</td>
+                    <td class="mono snippet">### Step 4: MCP Integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>274</td>
+                    <td class="mono snippet">### Step 5: CLI Integration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.taskmaster/docs/tdd-workflow-phase-1-orchestrator.md</td>
+                    <td>280</td>
+                    <td class="mono snippet">### Step 6: Integration Testing</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(12 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>114</td>
+                    <td class="mono snippet">  # Check if a log file path was provided as the second argument</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>293</td>
+                    <td class="mono snippet">  # Check if source .env file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>300</td>
+                    <td class="mono snippet">  # Check if sample PRD exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/run_fallback_verification.sh</td>
+                    <td>90</td>
+                    <td class="mono snippet">    if [[ -n &quot;${total_fallback_cost+x}&quot; &amp;&amp; &quot;$total_fallback_cost&quot; != &quot;0.0&quot; ]]; then # Check if var is set and not initial</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/providers/codex-cli.md</td>
+                    <td>460</td>
+                    <td class="mono snippet">   # Check if .env exists in project root</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/examples/codex-cli-usage.md</td>
+                    <td>233</td>
+                    <td class="mono snippet"># Check if Codex is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/create-worktree.sh</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Check if worktree already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/tm-profiles/src/slash-commands/commands/solo/install-taskmaster.ts</td>
+                    <td>24</td>
+                    <td class="mono snippet">   # Check if task-master command exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/claude-code-plugin/commands/install-taskmaster.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">   # Check if task-master command exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/release.yml</td>
+                    <td>114</td>
+                    <td class="mono snippet">          # Check if we're in pre-release mode with the &quot;rc&quot; tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/log-issue-events.yml</td>
+                    <td>112</td>
+                    <td class="mono snippet">          # Check if issue was closed automatically (by checking if closed_by is a bot)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/log-issue-events.yml</td>
+                    <td>118</td>
+                    <td class="mono snippet">          # Check if closed as duplicate by state_reason</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ==========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>105</td>
+                    <td class="mono snippet"># ==========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>211</td>
+                    <td class="mono snippet"># ==========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>249</td>
+                    <td class="mono snippet"># ==========================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/run_e2e.sh</td>
+                    <td>326</td>
+                    <td class="mono snippet">  # ========================================</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>2100</td>
+                    <td class="mono snippet">    except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>2399</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>2465</td>
+                    <td class="mono snippet">                except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>2474</td>
+                    <td class="mono snippet">                except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>2481</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>3475</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>4401</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>84</td>
+                    <td class="mono snippet">Don't forget to add your API keys to the configuration:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>1368</td>
+                    <td class="mono snippet">Here's a simple example of implementing resource support in an MCP server:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">context/mcp-protocol-repo.txt</td>
+                    <td>5519</td>
+                    <td class="mono snippet">Make sure to replace `username` with your computer's username. The paths should point to valid directories that you want Claude to be able to access a</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/tm-core/tests/integration/workflow/autopilot-workflow.test.ts</td>
+                    <td>93</td>
+                    <td class="mono snippet">		execSync('git config user.email &quot;test@test.com&quot;', {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-24 12:28 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

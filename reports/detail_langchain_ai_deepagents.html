@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — langchain-ai/deepagents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>langchain-ai/deepagents</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">9.5</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">9.5</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1123</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">2087</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">219,699</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">634</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-24</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(513 hits · 1026 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/external_benchmarks.py</td>
+                    <td>191</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/external_benchmarks.py</td>
+                    <td>193</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_followup_quality.py</td>
+                    <td>27</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_followup_quality.py</td>
+                    <td>30</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>34</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>36</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>207</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>209</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>250</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>252</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>407</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>409</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>433</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_usage_relational.py</td>
+                    <td>435</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>44</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>100</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>102</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>148</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>150</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>194</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_memory_multiturn.py</td>
+                    <td>196</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_external_benchmarks.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_external_benchmarks.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_external_benchmarks.py</td>
+                    <td>59</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_external_benchmarks.py</td>
+                    <td>61</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>35</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>105</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>107</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>188</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>190</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>272</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/test_tool_selection.py</td>
+                    <td>274</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>22</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>74</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>76</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>144</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>146</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>214</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>216</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>418</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>420</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>573</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>575</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>701</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>703</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>765</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/utils.py</td>
+                    <td>767</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 463 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(71 hits · 355 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    NR &gt; offset &amp;&amp; NR &lt;= offset + limit {{ print }}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>448</td>
+                    <td class="mono snippet">cd {safe_path} 2&gt;/dev/null || exit 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">            &quot;nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 0&quot;, timeout=10</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">        os_result = await backend.aexecute(&quot;uname -s -r 2&gt;/dev/null || echo unknown&quot;, timeout=10)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/evals/deepagents_harbor/langsmith_environment.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">            &quot;[ -d /app ] &amp;&amp; echo /app || echo /&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">        (&quot;ls &amp;&amp; cat file&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        (&quot;ls &amp;&amp; rm file&quot;, False),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">        (&quot;ls -la &amp;&amp; grep pattern file &amp;&amp; cat output.txt&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        (&quot;ls &amp;&amp; cat file &amp;&amp; grep test&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">        (&quot;cat a.txt &amp;&amp; cat b.txt &amp;&amp; cat c.txt&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">        (&quot;ls &amp;&amp; rm -rf /&quot;, False),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test commands with &amp;&amp; operator (commonly used by Claude for chaining).&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">        (&quot;ls || cat file&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">        (&quot;ls || rm file&quot;, False),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test commands with || operator.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>549</td>
+                    <td class="mono snippet">            (&quot;ls &amp;&amp; cat file&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>550</td>
+                    <td class="mono snippet">            (&quot;ls &amp;&amp; grep test file&quot;, True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>638</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Double &amp;&amp; should not be flagged as dangerous (it's a safe operator).&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_shell_allow_list.py</td>
+                    <td>639</td>
+                    <td class="mono snippet">        assert not contains_dangerous_patterns(&quot;ls &amp;&amp; cat file&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/tests/integration_tests/test_sandbox_operations.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">            &quot;rm -rf /tmp/test_sandbox_ops &amp;&amp; mkdir -p /tmp/test_sandbox_ops&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">$IN_GIT &amp;&amp; ROOT=&quot;$(git rev-parse --show-toplevel 2&gt;/dev/null)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">$IN_GIT &amp;&amp; ROOT=&quot;$(git rev-parse --show-toplevel 2&gt;/dev/null)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">  $MONOREPO &amp;&amp; echo &quot;- Monorepo: yes&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">  if grep -q '\[tool\.uv\]' pyproject.toml 2&gt;/dev/null; then PKG=&quot;Python: uv&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">  elif grep -q '\[tool\.poetry\]' pyproject.toml 2&gt;/dev/null; then PKG=&quot;Python: poetry&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">  BRANCH=&quot;$(git rev-parse --abbrev-ref HEAD 2&gt;/dev/null)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">if [ -f Makefile ] &amp;&amp; grep -qE '^tests?:' Makefile 2&gt;/dev/null; then TC=&quot;make test&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">    &amp;&amp; grep -q '&quot;test&quot;' package.json 2&gt;/dev/null; then</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">  { ls -1 2&gt;/dev/null; [ -e .deepagents ] &amp;&amp; echo .deepagents; } |</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/cli/deepagents_cli/local_context.py</td>
+                    <td>345</td>
+                    <td class="mono snippet">    $TREE_TRUNCATED &amp;&amp; echo &quot;... (more lines truncated)&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/partners/quickjs/tests/unit_tests/test_end_to_end.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">                                    &quot;  values.push('x'.repeat(1024));\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_local_sandbox_operations.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        sandbox.execute(&quot;rm -rf /tmp/test_sandbox_ops &amp;&amp; mkdir -p /tmp/test_sandbox_ops&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/subagents.py</td>
+                    <td>270</td>
+                    <td class="mono snippet">  if (n &lt;= 1) return false</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/subagents.py</td>
+                    <td>272</td>
+                    <td class="mono snippet">    if (n % i === 0) return false</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/subagents.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">  return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">    - Use '&amp;&amp;' when commands depend on each other (e.g., &quot;mkdir dir &amp;&amp; cd dir&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">    - execute(command=&quot;npm install &amp;&amp; npm test&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">    - execute(command=&quot;cd /foo/bar &amp;&amp; pytest tests&quot;)  # Use absolute path instead</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/sandbox.py</td>
+                    <td>704</td>
+                    <td class="mono snippet">        cmd = f&quot;grep {grep_opts} {glob_pattern} -e {pattern_escaped} {search_path} 2&gt;/dev/null || true&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">        assert not contains_dangerous_patterns(&quot;cd dir &amp;&amp; ls&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        assert not contains_dangerous_patterns(&quot;make &amp;&amp; make test&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">        assert extract_command_types(&quot;test -f foo || echo missing&quot;) == [&quot;test&quot;, &quot;echo&quot;]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        result = extract_command_types(&quot;cd dir &amp;&amp; ls ; echo done || cat file&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        result = extract_command_types(&quot;cd dir &amp;&amp; ls ; echo done || cat file&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Ensure existing &amp;&amp; and | splitting still works.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">        assert extract_command_types(&quot;cd /path &amp;&amp; npm install&quot;) == [&quot;cd&quot;, &quot;npm install&quot;]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_dangerous_patterns.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        cmd = &quot;cd /Users/test/project &amp;&amp; python -m pytest tests/test_agent.py -v&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_command_allowlist.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test extracting command types from commands with &amp;&amp; operator.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_command_allowlist.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        assert extract_command_types(&quot;cd /path &amp;&amp; npm install&quot;) == [&quot;cd&quot;, &quot;npm install&quot;]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">libs/acp/tests/test_command_allowlist.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">        assert extract_command_types(&quot;cd /path &amp;&amp; python -m pytest tests/&quot;) == [</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 21 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(297 hits · 322 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">    except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">    except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">    except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">    except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">    except Exception as exc:  # noqa: BLE001  # private API; best-effort</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/pytest_reporter.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/external_benchmarks.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/llm_judge.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/llm_judge.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/memory_agent_bench/data_utils.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>307</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>515</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>542</td>
+                    <td class="mono snippet">                except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001  # best-effort metadata collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001  # best-effort metadata collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001  # best-effort metadata collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/metadata.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001  # best-effort metadata collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/langsmith_environment.py</td>
+                    <td>341</td>
+                    <td class="mono snippet">        except Exception as create_err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/langsmith_environment.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/langsmith_environment.py</td>
+                    <td>398</td>
+                    <td class="mono snippet">            except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/langsmith_environment.py</td>
+                    <td>544</td>
+                    <td class="mono snippet">            except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/deepagents_wrapper.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">            except Exception:  # noqa: BLE001  # gracefully degrade when LangSmith is unavailable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/deepagents_wrapper.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001  # metadata is supplementary; never abort a trial</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/generate_radar.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001  # top-level script should surface chart backend failures cleanly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/generate_radar.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">            except Exception as exc:  # noqa: BLE001  # top-level script should surface chart backend failures cleanly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">            print(f&quot;Error: --metadata must be valid JSON: {exc}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">            print(&quot;Error: --metadata must be a JSON object.&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">            print(f&quot;Error: {exc}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">            print(f&quot;Error: failed to create experiment: {exc}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001  # unexpected; distinct exit code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">            print(f&quot;Error: unexpected failure creating experiment: {exc!r}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/harbor_langsmith.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">            print(f&quot;Error: Job folder does not exist: {args.job_folder}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>291</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>371</td>
+                    <td class="mono snippet">        print(f&quot;Error: Directory {jobs_dir} does not exist&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>510</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>868</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/repl/langchain_repl/middleware.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/repl/langchain_repl/middleware.py</td>
+                    <td>273</td>
+                    <td class="mono snippet">        except Exception as exc:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/arxiv-search/arxiv_search.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/scripts/init_skill.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">        print(f&quot;Error: Skill directory already exists: {skill_dir}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/scripts/init_skill.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/scripts/init_skill.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        print(f&quot;Error creating directory: {e}&quot;)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 247 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(130 hits · 260 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/fixtures/summarization_seed_messages.json</td>
+                    <td>199</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;   501\t            # Keep the most recent N messages\n   502\t            if len(messages) &lt;= keep_value:\n   503\t                </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/tests/evals/data/bfcl_apis/trading_bot.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">        # Define the start and end dates for the range</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>628</td>
+                    <td class="mono snippet">    # Create the deep agent for trajectory analysis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>654</td>
+                    <td class="mono snippet">    # Create the user message with the trajectory and explicit status</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_media_utils.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">        # Create a small PNG in memory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_media_utils.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">        # Create a small valid PNG</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_media_utils.py</td>
+                    <td>419</td>
+                    <td class="mono snippet">        # Create a minimal valid MP4 file (ftyp box)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_media_utils.py</td>
+                    <td>459</td>
+                    <td class="mono snippet">        # Create a file that reports &gt; 20 MB via stat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_agent.py</td>
+                    <td>828</td>
+                    <td class="mono snippet">        # Create the default agent directory with AGENTS.md</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_agent.py</td>
+                    <td>833</td>
+                    <td class="mono snippet">        # Create a non-default agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">            # Create a fake model that returns predefined messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">            # Create a CLI agent with the fake model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">            # Create a CLI agent with the fake model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">            # Create a fake model that calls sample_tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">            # Create a CLI agent with the fake model and sample_tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>297</td>
+                    <td class="mono snippet">            # Create a test file to list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">            # Create a fake model that uses filesystem tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">            # Create a CLI agent with the fake model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>351</td>
+                    <td class="mono snippet">            # Create a fake model that makes multiple tool calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>384</td>
+                    <td class="mono snippet">            # Create a CLI agent with the fake model and sample_tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>417</td>
+                    <td class="mono snippet">            # Create a simple fake model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_end_to_end.py</td>
+                    <td>426</td>
+                    <td class="mono snippet">            # Create a CLI agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_message_store.py</td>
+                    <td>569</td>
+                    <td class="mono snippet">        # Create a tool message with various states</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_config.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">        # Create a mock project structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_config.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        # Create a subdirectory to search from</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_config.py</td>
+                    <td>464</td>
+                    <td class="mono snippet">        # Create a mock project with .git</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_config.py</td>
+                    <td>475</td>
+                    <td class="mono snippet">        # Create a directory without .git</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_exception_handling.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">        # Create a mock app with widgets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/unit_tests/skills/test_load.py</td>
+                    <td>686</td>
+                    <td class="mono snippet">        # Create a healthy user skills directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/integration_tests/test_sandbox_operations.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        # Create a line with 3000 characters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/integration_tests/test_sandbox_factory.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">        # Create a directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/tests/integration_tests/test_sandbox_factory.py</td>
+                    <td>285</td>
+                    <td class="mono snippet">        # Create a directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/deepagents_cli/media_utils.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">    # Create a temp file for the image</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/deepagents_cli/agent.py</td>
+                    <td>1263</td>
+                    <td class="mono snippet">    # Create the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/cli/deepagents_cli/app.py</td>
+                    <td>4027</td>
+                    <td class="mono snippet">        # Create the stats object up-front and store on the app so</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>436</td>
+                    <td class="mono snippet">        # Create a large number of files that will exceed TOOL_RESULT_TOKEN_LIMIT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1803</td>
+                    <td class="mono snippet">        # Create a list that exceeds the token limit (20000 tokens * 4 chars = 80000 chars)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1837</td>
+                    <td class="mono snippet">        # Create a large tool result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1845</td>
+                    <td class="mono snippet">        # Create a request for a tool in TOOLS_EXCLUDED_FROM_EVICTION</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1867</td>
+                    <td class="mono snippet">        # Create a large tool result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1875</td>
+                    <td class="mono snippet">        # Create a request for a tool NOT in TOOLS_EXCLUDED_FROM_EVICTION</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1901</td>
+                    <td class="mono snippet">        # Create a ToolMessage with the large execute output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_middleware.py</td>
+                    <td>1908</td>
+                    <td class="mono snippet">        # Create a request for the execute tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_file_system_tools.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Create a deep agent with the fake model and a memory saver</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">        # Create a fake model that returns predefined messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">        # Create a deep agent with the fake model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">        # Create a fake model that calls sample_tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">        # Create a deep agent with the fake model and sample_tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">        # Create a fake model that uses filesystem tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_end_to_end.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">        # Create a deep agent with the fake model</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 80 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(52 hits · 52 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/CONTRIBUTING.md</td>
+                    <td>293</td>
+                    <td class="mono snippet">#### Step 1: Create dataset and experiment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/CONTRIBUTING.md</td>
+                    <td>303</td>
+                    <td class="mono snippet">#### Step 2: Run benchmark with tracing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/CONTRIBUTING.md</td>
+                    <td>321</td>
+                    <td class="mono snippet">#### Step 3: Add feedback scores</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">        # Step 1: read_file to get the skill content.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        # Step 2: answer with the magic number.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">        # Step 1: read_file for code-review only.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">        # Step 2: answer with the code.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        # Step 1: read_file for both skills in parallel.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">        # Step 2: answer combining both ports.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">        # Step 1: read_file to discover the typo.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">        # Step 2: edit_file to fix it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/test_skills.py</td>
+                    <td>232</td>
+                    <td class="mono snippet">        # Step 3: confirm.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/fixtures/summarization_seed_messages.json</td>
+                    <td>199</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;   501\t            # Keep the most recent N messages\n   502\t            if len(messages) &lt;= keep_value:\n   503\t                </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        # Step 1: existence check + mkdir (small command, no ARG_MAX risk).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/deepagents_harbor/backend.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        # Step 2: transfer content via Harbor's native file upload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_model_config.py</td>
+                    <td>928</td>
+                    <td class="mono snippet">        # Step 1: Save model to config (simulating /model anthropic:claude-opus-4-5)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_model_config.py</td>
+                    <td>936</td>
+                    <td class="mono snippet">        # Step 2: Patch DEFAULT_CONFIG_PATH and call _get_default_model_spec</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_model_config.py</td>
+                    <td>946</td>
+                    <td class="mono snippet">            # Step 3: Get default model spec - should use saved recent model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>225</td>
+                    <td class="mono snippet">### Step 1: Understanding the Skill with Concrete Examples</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>242</td>
+                    <td class="mono snippet">### Step 2: Planning the Reusable Skill Contents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>266</td>
+                    <td class="mono snippet">### Step 3: Initializing the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>317</td>
+                    <td class="mono snippet">### Step 4: Edit the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>358</td>
+                    <td class="mono snippet">### Step 5: Validate the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/SKILL.md</td>
+                    <td>376</td>
+                    <td class="mono snippet">### Step 6: Iterate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/web-research/SKILL.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">### Step 1: Create and Save Research Plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/web-research/SKILL.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">### Step 2: Delegate to Research Subagents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/web-research/SKILL.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">### Step 3: Synthesize Findings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/skills/commands.py</td>
+                    <td>371</td>
+                    <td class="mono snippet">### Step 1: [First Action]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/skills/commands.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">### Step 2: [Second Action]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/skills/commands.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">### Step 3: [Final Action]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>228</td>
+                    <td class="mono snippet">### Step 1: Understanding the Skill with Concrete Examples</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>245</td>
+                    <td class="mono snippet">### Step 2: Planning the Reusable Skill Contents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>269</td>
+                    <td class="mono snippet">### Step 3: Initializing the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>320</td>
+                    <td class="mono snippet">### Step 4: Edit the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>356</td>
+                    <td class="mono snippet">### Step 5: Validate the Skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/SKILL.md</td>
+                    <td>374</td>
+                    <td class="mono snippet">### Step 6: Iterate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/remember/SKILL.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Step 1: Identify Best Practices and Key Learnings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/remember/SKILL.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">## Step 2: Decide Where to Store Each Learning</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/remember/SKILL.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 3: Create Skills for Significant Best Practices</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/remember/SKILL.md</td>
+                    <td>102</td>
+                    <td class="mono snippet">## Step 4: Update Memory for Simpler Learnings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/remember/SKILL.md</td>
+                    <td>114</td>
+                    <td class="mono snippet">## Step 5: Summarize Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>350</td>
+                    <td class="mono snippet">        # Step 1: &quot;Restore&quot; v1 checkpoint data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">        # Step 2: V2 backend reads v1 data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">        # Step 3: Edit v1 data (result upgrades to v2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">        # Step 4: Write a brand new file in v2</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">        # Step 5: Verify everything via reads</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/summarization.py</td>
+                    <td>923</td>
+                    <td class="mono snippet">        # Step 1: Truncate args if configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/summarization.py</td>
+                    <td>930</td>
+                    <td class="mono snippet">        # Step 2: Check if summarization should happen</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/summarization.py</td>
+                    <td>946</td>
+                    <td class="mono snippet">        # Step 3: Perform summarization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/summarization.py</td>
+                    <td>1027</td>
+                    <td class="mono snippet">        # Step 1: Truncate args if configured</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 2 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(41 hits · 41 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/fixtures/summarization_seed_messages.json</td>
+                    <td>199</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;   501\t            # Keep the most recent N messages\n   502\t            if len(messages) &lt;= keep_value:\n   503\t                </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/data/bfcl_apis/message_api.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">        # Check if there is a current user logged in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/data/bfcl_apis/travel_booking.py</td>
+                    <td>783</td>
+                    <td class="mono snippet">        # Check if the traveler is at least 18 years old</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/tests/evals/data/bfcl_apis/travel_booking.py</td>
+                    <td>790</td>
+                    <td class="mono snippet">        # Check if the passport number starts with 'US' (assuming this indicates a US passport)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">            # Check if this is a valid task directory (has solution/solve.sh)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/evals/scripts/analyze.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">            # Check if this step has tool calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/tests/unit_tests/test_chat_input.py</td>
+                    <td>2053</td>
+                    <td class="mono snippet">        # Set gap to 0 so any real delay exceeds it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/examples/skills/skill-creator/scripts/init_skill.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">    # Check if directory already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/textual_adapter.py</td>
+                    <td>755</td>
+                    <td class="mono snippet">                    # Check if this is an AIMessageChunk with content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/config.py</td>
+                    <td>1595</td>
+                    <td class="mono snippet">                # Check if this command is in the allow set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/config.py</td>
+                    <td>2257</td>
+                    <td class="mono snippet">    # Check if this provider uses a custom BaseChatModel class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/media_utils.py</td>
+                    <td>393</td>
+                    <td class="mono snippet">        # Check if file was created and has content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/app.py</td>
+                    <td>2472</td>
+                    <td class="mono snippet">        # Check if ALL actions in the batch are auto-approvable shell commands</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/app.py</td>
+                    <td>3985</td>
+                    <td class="mono snippet">        # Check if agent is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/app.py</td>
+                    <td>5071</td>
+                    <td class="mono snippet">        # Check if focused widget is the text area inside chat input</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/app.py</td>
+                    <td>6432</td>
+                    <td class="mono snippet">            # Check if already using this exact model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/skills/commands.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">        # Check if skill_dir is within base_dir</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/skills/commands.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">    # Check if this project skill shadows a user skill with the same name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/built_in_skills/skill-creator/scripts/init_skill.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">    # Check if directory already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/deepagents_cli/widgets/chat_input.py</td>
+                    <td>1686</td>
+                    <td class="mono snippet">            # Check if it looked like media but failed validation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend_async.py</td>
+                    <td>432</td>
+                    <td class="mono snippet">    # Write files to both backends</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend_async.py</td>
+                    <td>835</td>
+                    <td class="mono snippet">    # Write files to memories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend_async.py</td>
+                    <td>1016</td>
+                    <td class="mono snippet">    # Write files to memories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend.py</td>
+                    <td>539</td>
+                    <td class="mono snippet">    # Write files to both backends</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend.py</td>
+                    <td>949</td>
+                    <td class="mono snippet">    # Write files to memories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_composite_backend.py</td>
+                    <td>1130</td>
+                    <td class="mono snippet">    # Write files to memories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_store_backend_async.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    # Write file with multiple occurrences</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_store_backend_async.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">    # Write file with multiple lines</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_store_backend_async.py</td>
+                    <td>217</td>
+                    <td class="mono snippet">    # Write files in nested directories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_local_shell_backend.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">        # Read the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>1200</td>
+                    <td class="mono snippet">        # Check if execute tool is present and if backend supports it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>1265</td>
+                    <td class="mono snippet">        # Check if execute tool is present and if backend supports it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/filesystem.py</td>
+                    <td>1340</td>
+                    <td class="mono snippet">        # Check if content exceeds eviction threshold</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/middleware/summarization.py</td>
+                    <td>709</td>
+                    <td class="mono snippet">                # Check if this AIMessage has tool calls we need to truncate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/store.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">            # Check if file is in the specified directory or a subdirectory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/store.py</td>
+                    <td>541</td>
+                    <td class="mono snippet">        # Check if file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/store.py</td>
+                    <td>564</td>
+                    <td class="mono snippet">        # Check if file exists using async method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/utils.py</td>
+                    <td>530</td>
+                    <td class="mono snippet">    # Check if path matches an exact file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/deepagents/backends/state.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">            # Check if file is in the specified directory or a subdirectory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/acp/deepagents_acp/server.py</td>
+                    <td>807</td>
+                    <td class="mono snippet">                    # Check if this is write_todos - auto-approve updates to existing plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/acp/deepagents_acp/server.py</td>
+                    <td>836</td>
+                    <td class="mono snippet">                                    # Check if ALL command types are already allowed</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(12 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/smoke_tests/snapshots/system_prompt_with_memory_and_skills_tools.json</td>
+                    <td>226</td>
+                    <td class="mono snippet">      &quot;description&quot;: &quot;Launch an ephemeral subagent to handle complex, multi-step independent tasks with isolated context windows.\n\nAvailable agent t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/smoke_tests/snapshots/custom_system_message_tools.json</td>
+                    <td>226</td>
+                    <td class="mono snippet">      &quot;description&quot;: &quot;Launch an ephemeral subagent to handle complex, multi-step independent tasks with isolated context windows.\n\nAvailable agent t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/smoke_tests/snapshots/system_prompt_without_execute_tools.json</td>
+                    <td>226</td>
+                    <td class="mono snippet">      &quot;description&quot;: &quot;Launch an ephemeral subagent to handle complex, multi-step independent tasks with isolated context windows.\n\nAvailable agent t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/smoke_tests/snapshots/system_prompt_with_sync_and_async_subagents_tools.json</td>
+                    <td>226</td>
+                    <td class="mono snippet">      &quot;description&quot;: &quot;Launch an ephemeral subagent to handle complex, multi-step independent tasks with isolated context windows.\n\nAvailable agent t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/smoke_tests/snapshots/system_prompt_with_execute_tools.json</td>
+                    <td>257</td>
+                    <td class="mono snippet">      &quot;description&quot;: &quot;Launch an ephemeral subagent to handle complex, multi-step independent tasks with isolated context windows.\n\nAvailable agent t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/acp/deepagents_acp/utils.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">                # Use specific handler if available, otherwise just use base command</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/acp/deepagents_acp/utils.py</td>
+                    <td>317</td>
+                    <td class="mono snippet">                    # Non-sensitive commands - just use the base command</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/nvidia_deep_agent/src/prompts.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">RESEARCHER_INSTRUCTIONS = &quot;&quot;&quot;Gather and synthesize comprehensive information on the provided query, carefully addressing all aspects and constraints o</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/better-harness/README.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># better-harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/better-harness/tests/__init__.py</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Tests package for better-harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/better-harness/examples/deepagents_example.toml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Worked example for optimizing a Deep Agents-based harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/better-harness/better_harness/core.py</td>
+                    <td>345</td>
+                    <td class="mono snippet">            &quot;# better-harness report&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/test_file_system_tools.py</td>
+                    <td>320</td>
+                    <td class="mono snippet">                                &quot;content&quot;: &quot;def helper():\n    return 42&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/middleware/test_skills_middleware.py</td>
+                    <td>714</td>
+                    <td class="mono snippet">    helper_content = &quot;def helper(): pass&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">        write_res = be.write(&quot;/src/utils.py&quot;, &quot;import sys\ndef helper():\n    pass\nimport os\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_backwards_compat.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">        be.write(&quot;/src/utils.py&quot;, &quot;import sys\ndef helper():\n    pass\nimport os\n&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/deepagents/tests/unit_tests/backends/test_store_backend.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">            (&quot;user@example.com&quot;,),</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/async-subagent-server/README.md</td>
+                    <td>79</td>
+                    <td class="mono snippet">## ⚠️ For demonstration purposes only</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/cli/scripts/install.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-24 12:28 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

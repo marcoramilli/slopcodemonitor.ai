@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — vectordotdev/vector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>vectordotdev/vector</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">171</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">635</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">477,699</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">6804</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-24</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(41 hits · 410 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>245</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>247</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>248</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>250</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:215)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>251</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:178)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>252</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:357)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>253</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:270)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>254</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>255</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>256</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:99)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>257</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>258</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>259</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>260</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.HttpPutFormContentFilter.doFilterInternal(HttpPutFormContentFilter.java:109)\n&quot;,&quot;stream&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>261</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>262</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>263</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>264</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.HiddenHttpMethodFilter.doFilterInternal(HiddenHttpMethodFilter.java:93)\n&quot;,&quot;stream&quot;:&quot;stdou</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>265</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>266</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>267</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>268</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.boot.actuate.metrics.web.servlet.WebMvcMetricsFilter.filterAndRecordMetrics(WebMvcMetricsFilter.java:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>269</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.boot.actuate.metrics.web.servlet.WebMvcMetricsFilter.doFilterInternal(WebMvcMetricsFilter.java:106)\n</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>270</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>271</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>272</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>273</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:200)\n&quot;,&quot;stream&quot;:&quot;st</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>274</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>275</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>276</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>277</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:198)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>278</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:96)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>279</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:493)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>280</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:140)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T07:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>281</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:81)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T07:4</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>282</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:87)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>283</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T07:49</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>284</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:800)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T07:49:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/codecs/src/decoding/framing/character_delimited.rs</td>
+                    <td>288</td>
+                    <td class="mono snippet">            {&quot;log&quot;:&quot;\u0009at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)\n&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;time&quot;:&quot;2019-01-18T0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/vector-vrl/web-playground/public/index.js</td>
+                    <td>228</td>
+                    <td class="mono snippet">    this.monaco.languages.json.jsonDefaults.setDiagnosticsOptions({ validate: false });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/vector-vrl/web-playground/public/index.js</td>
+                    <td>232</td>
+                    <td class="mono snippet">    this.monaco.languages.json.jsonDefaults.setDiagnosticsOptions({ validate: true });</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(42 hits · 79 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">      - [Test harness](#test-harness)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>260</td>
+                    <td class="mono snippet">##### Test harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/docs/reference/configuration/_index.md</td>
+                    <td>435</td>
+                    <td class="mono snippet">        # Value found, just use the cached value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/docs/reference/configuration/_index.md</td>
+                    <td>516</td>
+                    <td class="mono snippet">        # Value found, just use the cached value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/highlights/2020-04-07-lua-transform-version-2.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">3. Introduction of [timers][docs.transforms.lua#timers] to facilitate timed flushing. Useful for aggregations.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-07-27-7117-vrl-string-interpolation.md</td>
+                    <td>169</td>
+                    <td class="mono snippet">### Use comprehensive f-strings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">* [State of the Art](#state-of-the-art)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">  * [test-harness](#test-harness)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">  * [Run test-harness Nightly](#run-test-harness-nightly)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">  * [Rethink test-harness](#rethink-test-harness)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>29</td>
+                    <td class="mono snippet">  * [Test-Harness](#test-harness)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>163</td>
+                    <td class="mono snippet">### test-harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>347</td>
+                    <td class="mono snippet">### Run test-harness Nightly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>382</td>
+                    <td class="mono snippet">### Rethink test-harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>482</td>
+                    <td class="mono snippet">* [Rethink test-harness](#rethink-test-harness)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-02-23-6531-performance-testing.md</td>
+                    <td>501</td>
+                    <td class="mono snippet">Nightly](#run-test-harness-nightly) as a mere stepping stone in that greater</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate-component-docs.rb</td>
+                    <td>251</td>
+                    <td class="mono snippet">  # We just use the detected value type in that case.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate-component-docs.rb</td>
+                    <td>284</td>
+                    <td class="mono snippet">  # TODO: The documentation should really just use `boolean` to match JSON Schema, which would let</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate-component-docs.rb</td>
+                    <td>291</td>
+                    <td class="mono snippet"># Essentially, as we resolve a schema we end up with a hash that looks like this:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate-component-docs.rb</td>
+                    <td>1652</td>
+                    <td class="mono snippet">  # Grab both the raw description and raw title, and if the title is empty, just use the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-config-macros/src/configurable.rs</td>
+                    <td>963</td>
+                    <td class="mono snippet">            // each variant until it finds one that can deserialize the data correctly. Essentially,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-core/src/fanout.rs</td>
+                    <td>138</td>
+                    <td class="mono snippet">                // Essentially, we should only land here if the control channel is closed but we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-stream/src/driver.rs</td>
+                    <td>114</td>
+                    <td class="mono snippet">            // Essentially, we bounce back and forth between &quot;grab the new batch from the input</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-config/tests/integration/named.rs</td>
+                    <td>6</td>
+                    <td class="mono snippet">// Essentially, this just derives an impl of `vector_config::NamedComponent` where the component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-config/src/schema/helpers.rs</td>
+                    <td>39</td>
+                    <td class="mono snippet">    // too generic and muddles the output. Essentially, if the callsite decides to provide an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-buffers/src/variants/disk_v2/writer.rs</td>
+                    <td>981</td>
+                    <td class="mono snippet">        // Essentially, we defer the actual skipping to avoid deadlocking here trying to open a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-buffers/src/variants/disk_v2/reader.rs</td>
+                    <td>996</td>
+                    <td class="mono snippet">            // Essentially: is the writer still writing to this data file or not, and are we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-buffers/src/variants/disk_v2/reader.rs</td>
+                    <td>1043</td>
+                    <td class="mono snippet">            // Fundamentally, when `try_read_record` returns `None`, there's three possible</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/vector-buffers/src/variants/disk_v2/tests/invariants.rs</td>
+                    <td>258</td>
+                    <td class="mono snippet">            // happening there.  Essentially, the process of doing a read or write could contain a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/config/cmd.rs</td>
+                    <td>174</td>
+                    <td class="mono snippet">    // Start by serializing to a `ConfigBuilder`. This will leverage validation in config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/splunk_hec/common/util.rs</td>
+                    <td>56</td>
+                    <td class="mono snippet">//       This sink should undergo a refactor to utilize the `HttpService`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/appsignal/service.rs</td>
+                    <td>27</td>
+                    <td class="mono snippet">    //       This sink should undergo a refactor to utilize the `HttpService`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/datadog/logs/config.rs</td>
+                    <td>93</td>
+                    <td class="mono snippet">    // utilize it, since it all follows the same pattern.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/datadog/events/service.rs</td>
+                    <td>50</td>
+                    <td class="mono snippet">    //       This sink should undergo a refactor to utilize the `HttpService`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/elasticsearch/service.rs</td>
+                    <td>74</td>
+                    <td class="mono snippet">    //       This sink should undergo a refactor to utilize the `HttpService`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/internal_telemetry/allocations/mod.rs</td>
+                    <td>184</td>
+                    <td class="mono snippet">/// a [`tracing::Span`] to achieve this&quot; we utilize the logical invariants provided by spans --</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/util/http_client.rs</td>
+                    <td>65</td>
+                    <td class="mono snippet">/// Builds the context, allowing the source-specific implementation to leverage data from the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/windows_event_log/checkpoint.rs</td>
+                    <td>23</td>
+                    <td class="mono snippet">/// Uses Windows Event Log bookmarks for robust position tracking that survives</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/windows_event_log/checkpoint.rs</td>
+                    <td>57</td>
+                    <td class="mono snippet">/// each channel. Bookmarks are more robust than record IDs as they survive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/windows_event_log/checkpoint.rs</td>
+                    <td>99</td>
+                    <td class="mono snippet">    /// Bookmarks provide robust position tracking that survives channel clears,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/windows_event_log/bookmark.rs</td>
+                    <td>21</td>
+                    <td class="mono snippet">/// Bookmarks provide robust, Windows-managed position tracking in event logs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sources/aws_s3/sqs.rs</td>
+                    <td>796</td>
+                    <td class="mono snippet">        // so we explicitly drop it so that we can again utilize `read_error` below.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(32 hits · 64 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/vector.yaml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/vector.yaml</td>
+                    <td>13</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/environment_variables.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/file_to_cloudwatch_metrics.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/wrapped_json.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/es_s3_hybrid.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/file_to_prometheus.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ----------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/stdio.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/examples/prometheus_to_console.yaml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/vrl_test_input.toml</td>
+                    <td>21</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>89</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>198</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>282</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>374</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>433</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>487</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>541</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/behavior/transforms/reduce.toml</td>
+                    <td>595</td>
+                    <td class="mono snippet">##------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">distribution/install.sh</td>
+                    <td>247</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">distribution/install.sh</td>
+                    <td>250</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/codecs/src/encoding/format/parquet.rs</td>
+                    <td>600</td>
+                    <td class="mono snippet">    // ── AutoInfer mode ───────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/codecs/src/encoding/format/parquet.rs</td>
+                    <td>761</td>
+                    <td class="mono snippet">    // ── Schema file mode ─────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/codecs/src/encoding/format/parquet.rs</td>
+                    <td>842</td>
+                    <td class="mono snippet">    // ── Schema mode: strict / relaxed ────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>10</td>
+                    <td class="mono snippet">//!                     ┌───────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>12</td>
+                    <td class="mono snippet">//!                     └───────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>14</td>
+                    <td class="mono snippet">//! ┌───────────────┐           │            ┌───────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>15</td>
+                    <td class="mono snippet">//! │  Data Node 1  │◄──────────┼───────────►│  Data Node 3  │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>16</td>
+                    <td class="mono snippet">//! └───────────────┘           │            └───────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>17</td>
+                    <td class="mono snippet">//!                     ┌───────┴───────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>19</td>
+                    <td class="mono snippet">//!                     └───────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>22</td>
+                    <td class="mono snippet">//!                      ┌──────┴─────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/webhdfs/mod.rs</td>
+                    <td>24</td>
+                    <td class="mono snippet">//!                      └────────────┘</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Cargo.toml</td>
+                    <td>455</td>
+                    <td class="mono snippet"># make sure to update the external docs when the Lua version changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/docs/setup/installation/package-managers/rpm.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">Make sure to replace `{arch}` with one of the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/docs/setup/installation/package-managers/dpkg.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">Make sure to replace `{arch}` with one of the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/docs/reference/configuration/unit-tests.md</td>
+                    <td>461</td>
+                    <td class="mono snippet">transform. Their separation into multiple transforms here is purely for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/highlights/2019-11-19-arm-support-on-linux.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">It's worth noting that Vector ships a fully static binary without dependencies.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2020-04-04-2221-kubernetes-integration.md</td>
+                    <td>1462</td>
+                    <td class="mono snippet">  anything extra there for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2020-05-25-2685-dev-workflow-simplification.md</td>
+                    <td>49</td>
+                    <td class="mono snippet"># Inside here, you can use Vector like you have full toolchain (See below!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2022-11-04-automatic-component-validation.md</td>
+                    <td>434</td>
+                    <td class="mono snippet">Here's a simple example of how the runner would actually be used to bring everything together:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2020-05-25-2692-more-usable-logevents.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">For the most part, `LogEvent`s are fairly small, uncomplicated structures, containing a few keys with simple values. Here is a simple example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2022-11-2-14714-expand-vrl-web-ui-beyond-MVP-status.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">context but as mentioned earlier in the RFC, would likely introduce</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/DEVELOPING.md</td>
+                    <td>82</td>
+                    <td class="mono snippet"># Inside here, you can use Vector like you have full toolchain (See below!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/DEVELOPING.md</td>
+                    <td>537</td>
+                    <td class="mono snippet">feel free to adjust both input size and sampling frequency for your setup.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/DEVELOPING.md</td>
+                    <td>539</td>
+                    <td class="mono snippet">It's worth noting that this is not the normal way to profile programs with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test-e2e-kubernetes.sh</td>
+                    <td>61</td>
+                    <td class="mono snippet">  # Hint #1: you can use `scripts/start-docker-registry.sh`, but it requires</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/SUPPORT.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">If your question is about [VRL](https://vector.dev/docs/reference/vrl/#learn), you can also try out</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(20 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>825</td>
+                    <td class="mono snippet">##### Step 1: Update the Vector config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>836</td>
+                    <td class="mono snippet">##### Step 2: Navigate to the Datadog metrics explorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>853</td>
+                    <td class="mono snippet">##### Step 1: Update your Vector config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>938</td>
+                    <td class="mono snippet">##### Step 2: Prometheus configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>951</td>
+                    <td class="mono snippet">##### Step 3: Docker Compose configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/developer/debugging.md</td>
+                    <td>995</td>
+                    <td class="mono snippet">##### Step 4: Setup Grafana</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/aws/aws-secrets-manager-example.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">## Step 1: Create secrets in AWS Secrets Manager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/aws/aws-secrets-manager-example.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">## Step 2: Configure IAM permissions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/aws/aws-secrets-manager-example.md</td>
+                    <td>85</td>
+                    <td class="mono snippet">## Step 3: Vector configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/aws/aws-secrets-manager-example.md</td>
+                    <td>209</td>
+                    <td class="mono snippet">## Step 4: Deploy Vector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/guides/aws/aws-secrets-manager-example.md</td>
+                    <td>221</td>
+                    <td class="mono snippet">## Step 5: Monitor and validate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>124</td>
+                    <td class="mono snippet">        // Step 1: Create a new release branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>133</td>
+                    <td class="mono snippet">        // Step 2: Create a new release preparation branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>264</td>
+                    <td class="mono snippet">    /// Step 9: Add new version to `versions.cue`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>295</td>
+                    <td class="mono snippet">    /// Step 10: Create a new release md file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>486</td>
+                    <td class="mono snippet">    // Step 1: Get latest tag from GitHub API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>502</td>
+                    <td class="mono snippet">    // Step 2: Download CHANGELOG.md for the specific tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">vdev/src/commands/release/prepare.rs</td>
+                    <td>511</td>
+                    <td class="mono snippet">    // Step 3: Extract text from first ## to next ##</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/sinks/datadog/metrics/encoder.rs</td>
+                    <td>2044</td>
+                    <td class="mono snippet">        // Step 1: measure a single metric's encoded size.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/sinks/datadog/metrics/encoder.rs</td>
+                    <td>2060</td>
+                    <td class="mono snippet">        // Step 2: encode metrics until buffered_bound decreases (= flush detected).</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/guides/aws/cloudwatch-logs-firehose.md</td>
+                    <td>141</td>
+                    <td class="mono snippet">## Creating a log groups</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">website/content/en/highlights/2022-12-22-enhanced-metric-tags.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">.tags.bare = null # Create a single-valued bare tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/nats/data/README.md</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Create the server certificate/key. This will also generate a root CA which we'll need to copy as well.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/README.md</td>
+                    <td>87</td>
+                    <td class="mono snippet">### Creating an RFC</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rfcs/2021-07-20-8288-csv-enrichment.md</td>
+                    <td>225</td>
+                    <td class="mono snippet">### Create a Join Transform</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/package-deb.sh</td>
+                    <td>61</td>
+                    <td class="mono snippet"># Create the license file for binary distributions (LICENSE + NOTICE)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate-release-cue.rb</td>
+                    <td>77</td>
+                    <td class="mono snippet"># This file is created from outstanding commits since the last release.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/package-archive.sh</td>
+                    <td>87</td>
+                    <td class="mono snippet"># Create the license file for binary distributions (LICENSE + NOTICE)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/docs/reference/vrl/_index.md</td>
+                    <td>80</td>
+                    <td class="mono snippet"># Check if the conversion was successful. Note here that all errors must be handled, more on that later.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/highlights/2025-02-24-memory_enrichment_table.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">      # Check if we already have a cached value for this user in the enrichment table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/highlights/2025-02-24-memory_enrichment_table.md</td>
+                    <td>69</td>
+                    <td class="mono snippet">      # Check if this user is already in the cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">distribution/install.sh</td>
+                    <td>695</td>
+                    <td class="mono snippet"># Check if curl supports the --retry flag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/check-docs.sh</td>
+                    <td>31</td>
+                    <td class="mono snippet">  # Check if any files were modified</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/changes.yml</td>
+                    <td>420</td>
+                    <td class="mono snippet">          # Check if at least one integration test has changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/changes.yml</td>
+                    <td>482</td>
+                    <td class="mono snippet">          # Check if at least one e2e test has changes</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/gcp/config/invalidauth.json</td>
+                    <td>6</td>
+                    <td class="mono snippet">  &quot;client_email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/gcp/config/auth.json</td>
+                    <td>6</td>
+                    <td class="mono snippet">  &quot;client_email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/sinks/util/uri.rs</td>
+                    <td>230</td>
+                    <td class="mono snippet">        test_parse(&quot;user@example.com&quot;, &quot;example.com&quot;, Some((&quot;user&quot;, &quot;&quot;)));</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">website/content/en/highlights/2020-12-23-internal-logs-source.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">## Example usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/behavior/secrets/mock_secrets_exec.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">def handle_request(req: Request) -&gt; Response:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/behavior/secrets/mock_secrets_exec.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-24 12:28 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
