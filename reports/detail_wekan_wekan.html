@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — wekan/wekan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>wekan/wekan</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.6</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.6</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">483</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1644</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,657,282</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1582</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(89 hits · 890 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.77/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.83/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.00/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.84/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.38/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.70/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.07/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.31/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.79/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.09/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.36/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.08/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.37/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.78/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.30/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.71/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.39/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.85/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.06/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.82/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.76/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.41/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.23/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.54/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.24/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.53/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.12/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.65/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.91/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.15/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.96/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.62/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.40/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.14/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.63/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.97/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.90/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.64/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.99/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.25/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.52/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.22/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.55/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.87/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.73/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.04/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.74/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.80/index.html</td>
+                    <td>1465</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v8.35/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/api/v7.89/index.html</td>
+                    <td>1464</td>
+                    <td class="mono snippet">;for(i=o.length;i--;)o[i].elem!==this||null!=e&amp;&amp;o[i].queue!==e||(o[i].anim.stop(n),t=!1,o.splice(i,1));!t&amp;&amp;n||he.dequeue(this,e)})},finish:function(e)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 39 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(333 hits · 666 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>24</td>
+                    <td class="mono snippet">      #----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>43</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>49</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>58</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>75</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>78</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>89</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>101</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>103</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>104</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>107</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>111</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>115</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>125</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>130</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>135</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>140</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>144</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>147</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>152</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>157</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>173</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>187</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>191</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>198</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>212</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>216</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>228</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>232</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>235</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>281</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>297</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>343</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>356</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>390</td>
+                    <td class="mono snippet">      #-----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>397</td>
+                    <td class="mono snippet">      #---------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>424</td>
+                    <td class="mono snippet">      #----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>429</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>574</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>581</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>592</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>595</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>600</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>612</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>615</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>626</td>
+                    <td class="mono snippet">      #---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rebuild-wekan.sh</td>
+                    <td>81</td>
+                    <td class="mono snippet">		#---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rebuild-wekan.sh</td>
+                    <td>85</td>
+                    <td class="mono snippet">		#---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">rebuild-wekan.sh</td>
+                    <td>92</td>
+                    <td class="mono snippet">                #---------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 283 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(18 hits · 31 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">                print(&quot;Error obraining ID.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>246</td>
+                    <td class="mono snippet">            print(&quot;Error adding card.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>387</td>
+                    <td class="mono snippet">                print(f&quot;Error: {response.status_code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">            print(f&quot;Error in the GET request: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api.py</td>
+                    <td>412</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>487</td>
+                    <td class="mono snippet">            print(f&quot;Error: {body.status_code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">            print(f&quot;Error: {body.status_code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api.py</td>
+                    <td>568</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>569</td>
+                    <td class="mono snippet">            print(&quot;Error GET:&quot;, e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>598</td>
+                    <td class="mono snippet">                    print(f&quot;Error deleting card: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">            print(f&quot;Error getting swimlane cards: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>620</td>
+                    <td class="mono snippet">            print(f&quot;Error: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>723</td>
+                    <td class="mono snippet">            print(f&quot;Error: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>783</td>
+                    <td class="mono snippet">            print(f&quot;Error: File '{filepath}' not found&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api.py</td>
+                    <td>785</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>786</td>
+                    <td class="mono snippet">            print(f&quot;Error reading file: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openapi/generate_openapi.py</td>
+                    <td>562</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">start-wekan.sh</td>
+                    <td>241</td>
+                    <td class="mono snippet">      #     by installation type, but make sure you have the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>552</td>
+                    <td class="mono snippet">      #     by installation type, but make sure you have the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>585</td>
+                    <td class="mono snippet">      #     by installation type, but make sure you have the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">releases/virtualbox/start-wekan.sh</td>
+                    <td>153</td>
+                    <td class="mono snippet">      #     by installation type, but make sure you have the following:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/hall-of-fame/fieldbleed/index.html</td>
+                    <td>319</td>
+                    <td class="mono snippet">          I am not familiar with Node.js, therefore I cannot provide the solution code.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/ImportExport/trellinator/readme.txt</td>
+                    <td>12</td>
+                    <td class="mono snippet">&gt; I can no longer edit, but it's worth noting that I went through my Trellinator libs and updated for use with WeKan, throwing exceptions where functi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/Webserver/Local-self-signed-TLS.md</td>
+                    <td>111</td>
+                    <td class="mono snippet">- **FIREWALL CONFIG:** Don't forget to block in and out 3001 for outside connections (e.g. using ufw or nfttables / iptables)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/Login/LDAP.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">For Caddy/Wekan/RocketChat Snap settings, see [Snap install page](https://github.com/wekan/wekan-snap/wiki/Install), [OAuth2 page](OAuth2#snap) and [C</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(15 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>155</td>
+                    <td class="mono snippet"># Step 1: Install dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>159</td>
+                    <td class="mono snippet"># Step 2: Build WeKan (after dependencies complete)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>163</td>
+                    <td class="mono snippet"># Step 3: Run WeKan in development mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/wekanCreator.import.test.js</td>
+                    <td>254</td>
+                    <td class="mono snippet">  // Step 1: Normalize IDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/wekanCreator.import.test.js</td>
+                    <td>269</td>
+                    <td class="mono snippet">  // Step 2: Map swimlanes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/wekanCreator.import.test.js</td>
+                    <td>275</td>
+                    <td class="mono snippet">  // Step 3: Verify cards get mapped swimlane IDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/deleteDuplicateEmptyLists.js</td>
+                    <td>78</td>
+                    <td class="mono snippet">      // Step 1: Convert shared lists to per-swimlane lists first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/deleteDuplicateEmptyLists.js</td>
+                    <td>82</td>
+                    <td class="mono snippet">      // Step 2: Delete empty per-swimlane lists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>203</td>
+                    <td class="mono snippet">      // Step 1: Analyze board structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>211</td>
+                    <td class="mono snippet">      // Step 2: Fix orphaned cards</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>221</td>
+                    <td class="mono snippet">      // Step 3: Convert shared lists to per-swimlane lists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>233</td>
+                    <td class="mono snippet">      // Step 4: Ensure all lists are per-swimlane</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>241</td>
+                    <td class="mono snippet">      // Step 5: Validate migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>250</td>
+                    <td class="mono snippet">      // Step 6: Fix avatar URLs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">server/migrations/comprehensiveBoardMigration.js</td>
+                    <td>257</td>
+                    <td class="mono snippet">      // Step 8: Fix attachment URLs</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/test-download-urls.sh</td>
+                    <td>17</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/release-website.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/rebuild-docs.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/build-bundle-ppc64le.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/build-bundle-arm64.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/build-bundle-s390x.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/build-bundle-armhf.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">releases/release-all.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs2/Platforms/FOSS/virtual-appliance.md</td>
+                    <td>88</td>
+                    <td class="mono snippet">### How to use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/wekan-accounts-lockout/README.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">## How to use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/release-all.yml</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">api.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    python3 api.py createlabel BOARDID LABELCOLOR LABELNAME (Color available: `white`, `green`, `yellow`, `orange`, `red`, `purple`, `blue`, `sky`, `l</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">snapcraft.yaml</td>
+                    <td>213</td>
+                    <td class="mono snippet">            # Create a basic default Caddyfile for the snap</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">releases/docker-build-deps.sh</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create a new builder instance that supports multi-platform</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/Design/Monkey-Proof-Software.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">&gt; Defensive design is the practice of planning for [contingencies](https://en.wikipedia.org/wiki/Contingency_plan) in the [design](https://en.wikipedi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/Webserver/Local-self-signed-TLS.md</td>
+                    <td>115</td>
+                    <td class="mono snippet">- https://caddy.community/t/proper-way-to-utilize-self-signed-certificates/7264 (reading docs and issues of caddy)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(3 hits · 3 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">api.py</td>
+                    <td>776</td>
+                    <td class="mono snippet">        # Read file and convert to base64</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs2/Design/Original-Positions.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">#### Check if Entity Has Moved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">stacksmith/user-scripts/build.sh</td>
+                    <td>61</td>
+                    <td class="mono snippet"># Check if opting for a release candidate instead of major release</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs2/Webserver/Caddy.md</td>
+                    <td>719</td>
+                    <td class="mono snippet">ExecStart=/home/username/caddy/caddy -conf=/home/username/caddy/Caddyfile -agree -email=&quot;admin@example.com&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

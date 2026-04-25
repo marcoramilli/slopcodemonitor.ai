@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — NVIDIA/NemoClaw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>NVIDIA/NemoClaw</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">13.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">13.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1120</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">2003</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">149,242</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">550</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(869 hits · 1738 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">uninstall.sh</td>
+                    <td>18</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">uninstall.sh</td>
+                    <td>21</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>36</td>
+                    <td class="mono snippet">  # ── Priority 0: general file fixers ───────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>48</td>
+                    <td class="mono snippet">  # ── Priority 0: reject force-added ignored files ───────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>73</td>
+                    <td class="mono snippet">  # ── Priority 4: regenerate agent skills when docs change ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>92</td>
+                    <td class="mono snippet">  # ── Priority 5: formatters ────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>123</td>
+                    <td class="mono snippet">  # ── Priority 6: auto-fix after formatting ─────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>144</td>
+                    <td class="mono snippet">  # ── Priority 10: linters and validation ─────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>207</td>
+                    <td class="mono snippet">  # ── commit-msg hooks ────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>216</td>
+                    <td class="mono snippet">  # ── pre-push hooks ─────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>256</td>
+                    <td class="mono snippet">  # ── post-merge / post-checkout: warn about stale compiled dist/ ───────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>272</td>
+                    <td class="mono snippet">  # ── Priority 20: project-level checks (coverage + ratchet) ─────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>289</td>
+                    <td class="mono snippet">// ─── Scenario 1 ─── destructive path preserved for `connect` ───────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>317</td>
+                    <td class="mono snippet">// ─── Scenario 2 ─── destructive path preserved for `status` ────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>349</td>
+                    <td class="mono snippet">// ─── Scenario 3 ─── self-heal via gateway select succeeds ──────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>420</td>
+                    <td class="mono snippet">// ─── Scenario 5 ─── exact #2276 repro: registry entry still present ────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>420</td>
+                    <td class="mono snippet">// ─── Scenario 5 ─── exact #2276 repro: registry entry still present ────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>449</td>
+                    <td class="mono snippet">// ─── Scenario 6 ─── nemoclaw gateway missing + NotFound ────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>481</td>
+                    <td class="mono snippet">// ─── Scenario 7 ─── nemoclaw gateway unreachable + NotFound ────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>513</td>
+                    <td class="mono snippet">// ─── Scenario 8 ─── gateway info fails / unparseable ───────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>542</td>
+                    <td class="mono snippet">// ─── Scenario 9 ─── openshell status empty / malformed ─────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>594</td>
+                    <td class="mono snippet">// ─── Scenario 10 ─── non-interactive mode: no prompts ──────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/gateway-state-reconcile-2276.test.ts</td>
+                    <td>624</td>
+                    <td class="mono snippet">// ─── Scenario 11 ─── cross-command parity: status drifts same way ──────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/validate-config-schemas.test.ts</td>
+                    <td>91</td>
+                    <td class="mono snippet">// ── Blueprint ────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/validate-config-schemas.test.ts</td>
+                    <td>185</td>
+                    <td class="mono snippet">// ── Base sandbox policy ──────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/validate-config-schemas.test.ts</td>
+                    <td>220</td>
+                    <td class="mono snippet">// ── Policy presets ───────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/validate-config-schemas.test.ts</td>
+                    <td>270</td>
+                    <td class="mono snippet">// ── OpenClaw plugin manifest ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>20</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>22</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>149</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>151</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>157</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>188</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>190</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>454</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-sandbox-tar-traversal.test.ts</td>
+                    <td>456</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>17</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>19</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>193</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>195</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>258</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>260</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>434</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/security-c4-manifest-traversal.test.ts</td>
+                    <td>436</td>
+                    <td class="mono snippet">// ═══════════════════════════════════════════════════════════════════</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/repro-2201.test.ts</td>
+                    <td>73</td>
+                    <td class="mono snippet">  // ── Registry — both sandboxes exist ───────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/repro-2201.test.ts</td>
+                    <td>142</td>
+                    <td class="mono snippet">  // ── Dummy workspace dir for the fake ssh tar call ─────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/repro-2201.test.ts</td>
+                    <td>147</td>
+                    <td class="mono snippet">  // ── Fake openshell ────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/repro-2201.test.ts</td>
+                    <td>169</td>
+                    <td class="mono snippet">  // ── Fake ssh ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/onboard.test.ts</td>
+                    <td>5538</td>
+                    <td class="mono snippet">  // ── Base image digest pinning (#1904) ──────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/onboard.test.ts</td>
+                    <td>5538</td>
+                    <td class="mono snippet">  // ── Base image digest pinning (#1904) ──────────────────────────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 819 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(152 hits · 152 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-get-started/SKILL.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">## Step 1: Install NemoClaw and Onboard OpenClaw Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-get-started/SKILL.md</td>
+                    <td>225</td>
+                    <td class="mono snippet">## Step 2: Open the OpenClaw UI in a Browser</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-get-started/SKILL.md</td>
+                    <td>274</td>
+                    <td class="mono snippet">## Step 3: Chat with the Agent from the Terminal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-get-started/SKILL.md</td>
+                    <td>294</td>
+                    <td class="mono snippet">## Step 4: Reconfigure or Recover</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-get-started/SKILL.md</td>
+                    <td>340</td>
+                    <td class="mono snippet">## Step 5: Uninstall</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Step 1: Verify Branch State</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Step 2: Run Pre-PR Checks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 3: Push the Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 4: Determine PR Metadata</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>99</td>
+                    <td class="mono snippet">## Step 5: Compose the PR Body</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>151</td>
+                    <td class="mono snippet">## Step 6: Create the PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-contributor-create-pr/SKILL.md</td>
+                    <td>182</td>
+                    <td class="mono snippet">## Step 7: Report the Result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-find-review-pr/SKILL.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Step 1: Fetch candidate PRs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-find-review-pr/SKILL.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">## Step 2: Extract linked issues</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-find-review-pr/SKILL.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">## Step 3: Detect duplicates</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-find-review-pr/SKILL.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 4: Check for superseded PRs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-find-review-pr/SKILL.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 5: Present results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">## Step 1: Parse the GitHub URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">## Step 2: Check Out the Code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 3: Identify Changed Files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>63</td>
+                    <td class="mono snippet">## Step 4: Read Every Changed File and Diff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>79</td>
+                    <td class="mono snippet">## Step 5: Analyze Against the Security Checklist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-security-code-review/SKILL.md</td>
+                    <td>145</td>
+                    <td class="mono snippet">## Step 6: Produce the Report</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Step 1: Check Progress</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Step 2: Bump Stragglers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 3: Generate Handoff Summary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Step 4: Cut the Tag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 5: Confirm and Share</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-evening/SKILL.md</td>
+                    <td>53</td>
+                    <td class="mono snippet">## Step 6: Update State</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">## Step 1: Quick Start</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>41</td>
+                    <td class="mono snippet">## Step 2: Deploy the Instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>63</td>
+                    <td class="mono snippet">## Step 3: Connect to the Remote Sandbox</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">## Step 4: Monitor the Remote Sandbox</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>80</td>
+                    <td class="mono snippet">## Step 5: Verify Inference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>88</td>
+                    <td class="mono snippet">## Step 6: Remote Dashboard Access</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">## Step 7: Proxy Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>128</td>
+                    <td class="mono snippet">## Step 8: GPU Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>147</td>
+                    <td class="mono snippet">## Step 9: Create a Telegram Bot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>152</td>
+                    <td class="mono snippet">## Step 10: Provide the Bot Token and Optional Allowlist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>177</td>
+                    <td class="mono snippet">## Step 11: Run `nemoclaw onboard`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>195</td>
+                    <td class="mono snippet">## Step 12: Confirm Delivery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-deploy-remote/SKILL.md</td>
+                    <td>200</td>
+                    <td class="mono snippet">## Step 13: `nemoclaw tunnel start` (cloudflared Only)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-morning/SKILL.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Step 1: Determine Target Version and Stragglers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-morning/SKILL.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Step 2: Triage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-morning/SKILL.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">## Step 3: Label Version Targets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-maintainer-morning/SKILL.md</td>
+                    <td>43</td>
+                    <td class="mono snippet">## Step 4: Save State and Output the Plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-workspace/SKILL.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Step 1: When to Back Up</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-workspace/SKILL.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Step 2: Snapshot Commands</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-workspace/SKILL.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">## Step 3: Manual Backup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/nemoclaw-user-workspace/SKILL.md</td>
+                    <td>69</td>
+                    <td class="mono snippet">## Step 4: Manual Restore</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 102 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(45 hits · 47 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-rebuild-openclaw.sh</td>
+                    <td>203</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-rebuild-openclaw.sh</td>
+                    <td>436</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-rebuild-hermes.sh</td>
+                    <td>182</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-gpu-e2e.sh</td>
+                    <td>74</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-full-e2e.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-upgrade-stale-sandbox.sh</td>
+                    <td>177</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-messaging-providers.sh</td>
+                    <td>495</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-hermes-e2e.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-sandbox-survival.sh</td>
+                    <td>84</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-e2e-cloud-experimental.sh</td>
+                    <td>158</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/e2e-cloud-experimental/test-inference-local-chat.sh</td>
+                    <td>60</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/hermes/plugin/__init__.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/hermes/plugin/__init__.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/hermes/plugin/__init__.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/hermes/plugin/__init__.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/hermes/plugin/__init__.py</td>
+                    <td>236</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/utils.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/core/hierarchy_builder.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">                except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/core/hierarchy_builder.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">                except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/core/hierarchy_builder.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">            except Exception as e:  # noqa: BLE001, PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/core/json_writer.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/cache.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">        except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/cache.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/processor.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/processor.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001, PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/processor.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">                except Exception:  # noqa: PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/processor.py</td>
+                    <td>197</td>
+                    <td class="mono snippet">        except Exception:  # noqa: PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/processor.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/metadata.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/metadata.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">        except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">        except Exception as e:  # noqa: BLE001, PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">        except Exception as e:  # noqa: BLE001, PERF203</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/extractor.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/text.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">    except Exception as e:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/install.sh</td>
+                    <td>1392</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/docs-to-skills.py</td>
+                    <td>1412</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/docs-to-skills.py</td>
+                    <td>1494</td>
+                    <td class="mono snippet">        print(f&quot;Error: {args.docs_dir} is not a directory&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/nemoclaw-start.sh</td>
+                    <td>836</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/setup-dns-proxy.sh</td>
+                    <td>140</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/setup-dns-proxy.sh</td>
+                    <td>184</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/generate-platform-docs.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">        print(f&quot;Error: {MATRIX_PATH} not found&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/setup-jetson.sh</td>
+                    <td>174</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(33 hits · 33 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.pre-commit-config.yaml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-telegram-injection.sh</td>
+                    <td>34</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-gpu-e2e.sh</td>
+                    <td>32</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-onboard-repair.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-spark-install.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-onboard-resume.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-skip-permissions-policy.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-full-e2e.sh</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-credential-sanitization.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-ollama-auth-proxy-e2e.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-messaging-providers.sh</td>
+                    <td>52</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-hermes-e2e.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-sandbox-rebuild.sh</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-sandbox-survival.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-token-rotation.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/e2e-cloud-experimental/test-port8080-conflict.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/e2e-cloud-experimental/openclaw-tui-in-sandbox.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/e2e-cloud-experimental/cleanup.sh</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/e2e-cloud-experimental/features/skill/lib/validate_sandbox_openclaw_skills.sh</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/check-spdx-headers.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/debug.sh</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/check-installer-hash.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/start-services.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/update-docker-pin.sh</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/setup-spark.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/walkthrough.sh</td>
+                    <td>30</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>94</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>146</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>175</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>202</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>219</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>259</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/lib/sandbox-init.sh</td>
+                    <td>286</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/e2e/test-credential-sanitization.sh</td>
+                    <td>160</td>
+                    <td class="mono snippet"># Create a temp directory simulating the state that would be migrated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/e2e/test-credential-sanitization.sh</td>
+                    <td>452</td>
+                    <td class="mono snippet"># Create a real file outside the bundle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/e2e/test-credential-sanitization.sh</td>
+                    <td>455</td>
+                    <td class="mono snippet"># Create a symlink inside the bundle pointing to the outside file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/e2e/test-sandbox-operations.sh</td>
+                    <td>240</td>
+                    <td class="mono snippet"># Create the primary test sandbox. Exits the script on failure since all</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/_ext/search_assets/__init__.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    # Define the module loading order (dependencies first)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/deployment/set-up-telegram-bridge.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">## Create a Telegram Bot</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/_ext/json_output/config.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        &quot;max_main_index_docs&quot;: 0,  # No limit by default for comprehensive search</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/_ext/json_output/core/hierarchy_builder.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        else:  # 'full' mode - comprehensive search index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/_ext/json_output/core/hierarchy_builder.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Build comprehensive search index for main index page.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/nemoclaw-start.sh</td>
+                    <td>821</td>
+                    <td class="mono snippet"># timeout reduction, and token cleanup for a more comprehensive fix.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/e2e-brev.yaml</td>
+                    <td>158</td>
+                    <td class="mono snippet">          # works in the test harness's hasAuthenticatedBrev check.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(9 hits · 9 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-telegram-injection.sh</td>
+                    <td>207</td>
+                    <td class="mono snippet"># Check if the injection file was created</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/e2e/test-shields-config.sh</td>
+                    <td>491</td>
+                    <td class="mono snippet"># Check if the timer process restored shields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/utils.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # Check if content_gating extension is loaded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/utils.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Check if this path matches any exclude pattern using fnmatch (supports glob patterns)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/core/document_discovery.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">            # Check if this document is a child of the parent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/processing/cache.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">            # Check if we have a recorded timestamp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/_ext/json_output/content/text.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">            # Check if this text node is inside a reference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/docs-to-skills.py</td>
+                    <td>534</td>
+                    <td class="mono snippet">        # Check if target doc maps to a generated skill</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/setup-spark.sh</td>
+                    <td>107</td>
+                    <td class="mono snippet">  # Check if already configured</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/lib/config-io.ts</td>
+                    <td>48</td>
+                    <td class="mono snippet">    &quot;    # If you can use sudo, repair the existing config directory:&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

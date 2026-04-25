@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — apache/shardingsphere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>apache/shardingsphere</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.9</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.9</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">184</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1048</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,130,242</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">13972</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(87 hits · 870 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mode/type/cluster/repository/provider/etcd/src/test/java/org/apache/shardingsphere/mode/repository/cluster/etcd/EtcdRepositoryTest.java</td>
+                    <td>145</td>
+                    <td class="mono snippet">        io.etcd.jetcd.api.KeyValue keyValue1 = io.etcd.jetcd.api.KeyValue.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mode/type/cluster/repository/provider/etcd/src/test/java/org/apache/shardingsphere/mode/repository/cluster/etcd/EtcdRepositoryTest.java</td>
+                    <td>148</td>
+                    <td class="mono snippet">        io.etcd.jetcd.api.KeyValue keyValue2 = io.etcd.jetcd.api.KeyValue.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mode/type/cluster/repository/provider/etcd/src/test/java/org/apache/shardingsphere/mode/repository/cluster/etcd/EtcdRepositoryTest.java</td>
+                    <td>276</td>
+                    <td class="mono snippet">        io.etcd.jetcd.api.KeyValue keyValue1 = io.etcd.jetcd.api.KeyValue.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mode/type/cluster/repository/provider/etcd/src/test/java/org/apache/shardingsphere/mode/repository/cluster/etcd/lock/EtcdDistributedLockTest.java</td>
+                    <td>74</td>
+                    <td class="mono snippet">        when(lease.grant(1)).thenReturn(CompletableFuture.completedFuture(new LeaseGrantResponse(io.etcd.jetcd.api.LeaseGrantResponse.newBuilder().set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mode/type/cluster/repository/provider/etcd/src/test/java/org/apache/shardingsphere/mode/repository/cluster/etcd/lock/EtcdDistributedLockTest.java</td>
+                    <td>94</td>
+                    <td class="mono snippet">        when(lease.grant(1)).thenReturn(CompletableFuture.completedFuture(new LeaseGrantResponse(io.etcd.jetcd.api.LeaseGrantResponse.newBuilder().set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>53</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>54</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.ConnectionImpl.unwrap(ConnectionImpl.java:2650)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>58</td>
+                    <td class="mono snippet">	at com.zaxxer.hikari.pool.ProxyConnection.unwrap(ProxyConnection.java:481)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>59</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.jta.connection.dialect.MySQLXAConnectionWrapper.wrap(MySQLXAConnectionWrapper.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>60</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.jta.datasource.XATransactionDataSource.getConnection(XATransactionDataSource.java:89)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.en.md</td>
+                    <td>61</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.XAShardingSphereTransactionManager.getConnection(XAShardingSphereTransactionManager.java:96</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>53</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>54</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">	at com.mysql.cj.jdbc.ConnectionImpl.unwrap(ConnectionImpl.java:2650)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">	at com.zaxxer.hikari.pool.ProxyConnection.unwrap(ProxyConnection.java:481)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>58</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.jta.connection.dialect.MySQLXAConnectionWrapper.wrap(MySQLXAConnectionWrapper.java:46)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>59</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.jta.datasource.XATransactionDataSource.getConnection(XATransactionDataSource.java:89)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/faq/_index.cn.md</td>
+                    <td>60</td>
+                    <td class="mono snippet">	at org.apache.shardingsphere.transaction.xa.XAShardingSphereTransactionManager.getConnection(XAShardingSphereTransactionManager.java:96</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.en.md</td>
+                    <td>290</td>
+                    <td class="mono snippet"> com.microsoft.sqlserver.jdbc.Encoding.checkSupported(SQLCollation.java:572)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.en.md</td>
+                    <td>292</td>
+                    <td class="mono snippet"> com.microsoft.sqlserver.jdbc.SQLCollation.encodingFromSortId(SQLCollation.java:501)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.en.md</td>
+                    <td>379</td>
+                    <td class="mono snippet">  com.mysql.cj.conf.ConnectionUrl.getConnectionUrlInstance(ConnectionUrl.java:291)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.en.md</td>
+                    <td>380</td>
+                    <td class="mono snippet">  com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:186)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.cn.md</td>
+                    <td>284</td>
+                    <td class="mono snippet"> com.microsoft.sqlserver.jdbc.Encoding.checkSupported(SQLCollation.java:572)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.cn.md</td>
+                    <td>286</td>
+                    <td class="mono snippet"> com.microsoft.sqlserver.jdbc.SQLCollation.encodingFromSortId(SQLCollation.java:501)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.cn.md</td>
+                    <td>370</td>
+                    <td class="mono snippet">  com.mysql.cj.conf.ConnectionUrl.getConnectionUrlInstance(ConnectionUrl.java:291)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/_index.cn.md</td>
+                    <td>371</td>
+                    <td class="mono snippet">  com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:186)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>337</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.findConstructors(MBeanIntrospector.java:459)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>338</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getClassMBeanInfo(MBeanIntrospector.java:430)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>339</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getMBeanInfo(MBeanIntrospector.java:389)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>350</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.findConstructors(MBeanIntrospector.java:459)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>351</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getClassMBeanInfo(MBeanIntrospector.java:430)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.en.md</td>
+                    <td>352</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getMBeanInfo(MBeanIntrospector.java:389)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>329</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.findConstructors(MBeanIntrospector.java:459)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>330</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getClassMBeanInfo(MBeanIntrospector.java:430)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>331</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getMBeanInfo(MBeanIntrospector.java:389)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>342</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.findConstructors(MBeanIntrospector.java:459)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>343</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getClassMBeanInfo(MBeanIntrospector.java:430)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/graalvm-native-image/development/_index.cn.md</td>
+                    <td>344</td>
+                    <td class="mono snippet">  java.management@24.0.2/com.sun.jmx.mbeanserver.MBeanIntrospector.getMBeanInfo(MBeanIntrospector.java:389)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/yaml-config/jdbc-driver/known-implementation/_index.en.md</td>
+                    <td>61</td>
+                    <td class="mono snippet">this involves how to implement `org.apache.shardingsphere.infra.url.ShardingSphereURLLoader.load()`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/yaml-config/jdbc-driver/known-implementation/_index.cn.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">这涉及到如何实现 `org.apache.shardingsphere.infra.url.ShardingSphereURLLoader.load()`。</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/special-api/transaction/seata.cn.md</td>
+                    <td>417</td>
+                    <td class="mono snippet">1. 在使用 ShardingSphere JDBC 的场景下，跨多个微服务的事务场景需要考虑在起点微服务的上下文使用 `org.apache.seata.core.context.RootContext.getXID()` 获取 Seata XID 后，</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/special-api/transaction/seata.en.md</td>
+                    <td>433</td>
+                    <td class="mono snippet">transaction scenarios across multiple microservices need to consider using `org.apache.seata.core.context.RootContext.getXID()` to obtain Seata XID in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/static/js/jquery-3.3.1.min.js</td>
+                    <td>2</td>
+                    <td class="mono snippet">!function(e,t){&quot;use strict&quot;;&quot;object&quot;==typeof module&amp;&amp;&quot;object&quot;==typeof module.exports?module.exports=e.document?t(e,!0):function(e){if(!e.document)thro</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/blog/content/material/2023_02_15_A_Distributed_Database_Load_Balancing_Architecture_Based_on_ShardingSphere_Demo_&amp;_User_Case.en.md</td>
+                    <td>299</td>
+                    <td class="mono snippet">        at com.mysql.cj.jdbc.exceptions.SQLError.createCommunicationsException(SQLError.java:174)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/blog/content/material/2023_02_15_A_Distributed_Database_Load_Balancing_Architecture_Based_on_ShardingSphere_Demo_&amp;_User_Case.en.md</td>
+                    <td>300</td>
+                    <td class="mono snippet">        at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:64)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 37 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(48 hits · 96 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/archetypes.en.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/archetypes.en.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/archetypes.fr.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/archetypes.fr.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>113</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum iner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>113</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum iner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>118</td>
+                    <td class="mono snippet">&lt;p&gt;Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>118</td>
+                    <td class="mono snippet">&lt;p&gt;Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>239</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>239</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>254</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>254</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>271</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>271</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>294</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>294</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>305</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>305</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>318</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>318</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>332</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>332</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>344</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.fr.md</td>
+                    <td>344</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum iner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum iner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>118</td>
+                    <td class="mono snippet">&lt;p&gt;Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>118</td>
+                    <td class="mono snippet">&lt;p&gt;Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>248</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>248</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>265</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>265</td>
+                    <td class="mono snippet">+ Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>283</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>283</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>306</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>306</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>318</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>318</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>331</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>331</td>
+                    <td class="mono snippet">  &lt;li&gt;Lorem ipsum dolor sit amet&lt;/li&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>345</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>345</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>357</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/markdown.en.md</td>
+                    <td>357</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/archetypes/default.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/archetypes/chapter.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/community/themes/hugo-theme-learn/archetypes/chapter.cn.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/community/themes/hugo-theme-learn/archetypes/default.cn.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">Lorem Ipsum.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/smart-antlr-rebuild.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/smart-antlr-rebuild.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>206</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>208</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>234</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>236</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>256</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>258</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>304</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>306</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>389</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>391</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>423</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/e2e-sql/test-generate-e2e-sql-matrix.sh</td>
+                    <td>425</td>
+                    <td class="mono snippet"># ============================================================</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(10 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/native/src/test/resources/test-native/sh/free-disk-space.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># This file is only used in the Bash of ShardingSphere in GitHub Actions environment and should not be executed manually in a development environment.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-proxy/distsql/syntax/rdl/rule-definition/readwrite-splitting/create-readwrite-splitting-rule.en.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">#### Create a read/write splitting rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-proxy/distsql/syntax/rdl/rule-definition/mask/create-mask-rule.en.md</td>
+                    <td>62</td>
+                    <td class="mono snippet">#### Create a mask rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-proxy/distsql/syntax/rdl/rule-definition/encrypt/create-encrypt-rule.en.md</td>
+                    <td>78</td>
+                    <td class="mono snippet">#### Create an encrypt rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-proxy/distsql/syntax/rdl/rule-definition/encrypt/create-encrypt-rule.en.md</td>
+                    <td>93</td>
+                    <td class="mono snippet">#### Create an encrypt rule with `ifNotExists` clause</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/content/user-manual/shardingsphere-jdbc/optional-plugins/h2/_index.en.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">### Creating a ShardingSphere Data Source in a Business Project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/Oct_12_6_AutoTable_Your_Butler_Like_Sharding_Configuration_Tool.en.md</td>
+                    <td>102</td>
+                    <td class="mono snippet"># Create a sharding table rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/Jan_28_Blog_PG_Create_a_Distributed_Database_Solution_Based_on_PostgreSQL_&amp;_openGauss.en.md</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Create a Distributed Database Solution Based on PostgreSQL/openGauss</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/unit-test-coverage-merge/code-coverage-merge.sh</td>
+                    <td>38</td>
+                    <td class="mono snippet"># Create an array to store file paths</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/resources/scripts/unit-test-coverage-merge/code-coverage-merge.sh</td>
+                    <td>70</td>
+                    <td class="mono snippet"># Create an array to store folder paths</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/cont/syntaxhighlight.en.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">Highlight will write a warning to the browser console if a requested language was not found. For example, the following code block references an imagi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_07_10_A_Step-by-Step_Guide_to_Data_Migration.md</td>
+                    <td>169</td>
+                    <td class="mono snippet">## Step 1: Initialize Data in the Source Database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_07_10_A_Step-by-Step_Guide_to_Data_Migration.md</td>
+                    <td>193</td>
+                    <td class="mono snippet">## Step 2: Initialize ShardingSphere-Proxy Rules</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_07_10_A_Step-by-Step_Guide_to_Data_Migration.md</td>
+                    <td>268</td>
+                    <td class="mono snippet">## Step 3: Start Data Migration Job</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_07_10_A_Step-by-Step_Guide_to_Data_Migration.md</td>
+                    <td>303</td>
+                    <td class="mono snippet">## Step 4: Check Data Consistency</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_07_10_A_Step-by-Step_Guide_to_Data_Migration.md</td>
+                    <td>324</td>
+                    <td class="mono snippet">## Step 5: Submit the Migration Job</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/Jan_28_Blog_X_How_to_Develop_Your_Distributed_SQL_Statement_in_Apache_ShardingSphere.en.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">When you complete the basic feature development, to ensure its continuous usability, you need to add test cases to the new class or method, and to com</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2022_11_22_ElasticJob_UI_now_supports_Auth_2.0,_OIDC_and_SAML_single_sign-on_thanks_to_Casdoor.en.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Step 1: Deploy Casdoor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2022_11_22_ElasticJob_UI_now_supports_Auth_2.0,_OIDC_and_SAML_single_sign-on_thanks_to_Casdoor.en.md</td>
+                    <td>43</td>
+                    <td class="mono snippet">## Step 2: Configure Casdoor and obtain the required data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2022_11_22_ElasticJob_UI_now_supports_Auth_2.0,_OIDC_and_SAML_single_sign-on_thanks_to_Casdoor.en.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">## Step 3: Configuration in ElasticJob UI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/Jan_28_Blog_X_Kernel_Optimizations_&amp;_Upgrade_Guide_for_Apache_ShardingSphere_5.0.0_The_Ideal_Database_Management_Ecosystem.en.md</td>
+                    <td>280</td>
+                    <td class="mono snippet">We didn’t make a lot of changes to the Read/write Splitting API in the 5.0.0 GA version. We only adjusted from`MasterSlave` to `ReadWriteSplitting` wh</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/basics/style-customization/_index.en.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">- *custom-header*: custom headers in page. Meant to be overwritten when adding CSS imports. Don't forget to include `style` HTML tag directive in your</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/basics/style-customization/_index.en.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">- *custom-footer*:  custom footer in page. Meant to be overwritten when adding Javacript. Don't forget to include `javascript` HTML tag directive in y</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/layouts/index.html</td>
+                    <td>22</td>
+                    <td class="mono snippet">		  The site is working. Don't forget to customize this homepage with your own. You typically have 3 choices :</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/2023_02_23_ShardingSphere-Proxy_Database_Protocol_Interaction_Explained.en.md</td>
+                    <td>161</td>
+                    <td class="mono snippet">`PacketCodecs` are mainly used for unpacking and encoding data. As mentioned earlier in the introduction to database protocols, the PostgreSQL protoco</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/community/themes/hugo-theme-learn/layouts/index.html</td>
+                    <td>22</td>
+                    <td class="mono snippet">		  The site is working. Don't forget to customize this homepage with your own. You typically have 3 choices :</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/2022_03_29_CITIC_Industrial_Cloud_Apache_ShardingSphere_Enterprise_Applications.en.md</td>
+                    <td>47</td>
+                    <td class="mono snippet">While JDBC can boost development efficiency, Proxy can deliver better O&amp;M performance. Through [DistSQL](https://medium.com/nerd-for-tech/intro-to-dis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/Oct_12_3_How_Can_Students_Participate_in_Open_Source_Communities.en.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">## The next question is how to leverage these attractive programs to join Open-Source?</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/2023_07_07_AWS_Summit_China_2023_ShardingSphere_Highlights_and_Data_Security_Insights.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">Among the participants, the[ ShardingSphere](https://shardingsphere.apache.org/) open-source community and its PMC and[ SphereEx](https://www.sphere-e</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/blog/content/material/Jan_28_Blog_X_How_to_Develop_Your_Distributed_SQL_Statement_in_Apache_ShardingSphere.en.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">In the previous article [“An Introduction to DistSQL”](https://medium.com/nerd-for-tech/intro-to-distsql-an-open-source-more-powerful-sql-bada4099211)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/basics/configuration/_index.en.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">  # Set this to true to disable this behavior (some proxies don't handle well this optimization)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/document/themes/hugo-theme-learn/exampleSite/content/basics/configuration/_index.en.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">  # Set this to true to disable copy-to-clipboard button for inline code.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/resources/scripts/unit-test-coverage-merge/code-coverage-merge.sh</td>
+                    <td>32</td>
+                    <td class="mono snippet"># Check if files exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/resources/scripts/unit-test-coverage-merge/code-coverage-merge.sh</td>
+                    <td>64</td>
+                    <td class="mono snippet"># Check if folders are found</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/blog/content/material/2023_04_27_How_South_Korea’s_Yogiyo_Improved_Scalability_and_Performance_with_Apache_ShardingSphere.en.md</td>
+                    <td>148</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

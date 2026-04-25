@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — terrastruct/d2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>terrastruct/d2</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">179</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">358</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,118,022</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2031</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(141 hits · 282 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape_oval.go</td>
+                    <td>52</td>
+                    <td class="mono snippet">	// ┌──────────────────* ┬</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape_oval.go</td>
+                    <td>54</td>
+                    <td class="mono snippet">	// │     *┌───────────┤ │ ┬</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape_oval.go</td>
+                    <td>57</td>
+                    <td class="mono snippet">	// *──────┴───────────┼ ┴ ┴</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape_oval.go</td>
+                    <td>58</td>
+                    <td class="mono snippet">	// ├────────rx────────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape.go</td>
+                    <td>197</td>
+                    <td class="mono snippet">// . ┌────r─────────────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/shape/shape.go</td>
+                    <td>208</td>
+                    <td class="mono snippet">// . └──────xxxxxxxxxxxxxx──────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>562</td>
+                    <td class="mono snippet">		//  ┌────────────────────┐    ┬                |       ┌─┬─┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>563</td>
+                    <td class="mono snippet">		//  │                    │    │                |       │ │ │    ┌───────────┬───────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>568</td>
+                    <td class="mono snippet">		//  └────────────────────┘  │ ┴ ┬              |       │ │ │    └───────────┴───────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>570</td>
+                    <td class="mono snippet">		//                    offset│   │label padding |         ├──────────────────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>572</td>
+                    <td class="mono snippet">		// ┌──────────────────────┐ │ ┬ ┴              |                ├───────────┼───────────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>574</td>
+                    <td class="mono snippet">		// ├─────edge─center──────┤ ┴ ┼stroke width    |        label padding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/label/label.go</td>
+                    <td>576</td>
+                    <td class="mono snippet">		// └──────────────────────┘   ┴                |    stroke width</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/pptx/pptx.go</td>
+                    <td>115</td>
+                    <td class="mono snippet">	// ┌──────────────────────────────────────────────────┐   ─┬─</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/pptx/pptx.go</td>
+                    <td>117</td>
+                    <td class="mono snippet">	// ├──┬────────────────────────────────────────────┬──┤    │         ─┬─</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/pptx/pptx.go</td>
+                    <td>127</td>
+                    <td class="mono snippet">	// └──┴────────────────────────────────────────────┴──┘   ─┴─        ─┴─</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/pptx/pptx.go</td>
+                    <td>128</td>
+                    <td class="mono snippet">	// ├────────────────────SLIDE WIDTH───────────────────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/pptx/pptx.go</td>
+                    <td>129</td>
+                    <td class="mono snippet">	//    ├─────────────────IMAGE WIDTH────────────────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>109</td>
+                    <td class="mono snippet">			// ┌grid(g.Root)───────────────────┐    ┌grid(g.Root)───────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>110</td>
+                    <td class="mono snippet">			// │ ┌────┐      ┌curr───────────┐ │    │ ┌────┐                        │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>113</td>
+                    <td class="mono snippet">			// │ │    ├──────┼C─┼──┼───►│  │ │ │    │ │    │                        │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>115</td>
+                    <td class="mono snippet">			// │ └────┘      └───────────────┘ │    │ └────┘                        │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>116</td>
+                    <td class="mono snippet">			// └───────────────────────────────┘    └───────────────────────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>177</td>
+                    <td class="mono snippet">			// ┌grid(g.Root)───────────────────┐    ┌grid(g.Root)───────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>178</td>
+                    <td class="mono snippet">			// │ ┌────┐      ┌curr───────────┐ │    │ ┌────┐      ┌curr───────────┐ │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>181</td>
+                    <td class="mono snippet">			// │ │    ├──────┼C─┼──┼───►│  │ │ │    │ │    │      │               │ │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>183</td>
+                    <td class="mono snippet">			// │ └────┘      └───────────────┘ │    │ └────┘      └───────────────┘ │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2layouts.go</td>
+                    <td>184</td>
+                    <td class="mono snippet">			// └───────────────────────────────┘    └───────────────────────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>99</td>
+                    <td class="mono snippet">			// . ├────┤───────├────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>326</td>
+                    <td class="mono snippet">	// . ┌A──────────────┐  ┌B──┐  ┌C─────────┐  ┌D────────┐  ┌E────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>327</td>
+                    <td class="mono snippet">	// . └───────────────┘  │   │  │          │  │         │  │                 │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>328</td>
+                    <td class="mono snippet">	// .                    │   │  └──────────┘  │         │  │                 │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>329</td>
+                    <td class="mono snippet">	// .                    │   │                │         │  └─────────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>331</td>
+                    <td class="mono snippet">	// .                                         └─────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>333</td>
+                    <td class="mono snippet">	// . ┌A─────────────┐  ┌B──┐  ┌C─────────┐  ┌D────────┐  ┌E────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>338</td>
+                    <td class="mono snippet">	// . └──────────────┘  └───┘  └──────────┘  └─────────┘  └─────────────────┘</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>379</td>
+                    <td class="mono snippet">		// . ┌A─────────────┐  ┌B──┐  ┌C─────────┐ ┬ maxHeight(A,B,C)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>383</td>
+                    <td class="mono snippet">		// . └──────────────┘  └───┘  └──────────┘ ┴</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>384</td>
+                    <td class="mono snippet">		// . ┌D────────┬────┐  ┌E────────────────┐ ┬ maxHeight(D,E)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>389</td>
+                    <td class="mono snippet">		// . └─────────┴────┘  └─────────────────┘ ┴</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>427</td>
+                    <td class="mono snippet">		// . ┌A─────────────┐  ┌B──┐  ┌C─────────┐ ┬ maxHeight(A,B,C)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>431</td>
+                    <td class="mono snippet">		// . └──────────────┘  └───┘  └──────────┘ ┴</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>432</td>
+                    <td class="mono snippet">		// . ┌D────────┐  ┌E────────────────┐ ┬ maxHeight(D,E)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>437</td>
+                    <td class="mono snippet">		// . └─────────┘  └─────────────────┘ ┴</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>470</td>
+                    <td class="mono snippet">		// . ├maxWidth(A,B)─┤  ├maxW(C,D)─┤  ├maxWidth(E)──────┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>471</td>
+                    <td class="mono snippet">		// . ┌A─────────────┐  ┌C─────────┐  ┌E────────────────┐</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>473</td>
+                    <td class="mono snippet">		// . │              │  └──────────┘  │                 │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>474</td>
+                    <td class="mono snippet">		// . └──────────────┘  ┌D─────────┐  ├ ─ ─ ─ ─ ─ ─ ─ ─ ┤</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>475</td>
+                    <td class="mono snippet">		// . ┌B─────────────┐  │          │  │                 │</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">d2layouts/d2grid/layout.go</td>
+                    <td>479</td>
+                    <td class="mono snippet">		// . └──────────────┘  └──────────┘  └─────────────────┘</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 91 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(34 hits · 68 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">&gt; This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>72</td>
+                    <td class="mono snippet">&gt; This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>81</td>
+                    <td class="mono snippet">&gt; This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>81</td>
+                    <td class="mono snippet">&gt; This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>164</td>
+                    <td class="mono snippet">- Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>164</td>
+                    <td class="mono snippet">- Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>172</td>
+                    <td class="mono snippet">- Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>172</td>
+                    <td class="mono snippet">- Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>182</td>
+                    <td class="mono snippet">1.  This is a list item with two paragraphs. Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/markdowntest.md</td>
+                    <td>200</td>
+                    <td class="mono snippet">  only required to indent the first line. Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1020</td>
+                    <td class="mono snippet">1.  This is a list item with two paragraphs. Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1038</td>
+                    <td class="mono snippet">  only required to indent the first line. Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1073</td>
+                    <td class="mono snippet">  Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1076</td>
+                    <td class="mono snippet">  Lorem ipsum dolor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1362</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit,  ` + `</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1362</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit,  ` + `</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1373</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit,\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/stable_test.go</td>
+                    <td>1373</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit,\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/elk/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/elk/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/dagre/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/dagre/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_backslash_newline/elk/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,\\\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_backslash_newline/elk/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,\\\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_backslash_newline/dagre/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,\\\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_backslash_newline/dagre/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,\\\nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_2space_newline/elk/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,  \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_2space_newline/elk/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,  \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_2space_newline/dagre/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,  \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/md_2space_newline/dagre/board.exp.json</td>
+                    <td>85</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit,  \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/li4/elk/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;\nList items may consist of multiple paragraphs. Each subsequent\nparagraph in a list item must be indented by either 4 spaces\nor one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/li4/dagre/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;\nList items may consist of multiple paragraphs. Each subsequent\nparagraph in a list item must be indented by either 4 spaces\nor one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/br/elk/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Headline 1\n## Headline 2\nLorem ipsum dolor\n&lt;br /&gt;\n## Headline 3\nLorem ipsum dolor\n&lt;br /&gt;\n&lt;br /&gt;\n## Headline 3\nThis just dis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/br/dagre/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Headline 1\n## Headline 2\nLorem ipsum dolor\n&lt;br /&gt;\n## Headline 3\nLorem ipsum dolor\n&lt;br /&gt;\n&lt;br /&gt;\n## Headline 3\nThis just dis</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">install.sh</td>
+                    <td>371</td>
+                    <td class="mono snippet"># flag_parse implements a robust flag parser.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests-cli/main_test.go</td>
+                    <td>1721</td>
+                    <td class="mono snippet">// getNumBoards gets the number of boards in an SVG file through a non-robust pattern search</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/elk/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">e2etests/testdata/stable/giant_markdown_test/dagre/board.exp.json</td>
+                    <td>43</td>
+                    <td class="mono snippet">      &quot;label&quot;: &quot;# Markdown: Syntax\n\n- [Overview](#overview)\n  - [Philosophy](#philosophy)\n  - [Inline HTML](#html)\n  - [Automatic Escaping for Sp</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

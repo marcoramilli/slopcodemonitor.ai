@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — netbox-community/netbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>netbox-community/netbox</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.8</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.8</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">265</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">985</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">259,511</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1956</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(62 hits · 620 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/netbox/models/mixins.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/core/models/files.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/core/models/change_logging.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/core/models/jobs.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/core/models/data.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/migrations/0023_squashed_0036.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower('name'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/migrations/0023_squashed_0036.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower('name'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/forms/model_forms.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/tests/test_models.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/models/clusters.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/virtualization/models/virtualmachines.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/circuits/models/virtual_circuits.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/circuits/models/circuits.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/tenancy/models/contacts.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/forms/model_forms.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/forms/bulk_import.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/tests/test_models.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/models/tunnels.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/models/crypto.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/vpn/models/l2vpn.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/fields.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/cable_profiles.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/svg/racks.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import FieldError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/migrations/0160_squashed_0166.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower('name'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/migrations/0160_squashed_0166.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">                django.db.models.functions.text.Lower('name'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/mixins.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/device_component_templates.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/sites.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/modules.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/racks.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>594</td>
+                    <td class="mono snippet">        termination = self.termination._meta.model.objects.get(pk=self.termination_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">        termination = self.termination._meta.model.objects.get(pk=self.termination_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/devices.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/power.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/dcim/models/base.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/password_validation.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/validators.py</td>
+                    <td>4</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/jsonschema.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/filters.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/templatetags/form_helpers.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        return field.field.widget.__class__.__name__.lower()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/utilities/forms/fields/csv.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import FieldError, MultipleObjectsReturned, ObjectDoesNotExist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/wireless/models.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/users/forms/model_forms.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">from django.core.exceptions import FieldError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/users/tests/test_models.py</td>
+                    <td>3</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/users/models/users.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/users/models/tokens.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/ipam/formfields.py</td>
+                    <td>2</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">netbox/ipam/fields.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">from django.core.exceptions import ValidationError</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 12 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(122 hits · 244 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">upgrade.sh</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Create a new virtual environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/configuration_example.py</td>
+                    <td>71</td>
+                    <td class="mono snippet"># Define a mapping of cryptographic peppers to use when hashing API tokens. A minimum of one pepper is required to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tables/columns.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">        # Create the actions dropdown menu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tables/tables.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">                # Create a copy to avoid modifying the original Column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_authentication.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Create a v1 token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_authentication.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        # Create a v2 token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_authentication.py</td>
+                    <td>630</td>
+                    <td class="mono snippet">        # Create a permitted object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_config.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">        # Create a config but don't load it into the cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_config.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">        # Create a config and load it into the cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_config.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">        # Create a config and load it into the cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/models/deletion.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">                        # Create a unique key for this relation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/api/viewsets/mixins.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">                # Creating a single object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/views/generic/object_views.py</td>
+                    <td>588</td>
+                    <td class="mono snippet">                        # Create the new components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/views/generic/bulk_views.py</td>
+                    <td>860</td>
+                    <td class="mono snippet">        # Create a new Form class from BulkRenameForm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/authentication/__init__.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        # Create a dictionary mapping permissions to their constraints</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/authentication/__init__.py</td>
+                    <td>307</td>
+                    <td class="mono snippet"># Create a new instance of django-auth-ldap's LDAPBackend with our own ObjectPermissions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/migrations/0018_concrete_objecttype.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">        # Create the new concrete model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">        # Create a custom field on the Site model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        # Create a select custom field on the Site model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">        # Create a Site</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">        # Create a Site</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>328</td>
+                    <td class="mono snippet">        # Create a cable between the interfaces</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>398</td>
+                    <td class="mono snippet">        # Create a custom field on the Site model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>408</td>
+                    <td class="mono snippet">        # Create a select custom field on the Site model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>647</td>
+                    <td class="mono snippet">        # Create a new Module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_changelog.py</td>
+                    <td>659</td>
+                    <td class="mono snippet">        # Create an Interface on the Module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/tests/test_api.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">        # Create the test user and assign permissions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/virtualization/tests/test_views.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">        # Create a child interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/virtualization/tests/test_api.py</td>
+                    <td>493</td>
+                    <td class="mono snippet">        # Create a child interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/tenancy/tests/test_models.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">        # Create a tree of contact groups:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/views.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">        # Create a new Form class from ConfirmationForm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/svg/cables.py</td>
+                    <td>429</td>
+                    <td class="mono snippet">                    # Create the connector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_cablepaths2.py</td>
+                    <td>1798</td>
+                    <td class="mono snippet">        # Create a PortMapping between frontport1 and rearport1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>919</td>
+                    <td class="mono snippet">        # Create the manufacturer and platform</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>1446</td>
+                    <td class="mono snippet">        # Create the manufacturer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2572</td>
+                    <td class="mono snippet">        # Create a module *without* replicating components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2581</td>
+                    <td class="mono snippet">        # Create a second module (in the next bay) with replicated components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2603</td>
+                    <td class="mono snippet">        # Create a module *without* replicating components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2624</td>
+                    <td class="mono snippet">        # Create a second module (in the next bay) with replicated components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2654</td>
+                    <td class="mono snippet">        # Create an interface to be adopted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2661</td>
+                    <td class="mono snippet">        # Create a module with adopted components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2691</td>
+                    <td class="mono snippet">        # Create an interface to be adopted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>2698</td>
+                    <td class="mono snippet">        # Create a module with adopted components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_views.py</td>
+                    <td>3146</td>
+                    <td class="mono snippet">        # Create a child interface</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>391</td>
+                    <td class="mono snippet">        # Create a CustomField with a default value &amp; assign it to all component models</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>727</td>
+                    <td class="mono snippet">        # Create a CustomField with a default value &amp; assign it to all component models</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>1003</td>
+                    <td class="mono snippet">        # Create a module type with a rear port template</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>1009</td>
+                    <td class="mono snippet">        # Create a rear port template with 12 positions (splice)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>1088</td>
+                    <td class="mono snippet">        # Create a module type without any port template mappings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>1094</td>
+                    <td class="mono snippet">        # Create a rear port template</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 72 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(16 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/search/backends.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">        # Omit any results pertaining to an object the user does not have permission to view</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/signals.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">            # This will impact changes that utilize clear() however so we may want to give consideration for this branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/core/models/data.py</td>
+                    <td>353</td>
+                    <td class="mono snippet">        # TODO: Something more robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/api/schema.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        # if not bulk - just return normal id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">            # Query self.terminations.all() to leverage cached results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/paginator.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">        # When dealing with five or fewer pages, simply return the whole list.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/index.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">NetBox is built on the enormously popular [Django](http://www.djangoproject.com/) framework for the Python programming language, already a favorite am</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/features/api-integration.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">NetBox's REST API, powered by the [Django REST Framework](https://www.django-rest-framework.org/), provides a robust yet accessible interface for crea</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-4.5.md</td>
+                    <td>202</td>
+                    <td class="mono snippet">* [#21327](https://github.com/netbox-community/netbox/issues/21327) - Always leverage `get_by_natural_key()` to resolve ContentTypes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-4.5.md</td>
+                    <td>202</td>
+                    <td class="mono snippet">* [#21327](https://github.com/netbox-community/netbox/issues/21327) - Always leverage `get_by_natural_key()` to resolve ContentTypes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-4.0.md</td>
+                    <td>366</td>
+                    <td class="mono snippet">* [#15915](https://github.com/netbox-community/netbox/issues/15915) - Provide a comprehensive system status view with export functionality</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-2.7.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">* [#4255](https://github.com/netbox-community/netbox/issues/4255) - Custom script object variables now utilize dynamic form widgets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-2.7.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">* [#4255](https://github.com/netbox-community/netbox/issues/4255) - Custom script object variables now utilize dynamic form widgets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-2.3.md</td>
+                    <td>108</td>
+                    <td class="mono snippet">* [#1952](https://github.com/netbox-community/netbox/issues/1952) - Implemented a more robust mechanism for assigning VLANs to interfaces</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-2.3.md</td>
+                    <td>108</td>
+                    <td class="mono snippet">* [#1952](https://github.com/netbox-community/netbox/issues/1952) - Implemented a more robust mechanism for assigning VLANs to interfaces</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/release-notes/version-3.7.md</td>
+                    <td>149</td>
+                    <td class="mono snippet">* [#15185](https://github.com/netbox-community/netbox/issues/15185) - Ensure error messages pertaining to related objects are displayed on the bulk im</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(25 hits · 26 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/jobs.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/tables/columns.py</td>
+                    <td>588</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/tables/columns.py</td>
+                    <td>597</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/views/misc.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/views/misc.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/views/generic/bulk_views.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/apps.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/jobs.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/tables/tasks.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/migrations/0019_configrevision_active.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/tests/test_data_backends.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/core/management/commands/syncdatasource.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/migrations/0206_load_module_type_profiles.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/dcim/migrations/0206_load_module_type_profiles.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">                print(f&quot;Error loading data from {file_path}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/request.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/jobs.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/scripts.py</td>
+                    <td>597</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/webhooks.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/templatetags/dashboard.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/templatetags/custom_links.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/templatetags/custom_links.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/forms/scripts.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/models/scripts.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/api/serializers_/scripts.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/extras/api/serializers_/scripts.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(4 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">netbox/dcim/forms/bulk_edit.py</td>
+                    <td>1579</td>
+                    <td class="mono snippet">                    # Query for VLANs assigned to the same site and VLANs with no site assigned (null).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>824</td>
+                    <td class="mono snippet">            # If not null, push cable positions onto the stack</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">netbox/utilities/tests/test_filter_modifiers.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">        # Simulate a query for objects with no tenant assigned (?tenant_id=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">netbox/extras/lookups.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    A key is considered empty if it is &quot;&quot;, null, or does not exist.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(17 hits · 17 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/configuration_example.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        # Set this to True to skip TLS certificate verification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/configuration_example.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Set this to True to skip TLS certificate verification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/plugins/urls.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    # Check if the plugin specifies any base URLs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/plugins/urls.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    # Check if the plugin specifies any API URLs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/plugins/views.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        # Check if the plugin specifies any API URLs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/netbox/views/generic/bulk_views.py</td>
+                    <td>584</td>
+                    <td class="mono snippet">                # Iterate through data and bind each record to a new model form instance.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/tests/test_models.py</td>
+                    <td>980</td>
+                    <td class="mono snippet">        # Assign bay2 to module1 and verify parent is now set to bay1 (module1's bay)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/modules.py</td>
+                    <td>322</td>
+                    <td class="mono snippet">                    # Check if there's a component with the same name already</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/modules.py</td>
+                    <td>324</td>
+                    <td class="mono snippet">                        # Assign it to the module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/fields.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">                # Check if the content type actually exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/templatetags/buttons.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    # Check if this user has already bookmarked the object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/templatetags/buttons.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">    # Check if this user has already subscribed to the object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/templatetags/helpers.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">        # Check if this is a modifier-enhanced field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/utilities/forms/fields/csv.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Check if value is omitted using parent behavior</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/ipam/forms/model_forms.py</td>
+                    <td>523</td>
+                    <td class="mono snippet">        # Check if we need to create a new IPAddress for the group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/ipam/tests/test_filtersets.py</td>
+                    <td>2051</td>
+                    <td class="mono snippet">        # Assign VLANs to device interfaces</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/ipam/tests/test_filtersets.py</td>
+                    <td>2059</td>
+                    <td class="mono snippet">        # Assign VLANs to VM interfaces</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/configuration_example.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # ('John Doe', 'jdoe@example.com'),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_search.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">                comments='Lorem ipsum etcetera'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_search.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">                comments='Lorem ipsum etcetera'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_search.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">                comments='Lorem ipsum etcetera'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/netbox/tests/test_search.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">            comments='Lorem ipsum etcetera'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plugins/development/index.md</td>
+                    <td>166</td>
+                    <td class="mono snippet">    {name = &quot;John Doe&quot;, email = &quot;test@netboxlabs.com&quot;},</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(10 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>820</td>
+                    <td class="mono snippet">            # Step 1: Record the near-end termination object(s)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>828</td>
+                    <td class="mono snippet">            # Step 2: Determine the attached links (Cable or WirelessLink), if any</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>844</td>
+                    <td class="mono snippet">            # Step 3: Record asymmetric paths as split</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>850</td>
+                    <td class="mono snippet">            # Step 4: Record the links, keeping cables in order to allow for SVG rendering</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>857</td>
+                    <td class="mono snippet">            # Step 5: Update the path status if a link is not connected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>862</td>
+                    <td class="mono snippet">            # Step 6: Determine the far-end terminations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>929</td>
+                    <td class="mono snippet">            # Step 7: Record the far-end termination object(s)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">netbox/dcim/models/cables.py</td>
+                    <td>934</td>
+                    <td class="mono snippet">            # Step 8: Determine the &quot;next hop&quot; terminations, if applicable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/customization/reports.md</td>
+                    <td>8</td>
+                    <td class="mono snippet">### Step 1: Update Class Definition</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/customization/reports.md</td>
+                    <td>24</td>
+                    <td class="mono snippet">### Step 2: Update Logging Calls</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">upgrade.sh</td>
+                    <td>150</td>
+                    <td class="mono snippet">echo &quot;Upgrade complete! Don't forget to restart the NetBox services:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">netbox/extras/constants.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">                'This is your personal dashboard. Feel free to customize it by rearranging, resizing, or removing '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/installation/3-netbox.md</td>
+                    <td>136</td>
+                    <td class="mono snippet">    As with [`SECRET_KEY`](#secret_key) below, you can use the `generate_secret_key.py` script to generate a random pepper:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

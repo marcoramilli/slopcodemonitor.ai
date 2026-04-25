@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — postgres/postgres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>postgres/postgres</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">356</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">642</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,128,172</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">3869</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-25</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(145 hits · 290 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/pg_visibility/t/001_concurrent_transaction.pl</td>
+                    <td>36</td>
+                    <td class="mono snippet"># Create a sample table and run vacuum</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/pg_visibility/t/002_corrupt_vm.pl</td>
+                    <td>21</td>
+                    <td class="mono snippet"># Create a sample table with at least 10 pages and then run VACUUM. 10 is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/amcheck/t/004_verify_nbtree_unique.pl</td>
+                    <td>18</td>
+                    <td class="mono snippet"># Create a custom operator class and an index which uses it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/amcheck/t/005_pitr.pl</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Create a table with each of 6 PK values spanning 1/4 of a block.  Delete the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/amcheck/t/001_verify_heapam.pl</td>
+                    <td>115</td>
+                    <td class="mono snippet"># Create a test sequence of the given name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Asia.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Australia.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Europe.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Africa.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Atlantic.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Antarctica.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Indian.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Pacific.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/Etc.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/timezone/tznames/America.txt</td>
+                    <td>3</td>
+                    <td class="mono snippet">#   This file is NOT loaded by the PostgreSQL database.  It just serves as</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/ssl/t/SSL/Server.pm</td>
+                    <td>15</td>
+                    <td class="mono snippet">  # Create a new cluster</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/ldap/t/003_ldap_connection_param_lookup.pl</td>
+                    <td>74</td>
+                    <td class="mono snippet"># Create the set of service files used in the tests.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/042_low_level_backup.pl</td>
+                    <td>51</td>
+                    <td class="mono snippet"># Create a table that will be used to verify that recovery started at the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Create a subscriber node, wait for sync to complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Create a subscription that enables failover.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>137</td>
+                    <td class="mono snippet"># Create a standby</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>377</td>
+                    <td class="mono snippet"># Create a cascading standby</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>410</td>
+                    <td class="mono snippet"># Create a failover slot and advance the restart_lsn to a position where a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>766</td>
+                    <td class="mono snippet"># Create a logical 'test_decoding' replication slot with failover enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/033_replay_tsp_drops.pl</td>
+                    <td>121</td>
+                    <td class="mono snippet"># Create a database in the tablespace and a table in default tablespace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/008_fsm_truncation.pl</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Create a primary node and its standby, initializing both with some data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>47</td>
+                    <td class="mono snippet"># Create the required logical slots on standby.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>501</td>
+                    <td class="mono snippet"># Create a table on the primary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>505</td>
+                    <td class="mono snippet"># Create a table (same structure) on the subscriber node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>509</td>
+                    <td class="mono snippet"># Create a publication on the primary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>556</td>
+                    <td class="mono snippet"># Create the injection_points extension</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>913</td>
+                    <td class="mono snippet"># Create a slot on a database that would not be dropped. This slot should not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>952</td>
+                    <td class="mono snippet"># Create a physical replication slot on the standby.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/046_checkpoint_logical_slot.pl</td>
+                    <td>36</td>
+                    <td class="mono snippet"># Create the two slots we'll need.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/046_checkpoint_logical_slot.pl</td>
+                    <td>159</td>
+                    <td class="mono snippet"># Create a standby</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/014_unlogged_reinit.pl</td>
+                    <td>21</td>
+                    <td class="mono snippet"># Create an unlogged table and an unlogged sequence to test that forks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/014_unlogged_reinit.pl</td>
+                    <td>43</td>
+                    <td class="mono snippet"># Create an unlogged table in a tablespace.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>39</td>
+                    <td class="mono snippet"># Create a standby linking to it using the replication slot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>426</td>
+                    <td class="mono snippet"># Create a standby linking to the primary using the replication slot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/049_wait_for_lsn.pl</td>
+                    <td>58</td>
+                    <td class="mono snippet"># Create a streaming standby with a 1 second delay from the backup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/017_shm.pl</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Create a shmem segment that will conflict with gnat's first choice</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/047_checkpoint_physical_slot.pl</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Create a physical replication slot.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/051_effective_wal_level.pl</td>
+                    <td>45</td>
+                    <td class="mono snippet"># Create a physical slot and verify that it doesn't affect effective_wal_level.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/051_effective_wal_level.pl</td>
+                    <td>54</td>
+                    <td class="mono snippet"># Create a temporary logical slot but exit without releasing it explicitly.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/051_effective_wal_level.pl</td>
+                    <td>68</td>
+                    <td class="mono snippet"># Create a new logical slot and check that effective_wal_level must be increased</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/051_effective_wal_level.pl</td>
+                    <td>164</td>
+                    <td class="mono snippet"># Creating a logical slot on standby should succeed as the primary enables</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>16</td>
+                    <td class="mono snippet">  # Create a data directory with initdb</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/BackgroundPsql.pm</td>
+                    <td>16</td>
+                    <td class="mono snippet">  # Create a data directory with initdb</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/017_stream_ddl.pl</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is mainly to test the DDL/DML interaction of the publisher side,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>100</td>
+                    <td class="mono snippet"># Create a logical replication slot to help with later tests.</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 95 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(105 hits · 210 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/gen_keywordlist.pl</td>
+                    <td>1</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/gen_keywordlist.pl</td>
+                    <td>29</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/PerfectHash.pm</td>
+                    <td>1</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/PerfectHash.pm</td>
+                    <td>28</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/msvc_gendef.pl</td>
+                    <td>33</td>
+                    <td class="mono snippet">		# ------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/mark_pgdllimport.pl</td>
+                    <td>3</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/mark_pgdllimport.pl</td>
+                    <td>23</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/044_invalidate_inactive_slots.pl</td>
+                    <td>40</td>
+                    <td class="mono snippet"># ========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/044_invalidate_inactive_slots.pl</td>
+                    <td>105</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>413</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>478</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>480</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/019_replslot_limit.pl</td>
+                    <td>538</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>69</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>71</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>201</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>203</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>226</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/037_except.pl</td>
+                    <td>228</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>77</td>
+                    <td class="mono snippet"># ====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>79</td>
+                    <td class="mono snippet"># ====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>179</td>
+                    <td class="mono snippet"># ====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>181</td>
+                    <td class="mono snippet"># ======================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/028_row_filter.pl</td>
+                    <td>800</td>
+                    <td class="mono snippet"># ======================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>43</td>
+                    <td class="mono snippet"># ------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>45</td>
+                    <td class="mono snippet"># ------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>84</td>
+                    <td class="mono snippet"># ----------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>86</td>
+                    <td class="mono snippet"># ----------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>135</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>137</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>180</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>182</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>243</td>
+                    <td class="mono snippet"># -----------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/014_binary.pl</td>
+                    <td>245</td>
+                    <td class="mono snippet"># -----------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>24</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>90</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>92</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>178</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>180</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>264</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>266</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>345</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>347</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>408</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>410</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>479</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>481</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/032_subscribe_use_index.pl</td>
+                    <td>548</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/subscription/t/011_generated.pl</td>
+                    <td>104</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 55 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(43 hits · 43 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/unaccent/generate_unaccent_rules.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    # Check if the base letter of this letter has marks.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/sepgsql/t/001_sepgsql.pl</td>
+                    <td>228</td>
+                    <td class="mono snippet"># Check if the truncate permission exists in the loaded policy, and if so,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/041_checkpoint_at_promote.pl</td>
+                    <td>38</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/001_stream_rep.pl</td>
+                    <td>588</td>
+                    <td class="mono snippet"># Check if the previous segment gets correctly recycled after the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>248</td>
+                    <td class="mono snippet"># Check if the synced slot is invalidated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/040_standby_failover_slots_sync.pl</td>
+                    <td>889</td>
+                    <td class="mono snippet"># Set two_phase to true and enable the subscription</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/044_invalidate_inactive_slots.pl</td>
+                    <td>58</td>
+                    <td class="mono snippet"># Check if the 'injection_points' extension is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/016_min_consistency.pl</td>
+                    <td>49</td>
+                    <td class="mono snippet"># Set shared_buffers to a very low value to enforce discard and flush</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>125</td>
+                    <td class="mono snippet"># Check if all the slots on standby are dropped. These include the 'activeslot'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>303</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/035_standby_logical_decoding.pl</td>
+                    <td>630</td>
+                    <td class="mono snippet"># Set hot_standby_feedback to on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/050_redo_segment_missing.pl</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/046_checkpoint_logical_slot.pl</td>
+                    <td>26</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/048_vacuum_horizon_floor.pl</td>
+                    <td>108</td>
+                    <td class="mono snippet"># Set primary_conninfo to something invalid on the replica and reload the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/047_checkpoint_physical_slot.pl</td>
+                    <td>27</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/047_checkpoint_physical_slot.pl</td>
+                    <td>124</td>
+                    <td class="mono snippet"># Check if the required wal segment exists.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/051_effective_wal_level.pl</td>
+                    <td>287</td>
+                    <td class="mono snippet"># Set wal_level to 'replica' and restart the primary. Since one logical slot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>1709</td>
+                    <td class="mono snippet">	# Add node to list of nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Utils.pm</td>
+                    <td>162</td>
+                    <td class="mono snippet">	# Check if this environment is MSYS2.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/subscription/t/023_twophase_stream.pl</td>
+                    <td>465</td>
+                    <td class="mono snippet"># Set max_prepared_transactions to correct value to resume the replication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/subscription/t/021_twophase.pl</td>
+                    <td>83</td>
+                    <td class="mono snippet"># Set max_prepared_transactions to correct value to resume the replication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/subscription/t/021_twophase.pl</td>
+                    <td>448</td>
+                    <td class="mono snippet"># Set two_phase to &quot;true&quot; and failover to &quot;true&quot; before the COMMIT PREPARED.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/subscription/t/035_conflicts.pl</td>
+                    <td>598</td>
+                    <td class="mono snippet"># Set max_retention_duration to a minimal value to initiate retention stop.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/subscription/t/035_conflicts.pl</td>
+                    <td>624</td>
+                    <td class="mono snippet"># Set max_retention_duration to 0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_autovacuum/t/001_parallel_autovacuum.pl</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/xid_wraparound/t/001_emergency_vacuum.pl</td>
+                    <td>105</td>
+                    <td class="mono snippet"># Check if these tables are vacuumed.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/xid_wraparound/t/001_emergency_vacuum.pl</td>
+                    <td>119</td>
+                    <td class="mono snippet"># Check if vacuum failsafe was triggered for each table.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/007_catcache_inval.pl</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/006_signal_autovacuum.pl</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/010_index_concurrently_upsert.pl</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/003_check_guc.pl</td>
+                    <td>62</td>
+                    <td class="mono snippet">	# Check if this line matches a GUC parameter:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/005_timeouts.pl</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_misc/t/011_lock_stats.pl</td>
+                    <td>81</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/worker_spi/t/002_worker_terminate.pl</td>
+                    <td>77</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/authentication/t/003_peer.pl</td>
+                    <td>82</td>
+                    <td class="mono snippet"># Check if peer authentication is supported on this platform.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/authentication/t/007_pre_auth.pl</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_rewind/t/RewindTest.pm</td>
+                    <td>132</td>
+                    <td class="mono snippet">	# Set wal_keep_size to prevent WAL segment recycling after enforced</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_basebackup/t/040_pg_createsubscriber.pl</td>
+                    <td>395</td>
+                    <td class="mono snippet"># Check if node S is still a standby</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_amcheck/t/004_verify_heapam.pl</td>
+                    <td>679</td>
+                    <td class="mono snippet">		# Set xmin to xmax of tuple at offset 30.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_upgrade/t/005_char_signedness.pl</td>
+                    <td>42</td>
+                    <td class="mono snippet"># Check if the value is successfully updated.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_upgrade/t/005_char_signedness.pl</td>
+                    <td>88</td>
+                    <td class="mono snippet"># Check if the default char signedness of the new cluster inherited</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_upgrade/t/002_pg_upgrade.pl</td>
+                    <td>584</td>
+                    <td class="mono snippet"># Check if there are any logs coming from pg_upgrade, that would only be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/interfaces/libpq/t/005_negotiate_encryption.pl</td>
+                    <td>152</td>
+                    <td class="mono snippet"># Check if the extension injection_points is available, as it may be</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(20 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/postgres_fdw/deparse.c</td>
+                    <td>1041</td>
+                    <td class="mono snippet">			 * expanded later, but don't forget to add deparse support below.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/tools/version_stamp.pl</td>
+                    <td>103</td>
+                    <td class="mono snippet">print &quot;Don't forget to run autoconf $aconfver before committing.\n&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/regress/regress.c</td>
+                    <td>897</td>
+                    <td class="mono snippet">			 * enough for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/recovery/t/006_logical_decoding.pl</td>
+                    <td>145</td>
+                    <td class="mono snippet"># make sure you can't drop a slot while active</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/bin/pg_dump/pg_backup_archiver.c</td>
+                    <td>2164</td>
+                    <td class="mono snippet">	 * a sign byte. If you change this, don't forget to change the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/include/mb/pg_wchar.h</td>
+                    <td>61</td>
+                    <td class="mono snippet"> * WARNING: If you add some encoding don't forget to update</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/include/lib/ilist.h</td>
+                    <td>46</td>
+                    <td class="mono snippet"> * Here's a simple example demonstrating how this can be used.  Let's assume</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/access/transam/xlog.c</td>
+                    <td>5799</td>
+                    <td class="mono snippet"> * If you change them, don't forget to update the list.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/access/brin/brin_minmax_multi.c</td>
+                    <td>634</td>
+                    <td class="mono snippet">			/* don't forget to include the null terminator ;-) */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/access/common/reloptions.c</td>
+                    <td>52</td>
+                    <td class="mono snippet"> * (vi) don't forget to document the option</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/access/heap/heapam.c</td>
+                    <td>2185</td>
+                    <td class="mono snippet">	 * If heaptup is a private copy, release it.  Don't forget to copy t_self</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/access/heap/heapam.c</td>
+                    <td>4144</td>
+                    <td class="mono snippet">	 * If heaptup is a private copy, release it.  Don't forget to copy t_self</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/nodes/bitmapset.c</td>
+                    <td>1421</td>
+                    <td class="mono snippet"> * Note: don't forget to specify bitmap_match as the match function!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/catalog/system_views.sql</td>
+                    <td>10</td>
+                    <td class="mono snippet"> * executable either --- but by default they will be.  So don't forget to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/utils/adt/expandedrecord.c</td>
+                    <td>1464</td>
+                    <td class="mono snippet">	 * But don't forget to mark header as dummy.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/utils/adt/selfuncs.c</td>
+                    <td>1067</td>
+                    <td class="mono snippet">		/* Don't forget to account for nulls. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/utils/adt/acl.c</td>
+                    <td>820</td>
+                    <td class="mono snippet"> * you make a change here, don't forget to update the GRANT man page,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/utils/hash/dynahash.c</td>
+                    <td>1569</td>
+                    <td class="mono snippet">	/* don't forget to terminate the rebuilt hash chains... */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/regex/regc_nfa.c</td>
+                    <td>2927</td>
+                    <td class="mono snippet">		/* Don't forget to free sclone's donemap when done with it */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/backend/storage/lmgr/lock.c</td>
+                    <td>2077</td>
+                    <td class="mono snippet">	/* don't forget to clear waitMask bit if appropriate */</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(15 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">contrib/amcheck/t/005_pitr.pl</td>
+                    <td>35</td>
+                    <td class="mono snippet"># VACUUM to delete the aforementioned leaf page.  Force an XLogFlush() by</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/tcl/sql/pltcl_setup.sql</td>
+                    <td>194</td>
+                    <td class="mono snippet">        # If not a Postgres error, just return the basic error message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/tools/PerfectHash.pm</td>
+                    <td>76</td>
+                    <td class="mono snippet">	# It's not worth passing this around as a parameter; just use a global.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/kerberos/t/001_auth.pl</td>
+                    <td>16</td>
+                    <td class="mono snippet"># just add whatever other tests are needed to here.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/ssl/t/SSL/Server.pm</td>
+                    <td>74</td>
+                    <td class="mono snippet"># mode and this way they will find a port to run on in a more robust way.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/recovery/t/015_promotion_pages.pl</td>
+                    <td>55</td>
+                    <td class="mono snippet"># Now just use a dummy table and run some operations to move minRecoveryPoint</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>1901</td>
+                    <td class="mono snippet">		# so callers can harness this port for the widest range of purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>2253</td>
+                    <td class="mono snippet">	# because of a timeout and the caller requested to handle that, just return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>3413</td>
+                    <td class="mono snippet">	# Before release 12 walreceiver just set the application name to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/perl/PostgreSQL/Test/Cluster.pm</td>
+                    <td>3505</td>
+                    <td class="mono snippet">			# harness won't accept a skip; otherwise, it won't accept</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/test/modules/test_pg_dump/t/001_base.pl</td>
+                    <td>27</td>
+                    <td class="mono snippet"># test_key indicates that a given run should simply use the same</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_dump/t/002_pg_dump.pl</td>
+                    <td>20</td>
+                    <td class="mono snippet"># test_key indicates that a given run should simply use the same</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/catalog/Catalog.pm</td>
+                    <td>332</td>
+                    <td class="mono snippet">			# parse. We can't just use a regex because of values in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/catalog/genbki.pl</td>
+                    <td>323</td>
+                    <td class="mono snippet">	# special SQL names for types etc; we just use the names in the source</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/interfaces/ecpg/preproc/parse.pl</td>
+                    <td>507</td>
+                    <td class="mono snippet">				# Not a nonterminal declaration, so just add it to $line.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/regress/sql/tsearch.sql</td>
+                    <td>559</td>
+                    <td class="mono snippet">'Lorem ipsum urna.  Nullam nullam ullamcorper urna.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/regress/sql/tsearch.sql</td>
+                    <td>564</td>
+                    <td class="mono snippet">'Lorem ipsum urna.  Nullam nullam ullamcorper urna.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/regress/sql/tsearch.sql</td>
+                    <td>640</td>
+                    <td class="mono snippet">'Lorem ipsum urna.  Nullam nullam ullamcorper urna.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/test/modules/oauth_validator/t/001_server.pl</td>
+                    <td>650</td>
+                    <td class="mono snippet"># Allow &quot;user@example.com&quot; to log in under the test role.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/interfaces/ecpg/test/expected/preproc-pointer_to_struct.c</td>
+                    <td>163</td>
+                    <td class="mono snippet">    strcpy(custs1[0].name.arr, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/interfaces/ecpg/test/expected/preproc-pointer_to_struct.c</td>
+                    <td>167</td>
+                    <td class="mono snippet">    strcpy(acme.customers[1].name.arr, &quot;Jane Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/interfaces/ecpg/test/expected/preproc-array_of_struct.c</td>
+                    <td>158</td>
+                    <td class="mono snippet">    strcpy(custs1[0].name.arr, &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/interfaces/ecpg/test/expected/preproc-array_of_struct.c</td>
+                    <td>162</td>
+                    <td class="mono snippet">    strcpy(acme.customers[1].name.arr, &quot;Jane Doe&quot;);</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">contrib/amcheck/verify_heapam.c</td>
+                    <td>1756</td>
+                    <td class="mono snippet">	 * We go further, because we need to check if the toast datum is corrupt.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_amcheck/t/004_verify_heapam.pl</td>
+                    <td>145</td>
+                    <td class="mono snippet"># The purpose of this function is to write a tuple back to disk with some</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_dump/t/006_pg_dump_compress.pl</td>
+                    <td>530</td>
+                    <td class="mono snippet">			# if just one match, we need to check if it's real</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/bin/pg_dump/t/002_pg_dump.pl</td>
+                    <td>5232</td>
+                    <td class="mono snippet">			# if just one match, we need to check if it's real</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/optimizer/util/clauses.c</td>
+                    <td>4727</td>
+                    <td class="mono snippet">				 * Note that we need to check if the relation actually has any</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/utils/mb/mbutils.c</td>
+                    <td>73</td>
+                    <td class="mono snippet"> * This variable stores the conversion function to convert from UTF-8</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/storage/ipc/shm_mq.c</td>
+                    <td>872</td>
+                    <td class="mono snippet"> * The purpose of this function is to make sure that the process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/executor/execMain.c</td>
+                    <td>156</td>
+                    <td class="mono snippet">	 * If the transaction is read-only, we need to check if any writes are</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/replication/slot.c</td>
+                    <td>2278</td>
+                    <td class="mono snippet">			 * We need to check if the slot is invalidated here since</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/replication/pgoutput/pgoutput.c</td>
+                    <td>2307</td>
+                    <td class="mono snippet">				 * across all publications. So we need to check if the already</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/partitioning/partdesc.c</td>
+                    <td>448</td>
+                    <td class="mono snippet"> * The purpose of this function is to ensure that we get the same</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_import.sql</td>
+                    <td>27</td>
+                    <td class="mono snippet">except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_ereport.sql</td>
+                    <td>124</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_ereport.sql</td>
+                    <td>132</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_spi.sql</td>
+                    <td>34</td>
+                    <td class="mono snippet">except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_spi.sql</td>
+                    <td>48</td>
+                    <td class="mono snippet">except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_spi.sql</td>
+                    <td>63</td>
+                    <td class="mono snippet">except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/pl/plpython/sql/plpython_transaction.sql</td>
+                    <td>170</td>
+                    <td class="mono snippet">except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/tools/ci/ci_macports_packages.sh</td>
+                    <td>62</td>
+                    <td class="mono snippet"># If setting all the required packages as requested fails, we need</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/backend/port/aix/mkldexport.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-25 13:35 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
