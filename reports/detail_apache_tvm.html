@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — apache/tvm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>apache/tvm</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">448</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">758</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">612,779</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2104</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(177 hits · 354 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">version.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># ---------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">version.py</td>
+                    <td>51</td>
+                    <td class="mono snippet"># ---------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/base.py</td>
+                    <td>27</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/base.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/base.py</td>
+                    <td>34</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/base.py</td>
+                    <td>36</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>56</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>58</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>83</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>85</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>122</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>124</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>133</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>135</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>147</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>149</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>171</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>173</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>182</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>184</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>187</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>189</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>192</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>194</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>203</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>205</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>212</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>214</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>225</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>227</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>252</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>254</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>266</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>268</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>283</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>285</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>305</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>307</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>338</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>340</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>360</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>362</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>368</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/target/tag_registry/cuda.py</td>
+                    <td>370</td>
+                    <td class="mono snippet"># =====================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>65</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>67</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>90</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_cpu_reduction.py</td>
+                    <td>92</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 127 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(49 hits · 98 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/topi/testing/poolnd_python.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">    # Create a padded array, and a boolean mask showing which values are padded values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/te/operation.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">      # The following code is equivalent to numpy.cumsum</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/base_py_module.py</td>
+                    <td>481</td>
+                    <td class="mono snippet">        # Create a wrapper that handles both instance methods and static functions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/relax_to_pyfunc_converter.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">        # Create a copy of the current IRModule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/relax_to_pyfunc_converter.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">        # Create the Python function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/tflite/tflite_frontend.py</td>
+                    <td>4262</td>
+                    <td class="mono snippet">        # Define a tf.Module containing a tf.function with network definition</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/nn/core.py</td>
+                    <td>359</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;This method provides an iterator over module parameters,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/nn/core.py</td>
+                    <td>376</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;This method provides an iterator over module parameters,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/onnx/onnx_frontend.py</td>
+                    <td>3552</td>
+                    <td class="mono snippet">        # Create a tensor of zeros then scatter our data through it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>1413</td>
+                    <td class="mono snippet">        # Create a placeholder for indices (empty tensor with same shape as output)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>1429</td>
+                    <td class="mono snippet">        # Create a placeholder for indices (empty tensor with same shape as output)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>1445</td>
+                    <td class="mono snippet">        # Create a placeholder for indices (empty tensor with same shape as output)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/fx_translator.py</td>
+                    <td>1230</td>
+                    <td class="mono snippet">        # Define the module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/exported_program_translator.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">        # This method is called for batch_norm in training mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/exported_program_translator.py</td>
+                    <td>2102</td>
+                    <td class="mono snippet">        # Define the module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/testing/nn.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">        # Define a linear layer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/transform/transform.py</td>
+                    <td>1116</td>
+                    <td class="mono snippet">        # Define the pass input IRModule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/transform/transform.py</td>
+                    <td>1127</td>
+                    <td class="mono snippet">        # Define the customized legalization function for &quot;relax.add&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/tirx/expr.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">    # This class is not manipulated by C++. So use python's identity check function is sufficient</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/tirx/expr.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">    # This class is not manipulated by C++. So use python's identity check function is sufficient</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ci/scripts/github/github_tag_teams.py</td>
+                    <td>272</td>
+                    <td class="mono snippet">    # Create the new PR/issue body</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/driver/test_compile.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">    # Define a simple Relax program</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/runtime/test_executable.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">    # Create a temporary directory for the library</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/runtime/test_executable.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">    # Create an executable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/runtime/test_executable.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">    # Create an executable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/s_tir/dlight/test_gpu_fallback.py</td>
+                    <td>203</td>
+                    <td class="mono snippet">        # This function is identical, except that it is explicitly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_util.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">                # Creating a new TempDirectory should fail now</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_hexagon/test_benchmark_maxpool2d.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">        # Create the host-side directory for this benchmark run's files / logs...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_hexagon/test_benchmark_elemwise_add.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">        # The below code is commented is commented to avoid unreachable error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_hexagon/test_benchmark_elemwise_add.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    # Create the host-side directory for this benchmark run's files / logs...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_hexagon/test_benchmark_elemwise_add.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">            # Create an actual Hexagon-native shared object file, initially stored on the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/contrib/test_hexagon/test_benchmark_elemwise_add.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">            # Create the target-side tensors to hold the primfunc's inputs and outputs...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/codegen/test_target_codegen_llvm.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">            # Create an intrinsic that returns void.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/tirx-transform/test_tir_functor.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">    # Create a simple for loop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/tirx-transform/test_tir_functor.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">    # Create an evaluate statement with an expression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/tirx-analysis/test_tir_analysis_verify_well_formed.py</td>
+                    <td>438</td>
+                    <td class="mono snippet">    # Create an undeclared buffer using an explicit data pointer that is NOT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_runtime_builtin_paged_attention_kv_cache_mla_flashinfer.py</td>
+                    <td>407</td>
+                    <td class="mono snippet">            # Create a mask similar to np.tril and np.triu.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_pytorch_integration.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        # Define a custom function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_base_py_module.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">            # Create a simple IRModule without TIR functions for GPU testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_dlpack_integration.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        # Create a simple IRModule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_runtime_builtin_paged_attention_kv_cache_mla_tir.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">            # Create a mask similar to np.tril and np.triu.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/scripts/task_config_build_gpu_other.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># This file is a compiler test to ensure that runtimes can compile</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/conf.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/README.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">## Define the Order of Tutorials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>226</td>
+                    <td class="mono snippet"># The following function shows how we run an OpenCL kernel remotely</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/customize_opt.py</td>
+                    <td>121</td>
+                    <td class="mono snippet"># Define a new pass for CUBLAS dispatch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/import_model.py</td>
+                    <td>307</td>
+                    <td class="mono snippet">    # Define a simple TF module and convert to TFLite.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/optimize_llm.py</td>
+                    <td>530</td>
+                    <td class="mono snippet"># Create the KVCache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/get_started/tutorials/ir_module.py</td>
+                    <td>57</td>
+                    <td class="mono snippet"># Create a dummy model</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(70 hits · 76 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/ir/instrument.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">        except Exception:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/ir/base.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">        except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/target/tag_registry/metal.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/runtime/_tensor.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/schedule/_type_checker.py</td>
+                    <td>350</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/post_optimization/space.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/post_optimization/space.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/local_runner.py</td>
+                    <td>309</td>
+                    <td class="mono snippet">            except Exception as exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/rpc_runner.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">        except Exception as exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/testing/validate_database.py</td>
+                    <td>768</td>
+                    <td class="mono snippet">                except Exception as e:  # pylint: disable=broad-except, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/testing/tune_utils.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">        except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/dlight/adreno/pool.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">                except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/dlight/adreno/fallback.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">                    except Exception:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/dlight/adreno/fallback.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">                    except Exception:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/dlight/analysis/common_analysis.py</td>
+                    <td>293</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/dlight/analysis/common_analysis.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/contrib/popen_pool.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">        except Exception as exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/contrib/download.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/parser.py</td>
+                    <td>311</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/parser.py</td>
+                    <td>601</td>
+                    <td class="mono snippet">        except Exception as diag_err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/parser.py</td>
+                    <td>639</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/entry.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/entry.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/script/parser/core/entry.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">            print(f&quot;Error calling Python function {pyfunc.__name__}: {error}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/evaluator.py</td>
+                    <td>264</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/evaluator.py</td>
+                    <td>283</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/evaluator.py</td>
+                    <td>492</td>
+                    <td class="mono snippet">    except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/ir/entry.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">                except Exception:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/relax/parser.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">    except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/relax/parser.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/tirx/parser.py</td>
+                    <td>424</td>
+                    <td class="mono snippet">                    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/tirx/parser.py</td>
+                    <td>659</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/exec/popen_worker.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">        except Exception as exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/base_py_module.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">            except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/base_py_module.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">            except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/base_py_module.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">        except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/nn/exporter.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">    except Exception as exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/onnx/onnx_frontend.py</td>
+                    <td>5310</td>
+                    <td class="mono snippet">                print(f&quot;Error converting operator {op_name}, with inputs: {inputs}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/onnx/onnx_frontend.py</td>
+                    <td>5535</td>
+                    <td class="mono snippet">            except Exception as exception:  # pylint: disable=c-extension-no-member, broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/fx_translator.py</td>
+                    <td>1253</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/op/_op_gradient.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/op/_op_gradient.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/github/github_tvmbot.py</td>
+                    <td>590</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/github/github_tvmbot.py</td>
+                    <td>667</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/github/github_tvmbot.py</td>
+                    <td>674</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/github/github_tvmbot.py</td>
+                    <td>696</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/github/github_tvmbot.py</td>
+                    <td>702</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ci/scripts/jenkins/pytest_wrapper.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/lint/check_asf_header.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">            print(&quot;Error: Could not get git files. Make sure you're in a git repository.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/lint/check_asf_header.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        print(&quot;Error: Git not found. This tool requires git to be installed.&quot;)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 20 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(58 hits · 58 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/vision/nms.py</td>
+                    <td>204</td>
+                    <td class="mono snippet">            # Step 1: Reorder data by sorted score</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/vision/nms.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">            # Step 2: Apply NMS - greedy suppression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/vision/nms.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">            # Step 3: If return_indices, remap to original indices</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/ir/transform.py</td>
+                    <td>295</td>
+                    <td class="mono snippet">    The following code block decorates a module pass class.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/local_runner.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">        # Step 1: create the local runtime module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/local_runner.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">        # Step 2: Allocate input arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/local_runner.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">        # Step 3: Run time_evaluator</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/rpc_runner.py</td>
+                    <td>394</td>
+                    <td class="mono snippet">        # Step 3: Allocate input arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/s_tir/meta_schedule/runner/rpc_runner.py</td>
+                    <td>402</td>
+                    <td class="mono snippet">        # Step 4: Run time_evaluator</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/ir/parser.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">            # Step 1: Check if this class inherits from BasePyModule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/ir/parser.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    # We need to check if we're in a class that inherits from BasePyModule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/transform/transform.py</td>
+                    <td>1688</td>
+                    <td class="mono snippet">    The following code block decorates a function pass class.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/transform/transform.py</td>
+                    <td>1832</td>
+                    <td class="mono snippet">    The following code block decorates a dataflowblock pass class.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">    # Step 0: Determine the target in environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">    # Step 1: Determine the target to search for tirx pipeline</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">    # Step 2: Determine the host target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    # Step 3: Bind the target to the input module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>217</td>
+                    <td class="mono snippet">    # Step 4: Apply the tirx pipeline</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">    # Step 5: Get host and device modules</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/build.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">    # Step 6: Apply finalization passes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/transform/function_pass.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">    The following code block decorates a function pass class.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">include/tvm/topi/nn/pooling.h</td>
+                    <td>572</td>
+                    <td class="mono snippet">      // In the case of ceil_mode=True, we need to check if the last pooling window is valid.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">include/tvm/ir/config_schema.h</td>
+                    <td>125</td>
+                    <td class="mono snippet">    // Step 1: validate/coerce and materialize options in declaration order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">include/tvm/ir/config_schema.h</td>
+                    <td>140</td>
+                    <td class="mono snippet">    // Step 2: unknown-key policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">include/tvm/ir/config_schema.h</td>
+                    <td>157</td>
+                    <td class="mono snippet">    // Step 3: whole-object canonicalization (last)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_pytorch_integration.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">        # Step 1: TIR matmul</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_pytorch_integration.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">        # Step 2: ReLU</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_pytorch_integration.py</td>
+                    <td>289</td>
+                    <td class="mono snippet">        # Step 3: Softmax via call_dps_packed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_pytorch_integration.py</td>
+                    <td>294</td>
+                    <td class="mono snippet">        # Step 4: Identity function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_base_py_module_printer.py</td>
+                    <td>437</td>
+                    <td class="mono snippet">    # We need to check if they exist in the IRModule's pyfuncs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>311</td>
+                    <td class="mono snippet">    # Step 1: Define and Export PyTorch Model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">    # Step 2: Convert to Relax and Prepare for Compilation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">    # Step 3: Cross-Compile for Target Device</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>403</td>
+                    <td class="mono snippet">    # Step 4: Deploy to Remote Device via RPC</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>466</td>
+                    <td class="mono snippet">    # Step 5: Run Inference on Remote Device</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/cross_compilation_and_rpc.py</td>
+                    <td>505</td>
+                    <td class="mono snippet">    # Step 6: Performance Evaluation (Optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>73</td>
+                    <td class="mono snippet"># Step 1: Your First Hybrid Module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>126</td>
+                    <td class="mono snippet"># Step 2: Debugging — The Main Selling Point</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>188</td>
+                    <td class="mono snippet"># Step 3: A Realistic Pipeline — Python, TIR, and Packed Functions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>261</td>
+                    <td class="mono snippet"># Step 4: Relax-to-Python Converter — Verify at Any Compilation Stage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>333</td>
+                    <td class="mono snippet"># Step 5: R.call_py_func — Python Callbacks in Compiled IR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/mix_python_and_tvm_with_pymodule.py</td>
+                    <td>388</td>
+                    <td class="mono snippet"># Step 6: Cross-Level Calls and Symbolic Shapes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>59</td>
+                    <td class="mono snippet"># Step 1: Import the backend to register its patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>84</td>
+                    <td class="mono snippet"># Step 2: Define a model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>105</td>
+                    <td class="mono snippet"># Step 3: Partition the graph</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>133</td>
+                    <td class="mono snippet"># Step 4: Run codegen</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">    # Step 5: Build and run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/bring_your_own_codegen.py</td>
+                    <td>169</td>
+                    <td class="mono snippet"># Step 6: Conv2D + ReLU</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/export_and_load_executable.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">#    # Step 1: Load the compiled library</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/export_and_load_executable.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">#    # Step 2: Create Virtual Machine</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 8 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(52 hits · 52 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">CMakeLists.txt</td>
+                    <td>118</td>
+                    <td class="mono snippet"># Check if this is being run on its own or as a subdirectory for another project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/support.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">        # Set handle to NULL to avoid cleanup in c++ runtime, transferring ownership.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/sparse_reshape.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">            # Check if prev_shape and new_shape are equal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/vision/nms.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">                # Check if box j is still valid (score &gt; 0) and within max_output_size</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/contrib/hexagon/build.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    # Check if adb available via PATH</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/contrib/hexagon/build.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">    # Check if adb available via env vars or default directories</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/ir_builder/tirx/external_kernel.py</td>
+                    <td>153</td>
+                    <td class="mono snippet">            # Check if NVSHMEM is used - requires cubin output for device library linking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/ir/parser.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    # Check if Python functions are allowed in this context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/relax/parser.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # Check if it calls into a func</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/relax/parser.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    # Check if it is a recursive function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/testing/plugin.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">        # Check if any explicit parametrizations exist, and apply one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/relax_to_pyfunc_converter.py</td>
+                    <td>419</td>
+                    <td class="mono snippet">            # Check if it's a function parameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/relax_to_pyfunc_converter.py</td>
+                    <td>424</td>
+                    <td class="mono snippet">            # Check if it's a bound variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/tflite/tflite_frontend.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">            # Check if the tensors are quantized. Parse if yes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/tflite/tflite_frontend.py</td>
+                    <td>1476</td>
+                    <td class="mono snippet">        # Check if the input tensor is quantized, call QNN op</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">        # Check if this is a null_value expression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>1875</td>
+                    <td class="mono snippet">        # Check if all indices can be squeezed to 1D for sequential take</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/fx_translator.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        # Check if input is integer type and convert to float32 if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/fx_translator.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">        # Check if input is integer type and convert to float32 if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/exported_program_translator.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        # Check if input is integer type and convert to float32 if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/exported_program_translator.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        # Check if input is integer type and convert to float32 if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/backend/cuda/cutlass.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">    # Check if any dimensions are symbolic.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/backend/cuda/cudnn.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Check if the data types of input and weights are supported by cuDNN BYOC</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/lint/check_asf_header.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">        # Check if file should be skipped</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/lint/check_asf_header.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        # Check if this file type is supported</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/contrib/test_example_npu.py</td>
+                    <td>98</td>
+                    <td class="mono snippet"># Check if the example NPU runtime is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/codegen/test_target_codegen_aarch64.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">    # Check if the vscale_range() attribute exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>270</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>327</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>348</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>404</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>420</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>438</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>465</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tvmscript/test_tvmscript_ir_builder_tir.py</td>
+                    <td>499</td>
+                    <td class="mono snippet">    # Check if the generated ir is expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_tvmscript_pyfunc.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">        # Check if functions attribute exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_tvmscript_pyfunc.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">        # Check if script method exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_tvmscript_pyfunc.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">        # Check if inheritance flag exists (this might not be set in all implementations)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_tvmscript_pyfunc.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">        # Check if original class is preserved (this might not be set in all implementations)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_base_py_module.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">            # Check if target contains &quot;cuda&quot; instead of exact match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/scripts/ci.py</td>
+                    <td>552</td>
+                    <td class="mono snippet">        # Check if it should be a flag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/how_to/tutorials/customize_opt.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">        # Check if CUBLAS is enabled</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 2 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(9 hits · 45 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/tvm/contrib/cutlass/gemm_profiler.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">  for (int i = 1; i &lt; argc &amp;&amp; i &lt; 4; ++i) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/tvm/relax/frontend/tflite/tflite_flexbuffer.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">        # Keys are strings here. The format is all strings separated by null, followed by back</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>624</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>638</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>732</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>751</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>844</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/s_tir/meta_schedule/test_meta_schedule_runner.py</td>
+                    <td>857</td>
+                    <td class="mono snippet">        global repeated_args_before  # pylint: disable=global-variable-undefined, invalid-name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/python/tirx-transform/test_tir_transform_simplify.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">    simplification that ``!(x || y) == !x &amp;&amp; !y``.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(24 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">version.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">    # Remove the v prefix, mainly to be robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/nn/qnn.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">    # When disabled, just pass through the input values.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/topi/nn/qnn.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">    # When disabled simply return the input tensor.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/script/parser/core/diagnostics.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">            # Since `findsource` is an internal API of inspect, we just use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/testing/utils.py</td>
+                    <td>1361</td>
+                    <td class="mono snippet">    # this use case can just return the decorated function.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/relax_to_pyfunc_converter.py</td>
+                    <td>642</td>
+                    <td class="mono snippet">                    # Simple fallback: just add the tensors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/onnx/onnx_frontend.py</td>
+                    <td>1781</td>
+                    <td class="mono snippet">        # from other frameworks and not actually used in TVM. We'll just use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/base_fx_graph_translator.py</td>
+                    <td>2209</td>
+                    <td class="mono snippet">        # by the translator, and therefore we just return a copy of the input.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/frontend/torch/exported_program_translator.py</td>
+                    <td>1757</td>
+                    <td class="mono snippet">            &quot;bernoulli.p&quot;: lambda node: self.env[node.args[0]],  # Dropout: just return input</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/relax/training/loss.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">        # In other cases where ignore_index is not needed, just use the simpe product.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/tirx/op.py</td>
+                    <td>3519</td>
+                    <td class="mono snippet">                # mode 2, simply use it with multiple Exprs:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/tirx-transform/test_tir_functor.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">        # For demonstration, just return the original for now</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_relax_to_pyfunc_converter.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test that operator mapping is comprehensive.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_base_py_module_printer.py</td>
+                    <td>359</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test comprehensive error handling and validation.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/python/relax/test_base_py_module_printer.py</td>
+                    <td>363</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Robust data processing with comprehensive error handling.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/e2e_opt_model.py</td>
+                    <td>97</td>
+                    <td class="mono snippet"># leverage MetaSchedule to tune the model and store the tuning logs to the database. We also</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/export_and_load_executable.py</td>
+                    <td>326</td>
+                    <td class="mono snippet"># for a comprehensive guide on:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/optimize_llm.py</td>
+                    <td>169</td>
+                    <td class="mono snippet"># - QKV projection: We leverage the horizontal fusion on QKV projection and fuse them into one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/optimize_llm.py</td>
+                    <td>171</td>
+                    <td class="mono snippet"># - Attention: We leverage the horizontal fusion on attention and fuse the QKV projection and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/deep_dive/tensor_ir/tutorials/tir_creation.py</td>
+                    <td>260</td>
+                    <td class="mono snippet"># The aforementioned lambda expression encapsulates the computation:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/deep_dive/tensor_ir/tutorials/tir_transformation.py</td>
+                    <td>175</td>
+                    <td class="mono snippet"># Alternatively, we can output the IRModule in conjunction with the historical trace.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/get_started/tutorials/quick_start.py</td>
+                    <td>113</td>
+                    <td class="mono snippet"># Apache TVM leverage ``pipeline`` to transform and optimize program.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/get_started/tutorials/quick_start.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">#   In this tutorial we only demonstrate the overall flow, by leverage ``zero`` optimization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/ios_rpc/tests/ios_rpc_test.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    # If we don't want to do metal and only use cpu, just set target to be target</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(3 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/python/relax/backend/adreno/test_transform_fold_vdevice_scope_change.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    mod = tvm.relax.backend.adreno.transform.FoldVDeviceScopeChange()(input)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/python/relax/backend/adreno/test_transform_annotate_custom_scope.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        mod = tvm.relax.backend.adreno.transform.AnnotateCustomMemoryScope(tgt)(mod)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/python/relax/backend/adreno/test_transform_annotate_custom_scope.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">        mod = tvm.relax.backend.adreno.transform.FoldVDeviceScopeChange()(mod)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tvm/relax/frontend/tflite/tflite_frontend.py</td>
+                    <td>4280</td>
+                    <td class="mono snippet">        # Alternatively you can use tensorflow.keras.application wrapped arounf a tf.function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">include/tvm/s_tir/transform.h</td>
+                    <td>201</td>
+                    <td class="mono snippet"> * which is the three blocks as discussed above.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/how_to/tutorials/export_and_load_executable.py</td>
+                    <td>318</td>
+                    <td class="mono snippet"># you can use TVM's RPC mechanism to cross-compile, upload, and run the model</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(3 hits · 3 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tvm/contrib/hexagon/profiling/process_lwp_data.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">def process_data(data, func_info, so_ld_addr):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_tvmscript_printer_relax.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/python/relax/test_expr_functor.py</td>
+                    <td>540</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

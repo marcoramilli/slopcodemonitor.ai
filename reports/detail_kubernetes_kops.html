@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — kubernetes/kops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>kubernetes/kops</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">234</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">519</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">503,444</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2569</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(113 hits · 226 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>141</td>
+                    <td class="mono snippet">    value               = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>214</td>
+                    <td class="mono snippet">    value               = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>266</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>278</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>290</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>302</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>336</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>355</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>372</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>384</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>397</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>410</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>432</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>485</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                                                 = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>501</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                                                 = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>517</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                                                 = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>531</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                                                                                 = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>598</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                      = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>611</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                      = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>624</td>
+                    <td class="mono snippet">      &quot;Owner&quot;                                                                      = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>635</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                                                      = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>662</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>705</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>727</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>784</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>796</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>985</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>998</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1011</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1313</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1327</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1344</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1361</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1378</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/complex/kubernetes.tf</td>
+                    <td>1390</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                     = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>124</td>
+                    <td class="mono snippet">    value               = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>200</td>
+                    <td class="mono snippet">    value               = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>257</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>269</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>281</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>293</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>327</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>346</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>381</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>393</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>405</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>417</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>429</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>461</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/update_cluster/externalpolicies/kubernetes.tf</td>
+                    <td>474</td>
+                    <td class="mono snippet">    &quot;Owner&quot;                                              = &quot;John Doe&quot;</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 63 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(90 hits · 180 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create.go</td>
+                    <td>55</td>
+                    <td class="mono snippet">	# Create a cluster from the configuration specification in a YAML file.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create.go</td>
+                    <td>58</td>
+                    <td class="mono snippet">	# Create an instancegroup based on the YAML passed into stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/toolbox_instance-selector.go</td>
+                    <td>100</td>
+                    <td class="mono snippet">	## Create a spot instance group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/toolbox_instance-selector.go</td>
+                    <td>104</td>
+                    <td class="mono snippet">	## Create an on-demand instance group with custom vcpu and memory range filters.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_instancegroup.go</td>
+                    <td>71</td>
+                    <td class="mono snippet">		# Create an instancegroup for the k8s-cluster.example.com cluster.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_instancegroup.go</td>
+                    <td>75</td>
+                    <td class="mono snippet">		# Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_ciliumpassword.go</td>
+                    <td>40</td>
+                    <td class="mono snippet">	# Create a new Cilium IPsec configuration.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_ciliumpassword.go</td>
+                    <td>44</td>
+                    <td class="mono snippet">	# Create a new Cilium IPsec key via stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_cluster.go</td>
+                    <td>126</td>
+                    <td class="mono snippet">	# Create a cluster in AWS in a single zone.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_cluster.go</td>
+                    <td>132</td>
+                    <td class="mono snippet">	# Create a cluster in AWS with a High Availability control plane. This cluster</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_cluster.go</td>
+                    <td>150</td>
+                    <td class="mono snippet">	# Create a cluster in Digital Ocean.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_dockerconfig.go</td>
+                    <td>46</td>
+                    <td class="mono snippet">	# Create a new Docker config.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_dockerconfig.go</td>
+                    <td>50</td>
+                    <td class="mono snippet">	# Create a docker config via stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_sshpublickey.go</td>
+                    <td>38</td>
+                    <td class="mono snippet">	# Create a new SSH public key from the file &quot;&quot;~/.ssh/id_rsa.pub&quot;.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_encryptionconfig.go</td>
+                    <td>40</td>
+                    <td class="mono snippet">	# Create a new encryption config.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/create_secret_encryptionconfig.go</td>
+                    <td>44</td>
+                    <td class="mono snippet">	# Create a new encryption config via stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">clusterapi/README.md</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Create a cluster on GCP</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">clusterapi/README.md</td>
+                    <td>56</td>
+                    <td class="mono snippet"># Create a MachineDeployment matching our configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/karpenter/test.sh</td>
+                    <td>36</td>
+                    <td class="mono snippet"># Create a EC2NodeClass for Karpenter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/karpenter/test.sh</td>
+                    <td>63</td>
+                    <td class="mono snippet"># Create a NodePool for Karpenter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/run-test.sh</td>
+                    <td>293</td>
+                    <td class="mono snippet"># Create a ResourceClaim and Pod to test DRA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/validators/accelerators/dra_support/testdata/cuda-smoketest.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Create a ResourceClaim and Job to test DRA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/clusterapi/run-test.sh</td>
+                    <td>77</td>
+                    <td class="mono snippet"># Create a Cluster API Cluster object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/e2e/scenarios/clusterapi/run-test.sh</td>
+                    <td>80</td>
+                    <td class="mono snippet"># Create a MachineDeployment matching our configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">upup/models/cloudup/resources/addons/networking.cilium.io/helm-values.yaml</td>
+                    <td>1</td>
+                    <td class="mono snippet"># This file is only used to help generate the .yaml.template file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/dev-build-aws.sh</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Create the state-store bucket if it doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/generate-asset-hashes.sh</td>
+                    <td>30</td>
+                    <td class="mono snippet"># This file is generated by generate-asset-hashes.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/generate-asset-hashes.sh</td>
+                    <td>64</td>
+                    <td class="mono snippet"># This file is generated by generate-asset-hashes.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/generate-asset-hashes.sh</td>
+                    <td>97</td>
+                    <td class="mono snippet"># This file is generated by generate-asset-hashes.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/generate-asset-hashes.sh</td>
+                    <td>131</td>
+                    <td class="mono snippet"># This file is generated by generate-asset-hashes.sh</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/dev-build-gce.sh</td>
+                    <td>42</td>
+                    <td class="mono snippet"># Create the state-store bucket if it doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/dev-build-scaleway.sh</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Create the state-store bucket if it doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/mkdocs_macros/feature_stability_table.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        # Create the initial strings to which we'll concatenate the relevant columns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/mkdocs_macros/feature_stability_table.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">        # Create a list object containing all the table rows,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/authentication.md</td>
+                    <td>145</td>
+                    <td class="mono snippet">### Creating a new cluster with IAM Authenticator on.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/topology.md</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Defining a topology on create</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/metal.md</td>
+                    <td>75</td>
+                    <td class="mono snippet">### Create a VM</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/gpu.md</td>
+                    <td>29</td>
+                    <td class="mono snippet">## Creating an instance group with GPU nodeN</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/creating_subdomain.md</td>
+                    <td>1</td>
+                    <td class="mono snippet">## Creating a Subdomain That Uses Amazon Route 53 as the DNS Service without Migrating the Parent Domain</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorial/working-with-instancegroups.md</td>
+                    <td>422</td>
+                    <td class="mono snippet">## Creating a new instance group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tutorial/working-with-instancegroups.md</td>
+                    <td>438</td>
+                    <td class="mono snippet">## Creating an instance group of mixed instances types (AWS Only)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_sshpublickey.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">  # Create a new SSH public key from the file &quot;&quot;~/.ssh/id_rsa.pub&quot;.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_encryptionconfig.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">  # Create a new encryption config.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_encryptionconfig.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">  # Create a new encryption config via stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_ciliumpassword.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">  # Create a new Cilium IPsec configuration.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_ciliumpassword.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">  # Create a new Cilium IPsec key via stdin.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_instancegroup.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">  # Create an instancegroup for the k8s-cluster.example.com cluster.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_instancegroup.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">  # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_dockerconfig.md</td>
+                    <td>23</td>
+                    <td class="mono snippet">  # Create a new Docker config.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_create_secret_dockerconfig.md</td>
+                    <td>27</td>
+                    <td class="mono snippet">  # Create a docker config via stdin.</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 40 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(8 hits · 80 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dnsprovider/pkg/dnsprovider/providers/google/clouddns/rrchangeset.go</td>
+                    <td>61</td>
+                    <td class="mono snippet">	service := rrsets.zone.zones.interface_.service.Changes()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">upup/pkg/fi/ca.go</td>
+                    <td>228</td>
+                    <td class="mono snippet">	if privateKey == nil &amp;&amp; k.Primary.Certificate.Certificate.SerialNumber.Cmp(idNumber) &lt;= 0 {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">upup/pkg/fi/cloudup/template_functions.go</td>
+                    <td>396</td>
+                    <td class="mono snippet">		dest[&quot;EnableSQSTerminationDraining&quot;] = func() bool { return cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.IsQueueMode() }</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/apis/kops/cluster_test.go</td>
+                    <td>190</td>
+                    <td class="mono snippet">	resolved := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(&amp;instanceGroup)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/apis/kops/validation/instancegroup.go</td>
+                    <td>270</td>
+                    <td class="mono snippet">		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/model/components/kubecontrollermanager_test.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">			t.Fatalf(&quot;AttachDetachReconcileSyncPeriod should be set to 1m - %s, for k8s version %s&quot;, c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeri</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/model/components/kubecontrollermanager_test.go</td>
+                    <td>91</td>
+                    <td class="mono snippet">		t.Fatalf(&quot;AttachDetachReconcileSyncPeriod should be set to 5m - %s, for k8s version %s&quot;, c.Spec.KubeControllerManager.AttachDetachReconcileSyncPerio</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">pkg/model/awsmodel/autoscalinggroup.go</td>
+                    <td>99</td>
+                    <td class="mono snippet">			warmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(ig)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmd/kops/export_kubeconfig.go</td>
+                    <td>43</td>
+                    <td class="mono snippet">	# export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hack/dev-build.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># and make sure you `aws configure`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/bastion.md</td>
+                    <td>144</td>
+                    <td class="mono snippet"># then you can use the fowarded authentication to SSH into control-plane or worker nodes in the cluster.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/releases/1.22-NOTES.md</td>
+                    <td>71</td>
+                    <td class="mono snippet">    path: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml # make sure you add the path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/cli/kops_export_kubeconfig.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">  # export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting_started/gce.md</td>
+                    <td>153</td>
+                    <td class="mono snippet">put a few jumping off places here.  But when you're done, don't forget to [delete your cluster](#deleting-the-cluster).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting_started/azure.md</td>
+                    <td>49</td>
+                    <td class="mono snippet"># Export the kubeconfig file with the cluster admin user (make sure you keep this user safe!)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/validators/accelerators/driver_runtime_management/driver_runtime_management_test.go</td>
+                    <td>37</td>
+                    <td class="mono snippet">	// Step 1: Identify GPU nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/validators/accelerators/driver_runtime_management/driver_runtime_management_test.go</td>
+                    <td>63</td>
+                    <td class="mono snippet">	// Step 2: Verify GPU Operator DaemonSet is deployed and healthy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/validators/accelerators/driver_runtime_management/driver_runtime_management_test.go</td>
+                    <td>91</td>
+                    <td class="mono snippet">	// Step 3: Verify driver installation on GPU nodes using a diagnostic job</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/e2e/scenarios/ai-conformance/validators/accelerators/driver_runtime_management/driver_runtime_management_test.go</td>
+                    <td>122</td>
+                    <td class="mono snippet">	// Step 4: Check for DRA integration (future-proofing)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>186</td>
+                    <td class="mono snippet">### Step 1: Identify the failure type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>192</td>
+                    <td class="mono snippet">### Step 2: Read the build log</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>196</td>
+                    <td class="mono snippet">### Step 3: Check Kubernetes API resource dumps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>204</td>
+                    <td class="mono snippet">### Step 4: Check pod container logs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>214</td>
+                    <td class="mono snippet">### Step 5: Check node-level logs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>223</td>
+                    <td class="mono snippet">### Step 6: Check networking state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/e2e-failure-troubleshooting.md</td>
+                    <td>233</td>
+                    <td class="mono snippet">### Step 7: Check cluster configuration</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/contributing/building.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">[Delve](https://github.com/derekparker/delve) can be used to interactively debug the kOps binary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/getting_started/spot-ocean.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">[Ocean](https://spot.io/products/ocean/) by [Spot](https://spot.io/) simplifies infrastructure management for Kubernetes.  With robust, container-driv</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nodeup/pkg/model/kubelet.go</td>
+                    <td>641</td>
+                    <td class="mono snippet">	// TODO: leverage assets for this tar file (but we want to avoid expansion of the archive)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hack/dev-build.sh</td>
+                    <td>31</td>
+                    <td class="mono snippet"># # Example usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hack/boilerplate/boilerplate.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

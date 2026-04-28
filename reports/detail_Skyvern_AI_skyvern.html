@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — Skyvern-AI/skyvern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>Skyvern-AI/skyvern</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2172</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">3379</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">470,030</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2337</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(599 hits · 1198 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>48</td>
+                    <td class="mono snippet">    # =========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # =========================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>54</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>56</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>113</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>115</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>228</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>230</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>272</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>274</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>331</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>333</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>373</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>375</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>387</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>389</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>442</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>444</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>454</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>456</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>486</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>488</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>543</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_non_retriable_nav.py</td>
+                    <td>545</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>28</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>96</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>98</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>365</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>367</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>421</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>423</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>70</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>72</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>144</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>146</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>279</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>281</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>495</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_browser_session_download_artifacts.py</td>
+                    <td>497</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>27</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>60</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>62</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>299</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>301</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>431</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cached_artifact_bundling.py</td>
+                    <td>433</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_watchdog.py</td>
+                    <td>57</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_copilot_watchdog.py</td>
+                    <td>59</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 549 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1101 hits · 1124 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">run_streaming.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">run_streaming.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">run_streaming.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_iframe_mcp_e2e.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_iframe_mcp_e2e.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_iframe_e2e.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_pdf_download_fixes.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_pdf_download_fixes.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_pdf_download_fixes.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_workflow_service_cancel.py</td>
+                    <td>388</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_missing_starter_url.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_llm_response_parsing.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_script_reviewer_terminate.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_script_reviewer_terminate.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_script_reviewer_terminate.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/embedded/test_tab_management_e2e.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/embedded/test_tab_management_e2e.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/embedded/test_embedded_e2e.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit_tests/test_alembic_loop.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/sdk/python_sdk/conftest.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">                print(f&quot;Error details: {json.dumps(error_detail, indent=2)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">            print(f&quot;Error details: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">        print(f&quot;Error listing sessions: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">            print(f&quot;Error parsing response: {session}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">            print(f&quot;Error: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">        print(f&quot;Error creating session: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        print(f&quot;Error getting session: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        print(f&quot;Error closing sessions: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        print(f&quot;Error listing sessions directly: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">            print(&quot;Error: organization_id required&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>151</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">        print(f&quot;Error closing session: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">            print(f&quot;Error parsing response: {task}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">            print(f&quot;Error: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">        print(f&quot;Error creating task: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">            print(f&quot;Error parsing response: {workflow_run}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">            print(f&quot;Error: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">        print(f&quot;Error creating workflow run: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test_persistent_browsers.py</td>
+                    <td>246</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1051 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(87 hits · 435 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/test_mcp_workflow_create_defaults.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;When the user explicitly sets run_with to null, it stays null.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/test_mcp_workflow_tools.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;MCP workflow creation must strip ANY hallucinated llm_key and default to Skyvern Optimized (null).&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/test_should_run_script.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">run_with is always &quot;agent&quot; or &quot;code&quot; (never null). When run_with=&quot;agent&quot; and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/workflow/test_dag_engine.py</td>
+                    <td>320</td>
+                    <td class="mono snippet">      block_29 → inner_cond (next=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/workflow/test_dag_engine.py</td>
+                    <td>489</td>
+                    <td class="mono snippet">      outer_cond (next=merge) → branch → nav → inner_cond (next=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/workflow/test_dag_engine.py</td>
+                    <td>490</td>
+                    <td class="mono snippet">      inner_cond → branch → loop_block → validate (next=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/workflow/test_dag_engine.py</td>
+                    <td>599</td>
+                    <td class="mono snippet">    # Before the fix, execution stalled at validate (next=null).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit_tests/test_schema_validator.py</td>
+                    <td>273</td>
+                    <td class="mono snippet">        # When data is null, it should remain null (valid for nullable type)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit_tests/test_schema_validator.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">        # When data is an object (not null), missing required fields should be filled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit_tests/test_schema_validator.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        # When data is null, it should remain null</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit_tests/test_schema_validator.py</td>
+                    <td>328</td>
+                    <td class="mono snippet">        # When data is an array (not null), items should be validated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>2178</td>
+                    <td class="mono snippet">                        if (t &amp;&amp; t.length &gt; 3 &amp;&amp; t.length &lt; 300 &amp;&amp; el.offsetWidth &gt; 0) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>2181</td>
+                    <td class="mono snippet">                            errs.push(t.substring(0, 100));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>2983</td>
+                    <td class="mono snippet">                        &amp;&amp; style.opacity !== '0' &amp;&amp; el.offsetWidth &gt; 0 &amp;&amp; el.offsetHeight &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>2991</td>
+                    <td class="mono snippet">                    const required = el.required || el.getAttribute('aria-required') === 'true';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3013</td>
+                    <td class="mono snippet">                    const label = el.name || el.id || el.getAttribute('aria-label') || tag;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3014</td>
+                    <td class="mono snippet">                    results.push({required: true, hasValue: value.trim().length &gt; 0, label: label});</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3075</td>
+                    <td class="mono snippet">                        &amp;&amp; style.opacity !== '0' &amp;&amp; el.offsetWidth &gt; 0 &amp;&amp; el.offsetHeight &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3092</td>
+                    <td class="mono snippet">                    return el.name || el.id || null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3092</td>
+                    <td class="mono snippet">                    return el.name || el.id || null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3116</td>
+                    <td class="mono snippet">                                return lbl || checked.value || 'selected';</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3124</td>
+                    <td class="mono snippet">                        return el.files &amp;&amp; el.files.length &gt; 0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3146</td>
+                    <td class="mono snippet">                    results.push({</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>3148</td>
+                    <td class="mono snippet">                        type: type || tag,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/utils/page.py</td>
+                    <td>885</td>
+                    <td class="mono snippet">                        return rect.width &gt; 0 &amp;&amp; rect.height &gt; 0;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>799</td>
+                    <td class="mono snippet">            if (!element) return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>803</td>
+                    <td class="mono snippet">                if (element &amp;&amp; element.nodeType === 1) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>810</td>
+                    <td class="mono snippet">                    return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>812</td>
+                    <td class="mono snippet">                return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>857</td>
+                    <td class="mono snippet">        &quot; window.__skyvernScrolledElementId = null; return v === id; }&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/library/skyvern.py</td>
+                    <td>211</td>
+                    <td class="mono snippet">                (pip install playwright &amp;&amp; playwright install chromium).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/quickstart.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">                    &quot;[cyan]git clone https://github.com/skyvern-ai/skyvern.git &amp;&amp; cd skyvern[/cyan]&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/core/result.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Keys whose None value is meaningful (e.g. JS eval returning null).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>794</td>
+                    <td class="mono snippet">                    &quot;(s) =&gt; { const el = document.querySelector(s); return !!(el &amp;&amp; el.type === 'password'); }&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>667</td>
+                    <td class="mono snippet">  if (body.includes('Something went wrong')) errors.push('error_message');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>668</td>
+                    <td class="mono snippet">  if (body.includes('Cannot read properties')) errors.push('js_error_in_ui');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>669</td>
+                    <td class="mono snippet">  if (/\\bundefined\\b/.test(body) &amp;&amp; !/\\bif\\b|\\btypeof\\b|\\bdocument|tutorial|example/i.test(body) &amp;&amp; body.length &lt; 5000) errors.push('undefined_</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>670</td>
+                    <td class="mono snippet">  if (body.includes('connection refused')) errors.push('connection_refused');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>671</td>
+                    <td class="mono snippet">  if (/sign.?in|log.?in|auth/i.test(window.location.pathname)) errors.push('auth_redirect');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>672</td>
+                    <td class="mono snippet">  if (document.querySelector('[role=\\&quot;alert\\&quot;]')) errors.push('alert_element');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>674</td>
+                    <td class="mono snippet">    errors.push('blank_page');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>851</td>
+                    <td class="mono snippet">PR_NUMBER=$(gh pr view --json number -q '.number' 2&gt;/dev/null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/browser.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">                &quot;Run `pip install skyvern &amp;&amp; skyvern browser serve --tunnel` to bridge &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/browser.py</td>
+                    <td>677</td>
+                    <td class="mono snippet">                &quot;(s) =&gt; { const el = document.querySelector(s); return el &amp;&amp; el.type === 'password' }&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/cli/mcp_tools/browser.py</td>
+                    <td>1422</td>
+                    <td class="mono snippet">                &quot;Run `pip install skyvern &amp;&amp; skyvern browser serve --tunnel` to bridge &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/forge/sdk/copilot/enforcement.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    &quot;2. If the extraction/text_prompt block returned empty, all-null, or &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/forge/sdk/copilot/tools.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Return True when extracted data contains at least one non-null, non-empty value.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>1896</td>
+                    <td class="mono snippet">                                || (el.id &amp;&amp; document.querySelector('label[for=&quot;' + el.id + '&quot;]'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>1901</td>
+                    <td class="mono snippet">                            fields.push({</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>1906</td>
+                    <td class="mono snippet">                                required: el.required || el.getAttribute('aria-required') === 'true',</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 37 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(116 hits · 232 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/components/BitwardenCredentialForm.tsx</td>
+                    <td>105</td>
+                    <td class="mono snippet">                      placeholder=&quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/tasks/data/sampleTaskData.ts</td>
+                    <td>86</td>
+                    <td class="mono snippet">    name: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/tasks/data/sampleTaskData.ts</td>
+                    <td>104</td>
+                    <td class="mono snippet">    name: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/tasks/create/PromptBox.tsx</td>
+                    <td>64</td>
+                    <td class="mono snippet">    prompt: `Go to https://jobs.lever.co/leverdemo-8/45d39614-464a-4b62-a5cd-8683ce4fb80a/apply, fill out the job application form and apply to the jo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/tasks/create/PromptBox.tsx</td>
+                    <td>82</td>
+                    <td class="mono snippet">    prompt: `Go to https://canadahvac.com/contact-hvac-canada. Fill out the contact us form and submit it. Your goal is complete when the page says yo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/nodes/HttpRequestNode/CurlImportDialog.tsx</td>
+                    <td>50</td>
+                    <td class="mono snippet">  -d '{&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}'`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/nodes/HttpRequestNode/CurlImportDialog.tsx</td>
+                    <td>56</td>
+                    <td class="mono snippet">  -d '{&quot;name&quot;: &quot;Jane Doe&quot;}'`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">_TASK = make_task(_NOW, _ORG, navigation_payload={&quot;address&quot;: &quot;123 Main St&quot;})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">            text=&quot;123  Main  St&quot;,  # Double spaces - should still match after normalization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>220</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>305</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>355</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>384</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>467</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>474</td>
+                    <td class="mono snippet">        # LLM should be called because &quot;No results&quot; doesn't contain &quot;123 Main St&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_auto_completion_location.py</td>
+                    <td>516</td>
+                    <td class="mono snippet">            text=&quot;123 Main St&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_script_reviewer_validators.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        params = {&quot;website_url&quot;: &quot;https://portal.vendor.com/login&quot;, &quot;email&quot;: &quot;user@example.com&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_script_reviewer_validators.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        params = {&quot;email&quot;: &quot;user@example.com&quot;, &quot;password&quot;: &quot;secret123&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_otp_service.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">            &quot;totp_identifier&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_totp_identifier_fallback.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">        totp_identifier=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_totp_identifier_fallback.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">    assert context.get_credential_totp_identifier(&quot;credential_param&quot;) == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_totp_identifier_fallback.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">    workflow_run_context = SimpleNamespace(credential_totp_identifiers={&quot;credential_param&quot;: &quot;user@example.com&quot;})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_totp_identifier_fallback.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">    assert block._resolve_totp_identifier(workflow_run_context) == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_mcp_dom_inspection.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">    page.locator.return_value.input_value = AsyncMock(return_value=&quot;user@example.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_mcp_dom_inspection.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">    assert result[&quot;data&quot;][&quot;value&quot;] == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_no_fill_form_in_adaptive_codegen.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">            _make_input_action(&quot;phone&quot;, &quot;555-1234&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_workflow_schema_field_preservation.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">                {&quot;action_type&quot;: &quot;input_text&quot;, &quot;text&quot;: &quot;Acme Inc&quot;, &quot;intention&quot;: &quot;Enter company&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_workflow_schema_field_preservation.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">                    &quot;text&quot;: &quot;Acme Inc&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_credential_api_response.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">        &quot;username&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_data_extraction_summary_schema_cap.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">        &quot;properties&quot;: {f&quot;field_{i}&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;lorem ipsum &quot; * 40} for i in range(1000)},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_iframe_e2e.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">        await browser_page.fill(&quot;#card-name&quot;, &quot;John Doe&quot;, ai=None, mode=&quot;direct&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_iframe_e2e.py</td>
+                    <td>268</td>
+                    <td class="mono snippet">        assert value == &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_prompt_truncation.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    value = (&quot;lorem ipsum dolor sit amet &quot; * 20_000) + &quot;UNIQUE_TAIL_MARKER&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_prompt_truncation.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    value = (&quot;lorem ipsum dolor sit amet &quot; * 20_000) + &quot;UNIQUE_TAIL_MARKER&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_prompt_truncation.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">    items = [{&quot;f&quot;: f&quot;val_{i}_&quot; + (&quot;lorem ipsum &quot; * 40)} for i in range(1000)]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_load_prompt_with_elements_ceiling.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    oversized_prev = [{&quot;iter&quot;: i, &quot;marker&quot;: f&quot;UNIQUE_BLOCK_{i}_&quot; + (&quot;lorem ipsum &quot; * 200)} for i in range(3000)]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_load_prompt_with_elements_ceiling.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">    oversized_prev = [{&quot;iter&quot;: i, &quot;marker&quot;: f&quot;UNIQUE_BLOCK_{i}_&quot; + (&quot;lorem ipsum &quot; * 200)} for i in range(3000)]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_extract_actions_ceiling.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">    oversized_history = &quot;\n&quot;.join(f&quot;UNIQUE_ACTION_BLOCK_{i}_&quot; + (&quot;lorem ipsum &quot; * 200) for i in range(3000))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_extract_information_previous_info_cap.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        &quot;properties&quot;: {f&quot;field_{i}&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;lorem ipsum &quot; * 40} for i in range(1000)},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_mcp_http_auth.py</td>
+                    <td>474</td>
+                    <td class="mono snippet">        AsyncMock(return_value=(200, {}, {&quot;sub&quot;: &quot;user_123&quot;, &quot;email&quot;: &quot;user@example.com&quot;})),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_mcp_http_auth.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">    assert payload == {&quot;sub&quot;: &quot;user_123&quot;, &quot;email&quot;: &quot;user@example.com&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/workflow/test_credential_sanitization.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">        value = &quot;{'password': 'secret123', 'username': 'user@example.com'}&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/workflow/test_credential_sanitization.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        assert &quot;user@example.com&quot; not in result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/smoke_tests/data/geico_closest_coverage/navigation_payload.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;net_worth_numeric&quot;:2000000,&quot;looking_to_protect&quot;:[&quot;net_worth&quot;,&quot;owned_vehicles&quot;,&quot;owned_homes&quot;],&quot;discounts&quot;:null,&quot;marital_status&quot;:&quot;married&quot;,&quot;optimize_r</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/api-reference/openapi.json</td>
+                    <td>1526</td>
+                    <td class="mono snippet">                  &quot;username&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/api-reference/openapi.json</td>
+                    <td>4894</td>
+                    <td class="mono snippet">              &quot;username&quot;: &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/api-reference/openapi.json</td>
+                    <td>8603</td>
+                    <td class="mono snippet">            &quot;example&quot;: &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/api-reference/openapi.json</td>
+                    <td>8632</td>
+                    <td class="mono snippet">            &quot;example&quot;: &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/api-reference/openapi.json</td>
+                    <td>8652</td>
+                    <td class="mono snippet">            &quot;example&quot;: &quot;user@example.com&quot;</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 66 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(53 hits · 106 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_script_skyvern_page.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">        # Create a mock page first, then set page to None after construction</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_download_file_action_handler.py</td>
+                    <td>347</td>
+                    <td class="mono snippet">        # Create a read-only directory to simulate write failure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_forloop_script_generation.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">    # Create a mock CodeGenInput with ForLoop block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_cdp_download_interceptor.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        # Create a file that will collide</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_aiohttp_helper.py</td>
+                    <td>624</td>
+                    <td class="mono snippet">    # Create a temporary file for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_aiohttp_helper.py</td>
+                    <td>675</td>
+                    <td class="mono snippet">    # Create a temporary file for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_aiohttp_helper.py</td>
+                    <td>802</td>
+                    <td class="mono snippet">    # Create a temporary file for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_http_block_raw_filter.py</td>
+                    <td>344</td>
+                    <td class="mono snippet">        # Create a real context to test the method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_local_file_path_validation.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        # Create a symlink inside the sandbox that points to /etc/passwd</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_vertex_cache_model_extraction.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        # Create a mock router config that matches the real GEMINI_3_0_FLASH_WITH_FALLBACK</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/test_aws_client_ttl.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    # Create a stream that raises on seek</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/workflow/test_file_parser_block.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Create a minimal valid PDF file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/embedded/test_sqlite_server_mode.py</td>
+                    <td>406</td>
+                    <td class="mono snippet">    # Create a client with a bad setting that will cause validation error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit_tests/test_file_parser_block.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">        # Create a mock OutputParameter with all required fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit_tests/test_file_parser_block.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        # Create a mock OutputParameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit_tests/test_file_parser_block.py</td>
+                    <td>151</td>
+                    <td class="mono snippet">        # Create a binary file that's definitely not CSV</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit_tests/test_file_parser_block.py</td>
+                    <td>233</td>
+                    <td class="mono snippet">        # Create a DataFrame with NaN, NaT, and timestamp values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit_tests/test_schema_validator.py</td>
+                    <td>455</td>
+                    <td class="mono snippet">        # Create a schema that will fail Draft202012Validator.check_schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/sdk/python_sdk/conftest.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">    # Create a handler class that serves from the specific directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">fern/openapi/skyvern_openapi.json</td>
+                    <td>491</td>
+                    <td class="mono snippet">                &quot;code&quot;: &quot;\nfrom skyvern import Skyvern\n\n# Create a workflow in JSON format\nworkflow_definition = {\n    \&quot;title\&quot;: \&quot;Contact Forms </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">fern/openapi/skyvern_openapi.json</td>
+                    <td>2249</td>
+                    <td class="mono snippet">                &quot;code&quot;: &quot;from skyvern import Skyvern\n\nskyvern = Skyvern(api_key=\&quot;YOUR_API_KEY\&quot;)\n# Create a browser profile from a persistent brow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">alembic/README.md</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Creating a new revision</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>2463</td>
+                    <td class="mono snippet">    # Create the for loop target (current_value)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>2486</td>
+                    <td class="mono snippet">    # Create the async for loop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3348</td>
+                    <td class="mono snippet">                # Create a requires_agent entry (no code, no run_signature)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3492</td>
+                    <td class="mono snippet">            # Create a temporary module to convert the start block content to a function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>1796</td>
+                    <td class="mono snippet"># This function is deprecated in 'extract-actions' prompt. Downloads are handled by the click action handler now.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>2333</td>
+                    <td class="mono snippet">        # Create a TerminateAction and execute it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/library/skyvern_browser.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">            # Create a new page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>407</td>
+                    <td class="mono snippet">  # Create a new comment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>292</td>
+                    <td class="mono snippet">  # Create a new comment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>881</td>
+                    <td class="mono snippet">  # Create a new comment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/log_artifacts.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">    # This function is called from ``update_workflow_run`` in the DB layer, which</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>824</td>
+                    <td class="mono snippet">        # Create the workflow run and set skyvern context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>2258</td>
+                    <td class="mono snippet">                    # Create the browser with the saved profile and navigate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>5846</td>
+                    <td class="mono snippet">                # Create a new version of the SAME script_id instead of a new script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/models/block.py</td>
+                    <td>1891</td>
+                    <td class="mono snippet">        # Create a temporary output parameter using the current block's workflow_id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/models/block.py</td>
+                    <td>2236</td>
+                    <td class="mono snippet">                    # Create a failure block result for this iteration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/api/llm/config_registry.py</td>
+                    <td>1394</td>
+                    <td class="mono snippet"># Create a GCP service account WITH the Vertex AI API access enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/agent_protocol.py</td>
+                    <td>3473</td>
+                    <td class="mono snippet">        # Create a new timeline with processed children</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/credentials.py</td>
+                    <td>487</td>
+                    <td class="mono snippet">    # Create a temporary credential</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/credentials.py</td>
+                    <td>1135</td>
+                    <td class="mono snippet">            # Create the browser profile in DB</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/credentials.py</td>
+                    <td>1544</td>
+                    <td class="mono snippet">        # Create the new token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/credentials.py</td>
+                    <td>1760</td>
+                    <td class="mono snippet">        # Create the new Azure token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/credentials.py</td>
+                    <td>1866</td>
+                    <td class="mono snippet">        # Create the new configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/code_samples.py</td>
+                    <td>267</td>
+                    <td class="mono snippet"># Create a workflow in JSON format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/code_samples.py</td>
+                    <td>882</td>
+                    <td class="mono snippet"># Create a browser profile from a persistent browser session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/scripts.py</td>
+                    <td>564</td>
+                    <td class="mono snippet">        # Create a new version of the script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/routes/scripts.py</td>
+                    <td>1392</td>
+                    <td class="mono snippet">    # Create a new script version with the updated blocks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/services/workflow_script_service.py</td>
+                    <td>1458</td>
+                    <td class="mono snippet">        # Create a new script version</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 3 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(87 hits · 87 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/FlowRenderer.tsx</td>
+                    <td>649</td>
+                    <td class="mono snippet">      // Step 1: Remove inline {{ deleted_block_output }} references from all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/FlowRenderer.tsx</td>
+                    <td>656</td>
+                    <td class="mono snippet">      // Step 2: Remove from parameterKeys arrays and handle special cases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/workflowEditorUtils.ts</td>
+                    <td>3397</td>
+                    <td class="mono snippet">  // Step 1: Update inline {{ old_output }} references to {{ new_output }}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/workflowEditorUtils.ts</td>
+                    <td>3404</td>
+                    <td class="mono snippet">  // Step 2: Update parameterKeys arrays and the label of the renamed node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/panels/WorkflowParametersPanel.tsx</td>
+                    <td>80</td>
+                    <td class="mono snippet">      // Step 1: Remove inline {{ parameter.key }} references</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/panels/WorkflowParametersPanel.tsx</td>
+                    <td>85</td>
+                    <td class="mono snippet">      // Step 2: Remove from parameterKeys arrays</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/panels/WorkflowParametersPanel.tsx</td>
+                    <td>282</td>
+                    <td class="mono snippet">                      // Step 1: Update inline {{ old_key }} references to {{ new_key }}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern-frontend/src/routes/workflows/editor/panels/WorkflowParametersPanel.tsx</td>
+                    <td>287</td>
+                    <td class="mono snippet">                      // Step 2: Update parameterKeys arrays</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_workflow_schema_field_preservation.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">        # Step 1: Build existing field assignments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_workflow_schema_field_preservation.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">        # Step 2: SKY-8965 Phase 2 — deterministic picker preserves existing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/workflow/test_browser_session_id_template.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">        # Step 1: Register context (like initialize_workflow_run_context does)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/workflow/test_browser_session_id_template.py</td>
+                    <td>254</td>
+                    <td class="mono snippet">        # Step 2: Simulate auto_create_browser_session_if_needed returning a session,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/workflow/test_browser_session_id_template.py</td>
+                    <td>260</td>
+                    <td class="mono snippet">        # Step 3: Verify template rendering (as _execute_workflow_blocks would)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/2025_10_30_1414-541870962332_add_folders_table.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">    # Step 1: Create folders table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/2025_10_30_1414-541870962332_add_folders_table.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    # Step 2: Add folder_id to workflows table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/2025_10_30_1414-541870962332_add_folders_table.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # Step 1: Remove folder_id from workflows table (must be done before dropping folders table)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/2025_10_30_1414-541870962332_add_folders_table.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">    # Step 2: Drop folders table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3597</td>
+                    <td class="mono snippet">        # Step 1: Get or create ScriptBlock record for this revision</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3630</td>
+                    <td class="mono snippet">        # Step 2: Create or update ScriptFile with content deduplication</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/utils/dom.py</td>
+                    <td>901</td>
+                    <td class="mono snippet">        # Step 1: Use native element.scrollIntoView() which handles both window scrolling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/utils/dom.py</td>
+                    <td>942</td>
+                    <td class="mono snippet">        # Step 2: Playwright actionability confirmation. After Step 1, the element should</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/browser.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">    # Step 1: Check if debugging is already enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/browser.py</td>
+                    <td>241</td>
+                    <td class="mono snippet">    # Step 2: Guide the user to enable remote debugging</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/browser.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">    # Step 3: Auto-discover the debugging server with retries</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/browser.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">    # Step 4: Fallback — ask for manual URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/setup_commands.py</td>
+                    <td>895</td>
+                    <td class="mono snippet">    # Step 1: Credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/setup_commands.py</td>
+                    <td>904</td>
+                    <td class="mono snippet">    # Step 2: Detect tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/setup_commands.py</td>
+                    <td>950</td>
+                    <td class="mono snippet">    # Step 3: Configure detected tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">## Step 1: Understand the Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>67</td>
+                    <td class="mono snippet">## Step 2: Classify the Diff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>83</td>
+                    <td class="mono snippet">## Step 3: Choose the Validation Strategy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>335</td>
+                    <td class="mono snippet">## Step 5: Report Results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/qa/SKILL.md</td>
+                    <td>369</td>
+                    <td class="mono snippet">## Step 6: Post Evidence to PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 1: Understand the Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>74</td>
+                    <td class="mono snippet">## Step 2: Classify the Diff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>90</td>
+                    <td class="mono snippet">## Step 3: Choose the Validation Strategy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">## Step 4: Start the App</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>131</td>
+                    <td class="mono snippet">## Step 5: Generate Smoke Test Cases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>165</td>
+                    <td class="mono snippet">## Step 6: Run Tests via Browser Tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>227</td>
+                    <td class="mono snippet">## Step 7: Report Results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/smoke-test/SKILL.md</td>
+                    <td>248</td>
+                    <td class="mono snippet">## Step 8: Post to PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>11</td>
+                    <td class="mono snippet">## Step 1: Classify Your Task (ALWAYS do this first)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Step 2: Apply These Decision Rules</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>34</td>
+                    <td class="mono snippet">## Step 3: Create a Session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">## Step 4: Execute by Classification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>138</td>
+                    <td class="mono snippet">## Step 5: Verify</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/skills/skyvern/SKILL.md</td>
+                    <td>148</td>
+                    <td class="mono snippet">## Step 6: Error Recovery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">### Step 1: Create and run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">### Step 2: Check status</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/mcp_tools/prompts.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">### Step 3: Fix and re-run</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 37 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(81 hits · 81 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/test_workflow_schema_field_preservation.py</td>
+                    <td>30</td>
+                    <td class="mono snippet"># Check if real LLM tests should run (set RUN_LLM_TESTS=1 to enable)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/real_skyvern_page_ai.py</td>
+                    <td>842</td>
+                    <td class="mono snippet">            # Check if the goal has been achieved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">            # Check if this task has existing field names to preserve</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>811</td>
+                    <td class="mono snippet">            # Check if this is a multi-field TOTP sequence that needs digit indexing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3256</td>
+                    <td class="mono snippet">            # Check if already cached (for progressive caching)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/generate_script.py</td>
+                    <td>3325</td>
+                    <td class="mono snippet">            # Check if the reviewer has already provided code for this block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/core/script_generations/skyvern_page.py</td>
+                    <td>814</td>
+                    <td class="mono snippet">            # Check if the value persisted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/experimentation/wait_config.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">    # Check if user is in the experiment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/browser_factory.py</td>
+                    <td>739</td>
+                    <td class="mono snippet">            # Check if Chrome is already running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/scraper/scraped_page.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    # Check if the element is self-closing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>1154</td>
+                    <td class="mono snippet">        # Check if cached TOTP has expired</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>1235</td>
+                    <td class="mono snippet">    # Check if this is multi-field TOTP first - if so, skip secret resolution</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>2323</td>
+                    <td class="mono snippet">    # Check if we should terminate instead of complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/utils/url_validators.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">        # Check if the IP is private, link-local, loopback, or reserved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/doctor.py</td>
+                    <td>264</td>
+                    <td class="mono snippet">    # Check if any tools are even installed (binary on PATH or config dir exists)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/quickstart.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">    # Check if Docker Compose option was explicitly requested or offer choice</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>1510</td>
+                    <td class="mono snippet">                # Check if Chrome process is still alive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>1596</td>
+                    <td class="mono snippet">    # Check if ngrok is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>1606</td>
+                    <td class="mono snippet">    # Check if ngrok auth token is configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>1630</td>
+                    <td class="mono snippet">            # Check if ngrok died (e.g. bad auth token, port conflict)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>1340</td>
+                    <td class="mono snippet">                            # Check if the src is a data URI with base64 encoded PDF</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>1746</td>
+                    <td class="mono snippet">            # Check if Skyvern already returned a complete action, if so, don't run user goal check</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>2428</td>
+                    <td class="mono snippet">        # Check if we should use the termination-aware prompt (experiment)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>2537</td>
+                    <td class="mono snippet">            # Check if we should terminate instead of complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>2842</td>
+                    <td class="mono snippet">        # Check if we have pre-scraped data from parallel verification optimization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>3335</td>
+                    <td class="mono snippet">        # Check if prompt caching is enabled for extract-action</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>3539</td>
+                    <td class="mono snippet">                # Check if inputs are close together or have similar attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>3599</td>
+                    <td class="mono snippet">        # Check if we have multiple consecutive single-digit INPUT_TEXT actions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>4733</td>
+                    <td class="mono snippet">                    # Check if this is an LLM provider error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>4789</td>
+                    <td class="mono snippet">            # Check if we have LLM errors even if the summarization failed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>4858</td>
+                    <td class="mono snippet">                        # Check if this is an LLM provider error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>4932</td>
+                    <td class="mono snippet">            # Check if we have LLM errors even if the summarization failed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>4987</td>
+                    <td class="mono snippet">        # Check if parallel verification should be used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/models.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">        # Check if there is a successful complete action</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/models.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">        # Check if there is a successful terminate action</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/forge_log.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">    # Check if it's a subclass of known exception types</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/forge_log.py</td>
+                    <td>293</td>
+                    <td class="mono snippet">    # Check if exception is a subclass of transient exceptions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/forge_log.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">    # Check if exception is a subclass of bug exceptions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/workflow_definition_converter.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    # Check if user's trying to manually create an output parameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/workflow_definition_converter.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # Check if any parameter keys collide with automatically created output parameter keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">            # Check if this looks like a TaskOutput with screenshot artifact IDs (new format)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>1340</td>
+                    <td class="mono snippet">            # Check if there's a related workflow script that should be used instead</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>1362</td>
+                    <td class="mono snippet">            # Check if there's a finally block configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>2497</td>
+                    <td class="mono snippet">                # Check if this block is designated as requires_agent by the script reviewer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>2505</td>
+                    <td class="mono snippet">                # Check if this block has never been cached (e.g. from an unexecuted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>4044</td>
+                    <td class="mono snippet">        # Check if this workflow/org should use browser sessions (anti-bot detection mitigation)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>6007</td>
+                    <td class="mono snippet">            # Check if the script is pinned — skip auto-review for pinned scripts.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/context_manager.py</td>
+                    <td>515</td>
+                    <td class="mono snippet">        # Check if it's in the format vault_id:item_id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/context_manager.py</td>
+                    <td>679</td>
+                    <td class="mono snippet">        # Check if item is None</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/models/block.py</td>
+                    <td>1617</td>
+                    <td class="mono snippet">            # Check if this looks like a parameter path (contains dots and/or _output)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 31 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(4 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">#     response = await openai_client.client.chat.completions.with_raw_response.create(**llm_request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">#     response = await openai_client.client.chat.completions.with_raw_response.create(**llm_request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">#     response = await openai_client.client.chat.completions.with_raw_response.create(**llm_request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">skyvern/forge/sdk/api/real_azure.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">from azure.core.exceptions import ResourceNotFoundError</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(16 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>68</td>
+                    <td class="mono snippet">    # In your Microsoft Azure subscription, you will need to provision the OpenAI service and deploy a model, in order to utilize it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">EXTRACTED_INFORMATION_SCHEMA = &quot;&quot;&quot;{'additionalProperties': False, 'properties': {'quotes': {'items': {'additionalProperties': False, 'properties': {'c</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">#         navigation_goal=&quot;Navigate through the website until you generate an auto insurance quote. Only stay on the\nstarting website, do not navigat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/smoke_tests/test_prompts.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">#         data_extraction_goal='Extract all quote information in JSON format including the premium amount, the timeframe for the quote. The bodily inj</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/llms.txt</td>
+                    <td>81</td>
+                    <td class="mono snippet">- [Reliability Tips](https://skyvern.com/docs/going-to-production/reliability-tips.md): Write robust prompts, handle edge cases, and build resilient a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evaluation/results/webvoyager-BBC-News.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">| 198 | BBC News--29             | completed | Visit BBC News Audio and find out which podcast episode is currently featured as the 'New Releases'.   </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evaluation/results/webvoyager-Huggingface.md</td>
+                    <td>35</td>
+                    <td class="mono snippet">| 582 | Huggingface--35          | completed | Find the latest Diffusion-related blog on Hugging Face, and read its intro or overview section to rough</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evaluation/results/webvoyager-Huggingface.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">| 586 | Huggingface--39          | completed | Investigate in the Hugging Face documentation how to utilize the 'Trainer' API for training a model on </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evaluation/results/webvoyager-ArXiv.md</td>
+                    <td>41</td>
+                    <td class="mono snippet">| 166 | ArXiv--39                | completed | Search the title 'GPT-4 Technical Report' and access this paper through HTML format. Read the paper on </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/webeye/real_browser_state.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">        # TODO: do not use index of pages, it should be more robust if we want to fully support multi pages manipulation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/agent.py</td>
+                    <td>787</td>
+                    <td class="mono snippet">                # TODO (kerem): keep the task object uptodate at all times so that clean_up_task can just use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>4778</td>
+                    <td class="mono snippet">        # soft-deleted (e.g. eval harness teardown fired while the orphan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/workflow/service.py</td>
+                    <td>5096</td>
+                    <td class="mono snippet">        # harness tears down a workflow while the run is still executing in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/db/repositories/scripts.py</td>
+                    <td>572</td>
+                    <td class="mono snippet">            # Join on both script_id and organization_id to leverage uc_org_script_version index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/client/core/serialization.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">        # then we can just pass the value through as is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/services/browser_recording/service.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">            # Base64, but Python's standard decoder is usually robust enough to</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(19 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integrations/llama_index/skyvern_llamaindex/client.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">    def run_task(self) -&gt; FunctionTool:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integrations/llama_index/skyvern_llamaindex/client.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integrations/llama_index/skyvern_llamaindex/agent.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">    def run_task(self) -&gt; FunctionTool:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integrations/llama_index/skyvern_llamaindex/agent.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    async def helper(element_dict: dict, frame: Page | Frame) -&gt; bool:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/webeye/actions/handler.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">    async def helper(element_dict: dict, frame: Page | Frame) -&gt; bool:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/library/skyvern.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/library/skyvern_browser_page_agent.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/cli/commands/browser.py</td>
+                    <td>1160</td>
+                    <td class="mono snippet">def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/api/aws.py</td>
+                    <td>447</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/executor/background_task_executor.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    async def execute_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/executor/async_executor.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">    async def execute_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/forge/sdk/routes/agent_protocol.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/client/client.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/client/client.py</td>
+                    <td>2585</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/client/raw_client.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">    def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/client/raw_client.py</td>
+                    <td>3469</td>
+                    <td class="mono snippet">    async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/services/task_v1_service.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">async def run_task(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">skyvern/services/script_service.py</td>
+                    <td>1740</td>
+                    <td class="mono snippet">async def run_task(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(3 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern-ts/client/src/library/SkyvernBrowserPage.ts</td>
+                    <td>142</td>
+                    <td class="mono snippet">        // If the original selector doesn't work, try to click the element with the AI generated selector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">evaluation/results/webvoyager-Allrecipes.md</td>
+                    <td>36</td>
+                    <td class="mono snippet">|  33 | Allrecipes--33           | completed | Find a recipe for a low-carb breakfast on Allrecipes with at least 25 reviews. Show the Nutrition Facts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">skyvern/core/script_generations/script_skyvern_page.py</td>
+                    <td>1048</td>
+                    <td class="mono snippet">                # AI-generated cached scripts still get LLM verification.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>117</td>
+                    <td class="mono snippet">    # If you are looking to integrate Skyvern with a password manager (eg Bitwarden), you can use the following environment variables.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>126</td>
+                    <td class="mono snippet">    # If you are looking to integrate Skyvern with 1Password, you can use the following environment variables.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>178</td>
+                    <td class="mono snippet">#      - 127.0.0.1:11002:80 # you can replace the 11002 with your preferred port</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">alembic/README.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">**Note:** Please read [What does Autogenerate Detect (and what does it not detect?)](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-d</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">skyvern/forge/sdk/core/aiohttp_helper.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">                    # TODO: make sure to test this out</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

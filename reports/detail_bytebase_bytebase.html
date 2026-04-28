@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — bytebase/bytebase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>bytebase/bytebase</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">308</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">415</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,076,449</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">4342</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(236 hits · 236 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/tests/e2e/masking-exemption/masking-exemption.spec.ts</td>
+                    <td>404</td>
+                    <td class="mono snippet">    // Step 1: No exemption → data is masked</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/tests/e2e/masking-exemption/masking-exemption.spec.ts</td>
+                    <td>410</td>
+                    <td class="mono snippet">    // Step 2: Grant exemption via UI → data becomes unmasked</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/tests/e2e/masking-exemption/masking-exemption.spec.ts</td>
+                    <td>421</td>
+                    <td class="mono snippet">    // Step 3: Revoke exemption via UI → data becomes masked again</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>178</td>
+                    <td class="mono snippet">  // Step 1: Escape HTML entities to prevent XSS (converts &lt;, &gt;, &amp;, &quot;, ', ` to entities)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>182</td>
+                    <td class="mono snippet">  // Step 2: Escape the search keyword and apply highlighting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>189</td>
+                    <td class="mono snippet">  // Step 3: Sanitize with DOMPurify as defense-in-depth (allowlist-based)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>214</td>
+                    <td class="mono snippet">  // Step 1: Escape HTML entities to prevent XSS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>220</td>
+                    <td class="mono snippet">  // Step 2: Build safe regex pattern and apply highlighting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/utils/util.ts</td>
+                    <td>231</td>
+                    <td class="mono snippet">  // Step 3: Sanitize with DOMPurify as defense-in-depth (allowlist-based)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>45</td>
+                    <td class="mono snippet">  // Step 1: Extract all database targets from specs and expand database groups</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>49</td>
+                    <td class="mono snippet">  // Step 2: Fetch databases that are not cached</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>52</td>
+                    <td class="mono snippet">  // Step 3: Generate tasks from specs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>55</td>
+                    <td class="mono snippet">  // Step 4: Get environment order from store</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>58</td>
+                    <td class="mono snippet">  // Step 5: Group tasks by environment and create stages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/components/Plan/logic/rolloutPreview.ts</td>
+                    <td>61</td>
+                    <td class="mono snippet">  // Step 6: Build and return the rollout</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/databaseChange.ts</td>
+                    <td>18</td>
+                    <td class="mono snippet">### Step 1: Create sheet(s) with SQL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/databaseChange.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">### Step 2: Create a plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/databaseChange.ts</td>
+                    <td>104</td>
+                    <td class="mono snippet">### Step 3: Create an issue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/databaseChange.ts</td>
+                    <td>120</td>
+                    <td class="mono snippet">### Step 4: Create a rollout</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/grantPermission.ts</td>
+                    <td>25</td>
+                    <td class="mono snippet">### Step 1: List Available Roles</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/grantPermission.ts</td>
+                    <td>48</td>
+                    <td class="mono snippet">### Step 2: Get Current IAM Policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/plugins/agent/logic/skills/grantPermission.ts</td>
+                    <td>74</td>
+                    <td class="mono snippet">### Step 3: Set IAM Policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/sql-editor/WorksheetPane.test.tsx</td>
+                    <td>431</td>
+                    <td class="mono snippet">    // Step 1: enter multi-select and check a worksheet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/sql-editor/WorksheetPane.test.tsx</td>
+                    <td>443</td>
+                    <td class="mono snippet">    // Step 2: click the &quot;move-worksheets&quot; toolbar button to open the modal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/sql-editor/WorksheetPane.test.tsx</td>
+                    <td>459</td>
+                    <td class="mono snippet">    // Step 3: change the folder target via the mocked FolderForm's setter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/database/CreateDatabaseSheet.test.tsx</td>
+                    <td>300</td>
+                    <td class="mono snippet">    // Step 1: type a custom title.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/database/CreateDatabaseSheet.test.tsx</td>
+                    <td>304</td>
+                    <td class="mono snippet">    // Step 2: dbName preserved across manual title.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/database/CreateDatabaseSheet.test.tsx</td>
+                    <td>309</td>
+                    <td class="mono snippet">    // Step 3: clear title manually (invariant reset).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/database/CreateDatabaseSheet.test.tsx</td>
+                    <td>313</td>
+                    <td class="mono snippet">    // Step 4: clear dbName.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/components/database/CreateDatabaseSheet.test.tsx</td>
+                    <td>317</td>
+                    <td class="mono snippet">    // Step 5: retype dbName and verify each keystroke tracks.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/ProjectSyncSchemaPage.tsx</td>
+                    <td>341</td>
+                    <td class="mono snippet">    // Step 2: at least one target database with diff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>54</td>
+                    <td class="mono snippet">  // Step 1: Extract all database targets from specs and expand database groups</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>58</td>
+                    <td class="mono snippet">  // Step 2: Fetch databases that are not cached</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>61</td>
+                    <td class="mono snippet">  // Step 3: Generate tasks from specs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>64</td>
+                    <td class="mono snippet">  // Step 4: Get environment order from store</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>67</td>
+                    <td class="mono snippet">  // Step 5: Group tasks by environment and create stages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/plan-detail/utils/rolloutPreview.ts</td>
+                    <td>70</td>
+                    <td class="mono snippet">  // Step 6: Build and return the rollout</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/export-center/DataExportPrepSheet.tsx</td>
+                    <td>107</td>
+                    <td class="mono snippet">  // Step 1: target selection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/react/pages/project/export-center/DataExportPrepSheet.tsx</td>
+                    <td>118</td>
+                    <td class="mono snippet">  // Step 2: form fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/runner/approval/runner.go</td>
+                    <td>172</td>
+                    <td class="mono snippet">		// Step 1: Determine approval source from issue type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/runner/approval/runner.go</td>
+                    <td>182</td>
+                    <td class="mono snippet">		// Step 2: Build CEL variables for evaluation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/runner/approval/runner.go</td>
+                    <td>192</td>
+                    <td class="mono snippet">		// Step 3: Inject risk level into CEL variables for CHANGE_DATABASE issues</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/runner/approval/runner.go</td>
+                    <td>200</td>
+                    <td class="mono snippet">		// Step 4: Find matching approval template</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>199</td>
+                    <td class="mono snippet">	// Step 1: Create a release containing migration files.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>222</td>
+                    <td class="mono snippet">	// Step 2: Create a plan with the release field set.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>253</td>
+                    <td class="mono snippet">	// Step 3: Create a rollout from the plan.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>521</td>
+                    <td class="mono snippet">	// Step 1: Create a release containing 3 simple migration files.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>557</td>
+                    <td class="mono snippet">	// Step 2: Create a plan targeting both test and prod databases.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>590</td>
+                    <td class="mono snippet">	// Step 3: Create a rollout from the plan.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/gitops_test.go</td>
+                    <td>750</td>
+                    <td class="mono snippet">	// Step 1: Create a release with version 1.0.0 file.</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 186 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(37 hits · 74 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/sql-editor/AccessGrantRequestDrawer.test.tsx</td>
+                    <td>266</td>
+                    <td class="mono snippet">    value: { email: &quot;user@example.com&quot; },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/sql-editor/RoleGrantPanel.test.tsx</td>
+                    <td>227</td>
+                    <td class="mono snippet">    value: { email: &quot;user@example.com&quot; },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/auth/EmailCodeSigninForm.test.tsx</td>
+                    <td>109</td>
+                    <td class="mono snippet">    setInputValue(emailInput!, &quot;user@example.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/auth/EmailCodeSigninForm.test.tsx</td>
+                    <td>121</td>
+                    <td class="mono snippet">      &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/auth/EmailCodeSigninForm.test.tsx</td>
+                    <td>136</td>
+                    <td class="mono snippet">      email: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/settings/GroupsPage.tsx</td>
+                    <td>78</td>
+                    <td class="mono snippet">// Accepts: &quot;users/foo@bar.com&quot;, &quot;foo@bar.com&quot; → &quot;users/foo@bar.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/auth/PasswordForgotPage.test.tsx</td>
+                    <td>156</td>
+                    <td class="mono snippet">    setInputValue(input!, &quot;foo@bar.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/auth/PasswordForgotPage.test.tsx</td>
+                    <td>169</td>
+                    <td class="mono snippet">    setInputValue(input, &quot;foo@bar.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/auth/PasswordForgotPage.test.tsx</td>
+                    <td>176</td>
+                    <td class="mono snippet">      email: &quot;foo@bar.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/auth/PasswordForgotPage.test.tsx</td>
+                    <td>181</td>
+                    <td class="mono snippet">      query: { email: &quot;foo@bar.com&quot; },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/pages/auth/PasswordForgotPage.test.tsx</td>
+                    <td>193</td>
+                    <td class="mono snippet">    setInputValue(input, &quot;foo@bar.com&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/idp/oauth2/oauth2_test.go</td>
+                    <td>125</td>
+                    <td class="mono snippet">		testName        = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/idp/oauth2/oauth2_test.go</td>
+                    <td>176</td>
+                    <td class="mono snippet">		testName        = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/idp/oidc/oidc_test.go</td>
+                    <td>193</td>
+                    <td class="mono snippet">		testName        = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/idp/oidc/oidc_test.go</td>
+                    <td>247</td>
+                    <td class="mono snippet">		testName        = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/idp/oidc/oidc_test.go</td>
+                    <td>322</td>
+                    <td class="mono snippet">		testName        = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/mailer/smtp_test.go</td>
+                    <td>18</td>
+                    <td class="mono snippet">		To:       []string{&quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/mailer/smtp_test.go</td>
+                    <td>93</td>
+                    <td class="mono snippet">		To:       []string{&quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/catalog_masking_test.go</td>
+                    <td>270</td>
+                    <td class="mono snippet">			input:       `{&quot;name&quot;: &quot;John&quot;, &quot;address&quot;: {&quot;street&quot;: &quot;123 Main St&quot;, &quot;city&quot;: &quot;NYC&quot;}}`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/catalog_masking_test.go</td>
+                    <td>327</td>
+                    <td class="mono snippet">			input:       `{&quot;name&quot;: &quot;John&quot;, &quot;address&quot;: {&quot;street&quot;: &quot;123 Main St&quot;, &quot;city&quot;: &quot;NYC&quot;}}`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/catalog_masking_test.go</td>
+                    <td>387</td>
+                    <td class="mono snippet">        &quot;street&quot;: &quot;123 Main St&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/catalog_masking_test.go</td>
+                    <td>482</td>
+                    <td class="mono snippet">			input:       `{&quot;street&quot;: &quot;123 Main St&quot;, &quot;city&quot;: &quot;NYC&quot;}`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/catalog_masking_elasticsearch_test.go</td>
+                    <td>228</td>
+                    <td class="mono snippet">					&quot;phone&quot;: &quot;555-1234&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/mongodb_masking.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">    input: '{&quot;friends&quot;:{&quot;name&quot;:&quot;Bob&quot;,&quot;phone&quot;:&quot;555-1234&quot;}}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>47</td>
+                    <td class="mono snippet">    input: '{&quot;total&quot;:{&quot;value&quot;:1},&quot;hits&quot;:[{&quot;_index&quot;:&quot;test&quot;,&quot;_id&quot;:&quot;1&quot;,&quot;_source&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;,&quot;contact&quot;:{&quot;phone&quot;:&quot;555-1234</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>59</td>
+                    <td class="mono snippet">    input: '{&quot;total&quot;:{&quot;value&quot;:1},&quot;hits&quot;:[{&quot;_id&quot;:&quot;1&quot;,&quot;_source&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;},&quot;fields&quot;:{&quot;email&quot;:[&quot;alice@example.com&quot;],&quot;co</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>71</td>
+                    <td class="mono snippet">    input: '{&quot;total&quot;:{&quot;value&quot;:1},&quot;hits&quot;:[{&quot;_id&quot;:&quot;1&quot;,&quot;_source&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;},&quot;fields&quot;:{&quot;email&quot;:[&quot;alice@example.com&quot;],&quot;co</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>84</td>
+                    <td class="mono snippet">    input: '{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;,&quot;contact&quot;:{&quot;phone&quot;:&quot;555-1234&quot;,&quot;city&quot;:&quot;NYC&quot;}}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>98</td>
+                    <td class="mono snippet">    input: '{&quot;phone&quot;:&quot;555-1234&quot;,&quot;city&quot;:&quot;NYC&quot;}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>112</td>
+                    <td class="mono snippet">    input: '[{&quot;hits&quot;:{&quot;total&quot;:{&quot;value&quot;:1},&quot;hits&quot;:[{&quot;_id&quot;:&quot;1&quot;,&quot;_source&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;}}]}},{&quot;hits&quot;:{&quot;total&quot;:{&quot;value&quot;:1},&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/v1/test-data/elasticsearch_masking.yaml</td>
+                    <td>126</td>
+                    <td class="mono snippet">    input: '{&quot;total&quot;:{&quot;value&quot;:1},&quot;hits&quot;:[{&quot;_id&quot;:&quot;1&quot;,&quot;_source&quot;:{&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;},&quot;inner_hits&quot;:{&quot;comments&quot;:{&quot;hits&quot;:{&quot;total&quot;:{</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/api/directory-sync/scim.go</td>
+                    <td>80</td>
+                    <td class="mono snippet">// Okta sends: {&quot;value&quot;: &quot;101&quot;, &quot;display&quot;: &quot;user@example.com&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plans/saas/04.runners-and-auth.md</td>
+                    <td>46</td>
+                    <td class="mono snippet">  &quot;sub&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plans/2026-04-21-auth-setup-react-migration/plan.md</td>
+                    <td>99</td>
+                    <td class="mono snippet">     3. `&quot;enables submit button for a valid email&quot;` — fire `change` on input with `&quot;foo@bar.com&quot;`, assert button no longer disabled.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plans/2026-04-21-auth-setup-react-migration/plan.md</td>
+                    <td>100</td>
+                    <td class="mono snippet">     4. `&quot;submit calls requestPasswordReset then navigates to password-reset&quot;` — prime mock to resolve; fire click; await microtask; assert `requestPa</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/superpowers/plans/2026-04-12-email-service-integration.md</td>
+                    <td>690</td>
+                    <td class="mono snippet">		To:       []string{&quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/superpowers/plans/2026-04-12-email-service-integration.md</td>
+                    <td>767</td>
+                    <td class="mono snippet">		To:       []string{&quot;user@example.com&quot;},</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(5 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">backend/plugin/advisor/tidb/advisor_naming_foreign_key_convention.go</td>
+                    <td>175</td>
+                    <td class="mono snippet">					advisor.ReferencedTableNameTemplateToken:   spec.Constraint.Refer.Table.Name.String(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">backend/api/mcp/openapi_index.go</td>
+                    <td>109</td>
+                    <td class="mono snippet">	for pair := idx.doc.Model.Paths.PathItems.First(); pair != nil; pair = pair.Next() {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">backend/api/mcp/openapi_index.go</td>
+                    <td>428</td>
+                    <td class="mono snippet">	schemaProxy, ok := idx.doc.Model.Components.Schemas.Get(schemaName)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">backend/api/mcp/openapi_index.go</td>
+                    <td>533</td>
+                    <td class="mono snippet">	schemaProxy, ok := idx.doc.Model.Components.Schemas.Get(name)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/plans/2025-12-15-mcp-schema-lookup.md</td>
+                    <td>102</td>
+                    <td class="mono snippet">	schemaProxy, ok := idx.doc.Model.Components.Schemas.Get(name)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(16 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>42</td>
+                    <td class="mono snippet">// ─── levelText ───────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>59</td>
+                    <td class="mono snippet">// ─── approvalSourceText ───────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>82</td>
+                    <td class="mono snippet">// ─── APPROVAL_SOURCES ─────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>93</td>
+                    <td class="mono snippet">// ─── Factor lists ─────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>115</td>
+                    <td class="mono snippet">// ─── ApprovalSourceFactorMap ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>157</td>
+                    <td class="mono snippet">// ─── getApprovalFactorList ────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>169</td>
+                    <td class="mono snippet">// ─── Option helpers ───────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>223</td>
+                    <td class="mono snippet">// ─── getApprovalOptionConfigMap ───────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>269</td>
+                    <td class="mono snippet">// ─── Templates ────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/react/components/CustomApproval/utils.ts</td>
+                    <td>346</td>
+                    <td class="mono snippet">// ─── emptyLocalApprovalRule ───────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_bytebase_docker.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_bytebase_docker.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_init.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_init.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_bytebase.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/build_bytebase.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># ===========================================================================</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/parser/redshift/resource_change.go</td>
+                    <td>148</td>
+                    <td class="mono snippet">			// This is a simplified implementation - in production you'd want more robust parsing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/schema/differ.go</td>
+                    <td>1187</td>
+                    <td class="mono snippet">			// This is a simplified check - for a production system, you'd want more robust parsing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/schema/mssql/generate_migration_testcontainer_test.go</td>
+                    <td>856</td>
+                    <td class="mono snippet">'This is an extremely long comment designed to test the limits of extended property storage in SQL Server. It contains multiple lines of text with var</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/schema/mssql/generate_migration_testcontainer_test.go</td>
+                    <td>1917</td>
+                    <td class="mono snippet">'This is an extremely long comment designed to test the limits of extended property storage in SQL Server. It contains multiple lines of text with var</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/plugin/db/spanner/spanner.go</td>
+                    <td>297</td>
+                    <td class="mono snippet">// For a more robust parser-based approach that can handle complex queries, see the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/cosmos-repro-dotnet/README.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># cosmos-repro-dotnet — BYT-9239 reproduction harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/cosmos-repro-go/README.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># cosmos-repro-go — BYT-9239 reproduction harness (Go)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/azure-marketplace/push-to-acr.sh</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Check if Docker image exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/azure-marketplace/push-to-acr.sh</td>
+                    <td>34</td>
+                    <td class="mono snippet"># Check if Azure CLI is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/azure-marketplace/package.sh</td>
+                    <td>54</td>
+                    <td class="mono snippet"># Check if required files exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-push-release-image.yml</td>
+                    <td>63</td>
+                    <td class="mono snippet">          # Check if current version is the latest</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">proto/gen/grpc-doc/v1/README.md</td>
+                    <td>11880</td>
+                    <td class="mono snippet">| content | [bytes](#bytes) |  | The content of the worksheet. By default, it will be cut off in SearchWorksheet() method. If it doesn&amp;#39;t match the</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">scripts/azure-marketplace/manifest.yaml</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Define the container images used by your application</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/plugin/parser/base/lexer.go</td>
+                    <td>74</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

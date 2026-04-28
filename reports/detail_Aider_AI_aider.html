@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — Aider-AI/aider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>Aider-AI/aider</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.6</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.6</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">590</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">915</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">121,067</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">399</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(165 hits · 330 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">### Create a Virtual Environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/problem_stats.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">        # Create a set of (exercise, language) pairs from hard_set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/README.md</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create the scratch dir to hold benchmarking results inside the main aider dir:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/rsync.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Create a temporary file for rsync exclude patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/repomap.py</td>
+                    <td>585</td>
+                    <td class="mono snippet">        # Create a cache key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/waiting.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">        self.frame_idx = Spinner.last_frame_idx  # Initialize from class variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>709</td>
+                    <td class="mono snippet">        # Create a new Document object with the text after the command</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/coders/search_replace.py</td>
+                    <td>711</td>
+                    <td class="mono snippet">    # Create a 2D table with directories along the right and methods along the top</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/coders/search_replace.py</td>
+                    <td>729</td>
+                    <td class="mono snippet">    # Create a results matrix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/docs/scripting.md</td>
+                    <td>71</td>
+                    <td class="mono snippet"># Create a coder object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/docs/usage/not-code.md</td>
+                    <td>41</td>
+                    <td class="mono snippet">#### Create a Host entry 'my-server' using bastion.example.com as JumpHost</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/hello-world-flask.md</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Create a simple flask app with aider</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/census.md</td>
+                    <td>58</td>
+                    <td class="mono snippet"># Define the API endpoint and parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/census.md</td>
+                    <td>115</td>
+                    <td class="mono snippet"># Define the API endpoint and parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/census.md</td>
+                    <td>308</td>
+                    <td class="mono snippet"># Create a scatter plot of population density and housing prices</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/add-test.md</td>
+                    <td>67</td>
+                    <td class="mono snippet">        # Create a temporary directory and change the current working directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/add-test.md</td>
+                    <td>108</td>
+                    <td class="mono snippet">&gt;         # Create a temporary directory and change the current working directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>432</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_reasoning.py</td>
+                    <td>528</td>
+                    <td class="mono snippet">        # Create a mock hash object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">        # Create a temporary directory with sample files for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">        # Create a temporary directory with a sample Python file containing identifiers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">        # Create a temporary directory with sample files for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_aws_credentials.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">            # Create a model instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_aws_credentials.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">            # Create a model instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_aws_credentials.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">            # Create a model instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_aws_credentials.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">            # Create a model instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_aws_credentials.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">            # Create a model instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_watch.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">    # Create a temporary gitignore file with test patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_watch.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">    # Create a test directory structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editor.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">    # Create a temporary Python script that logs its arguments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_find_or_blocks.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        # Create a StringIO object to capture the output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>326</td>
+                    <td class="mono snippet">            # Create a few temporary files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>334</td>
+                    <td class="mono snippet">            # Initialize the Coder object with the mocked IO and mocked repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">        # Create a few temporary files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>372</td>
+                    <td class="mono snippet">        # Initialize the Coder object with the mocked IO and mocked repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>399</td>
+                    <td class="mono snippet">        # Create a few temporary files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">        # Initialize the Coder object with the mocked IO and mocked repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_exceptions.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">    # Create an APIConnectionError with OpenrouterException message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_model_info_manager.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">        # Create a temporary directory for cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_model_info_manager.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">        # Create a cache file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_io.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">        # Create a message with invalid Unicode that can't be encoded in UTF-8</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_deprecated.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">                # Create a mock IO instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repo.py</td>
+                    <td>447</td>
+                    <td class="mono snippet">        # Create a temporary directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repo.py</td>
+                    <td>589</td>
+                    <td class="mono snippet">            # Create a new repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repo.py</td>
+                    <td>646</td>
+                    <td class="mono snippet">            # Create a new repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/basic/test_repo.py</td>
+                    <td>649</td>
+                    <td class="mono snippet">            # Create a file to commit</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 115 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(221 hits · 221 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmark/refactor_tools.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        # Check if the first argument is 'self' and if it's not used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/repomap.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">        # Check if the file is in the cache and if the modification time has not changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/repomap.py</td>
+                    <td>611</td>
+                    <td class="mono snippet">            # Check if the result is in the cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>1204</td>
+                    <td class="mono snippet">    # Check if this is a Bedrock model and ensure boto3 is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>1210</td>
+                    <td class="mono snippet">    # Check if this is a Vertex AI model and ensure google-cloud-aiplatform is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        # Check if the user is on a free tier</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">            # Check if the port is available by trying to bind to it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>294</td>
+                    <td class="mono snippet">    # Check if server failed during startup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/deprecated.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    # Check if any deprecated args are used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/deprecated.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">            # Check if there's a shorter alias for this model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        # Check if it's a valid hex color (3 or 6 hex digits)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>670</td>
+                    <td class="mono snippet">                # Check if we were interrupted by a file change</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>716</td>
+                    <td class="mono snippet">                    # Check if line is exactly &quot;tag}&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>721</td>
+                    <td class="mono snippet">                # Check if line is exactly &quot;}&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">        # Set min_delay to render time plus a small buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/run_cmd.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">            bufsize=0,  # Set bufsize to 0 for unbuffered output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/watch.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        # Check if file contains AI markers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>785</td>
+                    <td class="mono snippet">    # Check if an OpenRouter model was selected/specified but the key is missing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>794</td>
+                    <td class="mono snippet">            # Check if the key is now present after the flow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>830</td>
+                    <td class="mono snippet">    # Check if deprecated remove_reasoning is set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">        # Check if the current edit format is the default for the old model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>597</td>
+                    <td class="mono snippet">            # Check if the file was in the repo in the previous commit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>1302</td>
+                    <td class="mono snippet">                # Check if a file with the same name already exists in the chat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/report.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    # Check if VERSION_CHECK_FNAME exists and delete it if so</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/scrape.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">        # Check if the content is HTML based on MIME type or content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/udiff_coder.py</td>
+                    <td>351</td>
+                    <td class="mono snippet">        # Check if standard git diff prefixes are present (or /dev/null) and strip them</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/patch_coder.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">                # Check if file exists in the context provided (should not for Add).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/patch_coder.py</td>
+                    <td>404</td>
+                    <td class="mono snippet">        # Check if we consumed the whole input or stopped early</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/patch_coder.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">                    # Check if all scope lines match sequentially from temp_index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/patch_coder.py</td>
+                    <td>612</td>
+                    <td class="mono snippet">                        # Check if target exists before overwriting/moving</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/editblock_coder.py</td>
+                    <td>467</td>
+                    <td class="mono snippet">        # Check if the next line or the one after that is an editblock</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/install.sh</td>
+                    <td>408</td>
+                    <td class="mono snippet">        # Add the updater to the list of binaries to install</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/install.sh</td>
+                    <td>1037</td>
+                    <td class="mono snippet">    # Check if the install layout should be changed from `flat` to `cargo-home`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/install.sh</td>
+                    <td>1312</td>
+                    <td class="mono snippet">        # Check if the line is already in the rcfile</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/docs/config/aider_conf.md</td>
+                    <td>170</td>
+                    <td class="mono snippet">## Check if model accepts settings like reasoning_effort/thinking_tokens (default: True)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/docs/config/dotenv.md</td>
+                    <td>145</td>
+                    <td class="mono snippet">## Check if model accepts settings like reasoning_effort/thinking_tokens (default: True)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/examples/add-test.md</td>
+                    <td>79</td>
+                    <td class="mono snippet">            # Check if both files have been created in the temporary directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/assets/sample.aider.conf.yml</td>
+                    <td>116</td>
+                    <td class="mono snippet">## Check if model accepts settings like reasoning_effort/thinking_tokens (default: True)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">            # Check if the result contains the expected tags map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">            # Check if the result contains the expected tags map with identifiers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">            # Check if the result contains each specific file in the expected tags map without ctags</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>267</td>
+                    <td class="mono snippet">            # Check if the result contains the expected tags map</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>429</td>
+                    <td class="mono snippet">            # Check if the result contains all the expected files and symbols</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>475</td>
+                    <td class="mono snippet">        if os.name == &quot;nt&quot;:  # Check if running on Windows</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_editblock.py</td>
+                    <td>567</td>
+                    <td class="mono snippet"># Check if exactly one argument is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_model_info_manager.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        # Set verify_ssl to False before any cache operations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_commands.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        # Check if both files have been created in the temporary directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_commands.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">        # Check if the Python files have been added to the chat session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_commands.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">        # Check if the text file has not been added to the chat session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_commands.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        # Check if no files have been added to the chat session</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 171 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(160 hits · 201 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        print(&quot;Error: No benchmark directories found under tmp.benchmarks.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        print(&quot;Error: No benchmark directories found from the last 24 hours.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">        print(&quot;Error: No .md files found in recent benchmark directories.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>335</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">            print(f&quot;Error loading model settings: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">benchmark/benchmark.py</td>
+                    <td>669</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/repomap.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/repomap.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">        except Exception:  # On Windows, bad ref to time.clock which is deprecated?</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/versioncheck.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">    except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">            except Exception as ex:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>314</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">            print(&quot;Error fetching openrouter info:&quot;, str(e))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>647</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>661</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>1098</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/models.py</td>
+                    <td>1121</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/openrouter.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    except Exception:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/openrouter.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">        except Exception as ex:  # noqa: BLE001</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/onboarding.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">            except Exception:  # On Windows, bad ref to time.clock which is deprecated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>360</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>679</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/io.py</td>
+                    <td>1099</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/__init__.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/__init__.py</td>
+                    <td>17</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/voice.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">            print(f&quot;Error: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/voice.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">                print(f&quot;Error converting audio: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/voice.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/voice.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">            except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/copypaste.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/waiting.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/utils.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/run_cmd.py</td>
+                    <td>38</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/run_cmd.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/args.py</td>
+                    <td>927</td>
+                    <td class="mono snippet">                print(f&quot;Error: Unsupported shell '{shell}'.&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/args.py</td>
+                    <td>934</td>
+                    <td class="mono snippet">            print(&quot;Error: Please specify a shell for completion.&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/watch.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/watch.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/editor.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/main.py</td>
+                    <td>385</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 110 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(7 hits · 70 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>607</td>
+                    <td class="mono snippet">        local_head = self.coder.repo.repo.git.rev_parse(&quot;HEAD&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>610</td>
+                    <td class="mono snippet">            remote_head = self.coder.repo.repo.git.rev_parse(f&quot;origin/{current_branch}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>628</td>
+                    <td class="mono snippet">                self.coder.repo.repo.git.checkout(&quot;HEAD~1&quot;, file_path)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">aider/commands.py</td>
+                    <td>644</td>
+                    <td class="mono snippet">        self.coder.repo.repo.git.reset(&quot;--soft&quot;, &quot;HEAD~1&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/fixtures/chat-history-search-replace-gold.txt</td>
+                    <td>1695</td>
+                    <td class="mono snippet">                        self.coder.repo.repo.git.add(str(fname))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/fixtures/chat-history-search-replace-gold.txt</td>
+                    <td>1711</td>
+                    <td class="mono snippet">                                self.coder.repo.repo.git.add(str(fname))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/fixtures/chat-history-search-replace-gold.txt</td>
+                    <td>7150</td>
+                    <td class="mono snippet">            diff = self.coder.repo.repo.git.diff('HEAD^', 'HEAD', color='always')</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(8 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">HISTORY.md</td>
+                    <td>189</td>
+                    <td class="mono snippet">- Commit messages generated by aider are no longer forced to be entirely lowercase, by Peter Hadlaw.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">HISTORY.md</td>
+                    <td>201</td>
+                    <td class="mono snippet">- Commit messages generated by aider are now lowercase, by Anton Ödman.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">HISTORY.md</td>
+                    <td>1375</td>
+                    <td class="mono snippet">- New `--commit` cmd line arg, which just commits all pending changes with a sensible commit message generated by gpt-3.5.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/waiting.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">        # Subtract 2 as requested, to leave a margin or prevent cursor wrapping issues</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/repo.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">        - aider_edits=True: Changes were generated by Aider (LLM).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/website/HISTORY.md</td>
+                    <td>213</td>
+                    <td class="mono snippet">- Commit messages generated by aider are no longer forced to be entirely lowercase, by Peter Hadlaw.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/website/HISTORY.md</td>
+                    <td>225</td>
+                    <td class="mono snippet">- Commit messages generated by aider are now lowercase, by Anton Ödman.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/website/HISTORY.md</td>
+                    <td>1399</td>
+                    <td class="mono snippet">- New `--commit` cmd line arg, which just commits all pending changes with a sensible commit message generated by gpt-3.5.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(3 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/history.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">        # Precompute token limit (fallback to 4096 if undefined)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">aider/coders/udiff_coder.py</td>
+                    <td>351</td>
+                    <td class="mono snippet">        # Check if standard git diff prefixes are present (or /dev/null) and strip them</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/basic/test_commands.py</td>
+                    <td>1136</td>
+                    <td class="mono snippet">            test_cmd = &quot;echo 'error output' &gt;&amp;2 &amp;&amp; exit 1&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/_posts/2024-08-26-sonnet-seems-fine.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">It's worth noting that these results would not capture any changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/_posts/2023-07-02-benchmarks.md</td>
+                    <td>139</td>
+                    <td class="mono snippet">It's worth noting that GPT never gets to see the source code of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/_posts/2024-05-22-swe-bench-lite.md</td>
+                    <td>361</td>
+                    <td class="mono snippet">It's worth noting that repositories may have lint or test errors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/docs/benchmarks.md</td>
+                    <td>139</td>
+                    <td class="mono snippet">It's worth noting that GPT never gets to see the source code of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/examples/census.md</td>
+                    <td>178</td>
+                    <td class="mono snippet">As an AI language model, I cannot directly download or access data. However, I can help you with the code to download the required data for testing hy</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(6 hits · 9 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">benchmark/README.md</td>
+                    <td>2</td>
+                    <td class="mono snippet"># Aider benchmark harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/report.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    # If it's a KeyboardInterrupt, just call the default handler</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/coders/patch_coder.py</td>
+                    <td>445</td>
+                    <td class="mono snippet">                # A more robust finder could handle nested scopes like the reference @@ @@</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/coders/editblock_coder.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">        # no dots in this edit block, just return None</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/website/install.sh</td>
+                    <td>1293</td>
+                    <td class="mono snippet">        # the more robust line to rcfiles, but when telling the user to apply the change</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/fixtures/chat-history-search-replace-gold.txt</td>
+                    <td>8482</td>
+                    <td class="mono snippet">@@@ #### scrape should only turn html to markdown. if the web page is plain text or some non-html text, just return it as-is @@@@@@@@@@@@@@@@@@@@</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">aider/mdstream.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">including versions of Lorem Ipsum.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/_posts/2024-05-13-models-over-time.md</td>
+                    <td>89</td>
+                    <td class="mono snippet"># Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">aider/website/docs/usage/modes.md</td>
+                    <td>185</td>
+                    <td class="mono snippet"># Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/fixtures/sample-code-base/sample.js</td>
+                    <td>43</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/fixtures/languages/r/test.r</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/fixtures/languages/swift/test.swift</td>
+                    <td>14</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_io.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        # Step 3: Mock the commands object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_io.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        # Step 4: Create an instance of AutoCompleter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_io.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        # Step 5: Set up test cases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_io.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">        # Step 6: Iterate through test cases</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">    def my_method(self, arg1, arg2):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/basic/test_repomap.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">def my_function(arg1, arg2):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

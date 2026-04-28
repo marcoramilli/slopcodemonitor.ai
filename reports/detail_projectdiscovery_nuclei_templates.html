@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — projectdiscovery/nuclei-templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>projectdiscovery/nuclei-templates</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">117</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">320</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">790,865</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">13362</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(19 hits · 190 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cnvd/2023/CNVD-C-2023-76801.yaml</td>
+                    <td>44</td>
+                    <td class="mono snippet">        cmd=org.apache.commons.io.IOUtils.toString(Runtime.getRuntime().exec(&quot;ipconfig&quot;).getInputStream())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2022/CVE-2022-38130.yaml</td>
+                    <td>8</td>
+                    <td class="mono snippet">    The com.keysight.tentacle.config.ResourceManager.smsRestoreDatabaseZip() method is used to restore the HSQLDB database used in SMS. It takes the p</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2024/CVE-2024-3408.yaml</td>
+                    <td>132</td>
+                    <td class="mono snippet">        GET /dtale/test-filter/{{data_id}}?query=%40pd.core.frame.com.builtins.__import__(%27os%27).system(%27curl+{{interactsh-url}}%27)&amp;save=true HT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2024/CVE-2024-0799.yaml</td>
+                    <td>8</td>
+                    <td class="mono snippet">    An authentication bypass vulnerability exists in Arcserve Unified Data Protection 9.2 and 8.1 in the edge-app-base-webui.jar!com.ca.arcserve.edge.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2020/CVE-2020-14750.yaml</td>
+                    <td>51</td>
+                    <td class="mono snippet">        _nfpb=true&amp;_pageLabel=&amp;handle=com.tangosol.coherence.mvel2.sh.ShellSession(&quot;weblogic.work.ExecuteThread executeThread = (weblogic.work.Execute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2020/CVE-2020-14883.yaml</td>
+                    <td>52</td>
+                    <td class="mono snippet">        test_handle=com.tangosol.coherence.mvel2.sh.ShellSession('weblogic.work.ExecuteThread currentThread = (weblogic.work.ExecuteThread)Thread.curr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">http/cves/2020/CVE-2020-14882.yaml</td>
+                    <td>40</td>
+                    <td class="mono snippet">      - &quot;{{BaseURL}}/console/images/%252e%252e%252fconsole.portal?_nfpb=true&amp;_pageLabel=&amp;handle=com.bea.core.repackaged.springframework.context.suppor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-memory-limits-not-set.yaml</td>
+                    <td>38</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.resources &amp;&amp; container.resources.limits &amp;&amp; container.resources.limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-memory-requests-not-set.yaml</td>
+                    <td>38</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.resources &amp;&amp; container.resources.requests &amp;&amp; container.resources.req</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-seccomp-profile-set.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">        deployment.spec.template.spec.containers.forEach(container =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-image-tag-not-fixed.yaml</td>
+                    <td>40</td>
+                    <td class="mono snippet">        deployment.spec.template.spec.containers.forEach(container =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-readiness-probe-not-set.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.readinessProbe)) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-image-pull-policy-always.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.every(container =&gt; container.imagePullPolicy === 'Always')) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-liveness-probe-not-configured.yaml</td>
+                    <td>38</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.livenessProbe)) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-cpu-requests-not-set.yaml</td>
+                    <td>40</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.resources &amp;&amp; container.resources.requests &amp;&amp; container.resources.req</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-cpu-limits-not-set.yaml</td>
+                    <td>40</td>
+                    <td class="mono snippet">        if (!deployment.spec.template.spec.containers.some(container =&gt; container.resources &amp;&amp; container.resources.limits &amp;&amp; container.resources.limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">cloud/kubernetes/deployments/k8s-root-container-admission.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">        if (deployment.spec.template.spec.containers.some(container =&gt; container.securityContext &amp;&amp; container.securityContext.runAsUser === null)) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dast/vulnerabilities/ssti/oob/jinjava-oob.yaml</td>
+                    <td>23</td>
+                    <td class="mono snippet">        - &quot;{{%27a%27.getClass().forName(%27javax.script.ScriptEngineManager%27).newInstance().getEngineByName(%27JavaScript%27).eval(%5C%22var%20x%3Dn</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dast/vulnerabilities/ssti/oob/jinjava-oob.yaml</td>
+                    <td>24</td>
+                    <td class="mono snippet">        - &quot;{{%27a%27.getClass().forName(%27javax.script.ScriptEngineManager%27).newInstance().getEngineByName(%27JavaScript%27).eval(%5C%22var%20x%3Dn</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(37 hits · 44 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/windows/enumeration/rdp-ntlm-info.yaml</td>
+                    <td>93</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2022/CVE-2022-42475.yaml</td>
+                    <td>94</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2022/CVE-2022-42475.yaml</td>
+                    <td>118</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2022/CVE-2022-42475.yaml</td>
+                    <td>166</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-32433.yaml</td>
+                    <td>126</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-32433.yaml</td>
+                    <td>169</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-54309.yaml</td>
+                    <td>84</td>
+                    <td class="mono snippet">          except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-54309.yaml</td>
+                    <td>110</td>
+                    <td class="mono snippet">          except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-9242.yaml</td>
+                    <td>516</td>
+                    <td class="mono snippet">          except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-9242.yaml</td>
+                    <td>538</td>
+                    <td class="mono snippet">          except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-55556.yaml</td>
+                    <td>128</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-55556.yaml</td>
+                    <td>141</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-55556.yaml</td>
+                    <td>148</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2024/CVE-2024-55556.yaml</td>
+                    <td>149</td>
+                    <td class="mono snippet">                print(&quot;Error decoding base64 values in the cipher data.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-56331.yaml</td>
+                    <td>75</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-56331.yaml</td>
+                    <td>117</td>
+                    <td class="mono snippet">        except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-47575.yaml</td>
+                    <td>68</td>
+                    <td class="mono snippet">          except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2024/CVE-2024-47575.yaml</td>
+                    <td>113</td>
+                    <td class="mono snippet">          except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">            print(f&quot;Error reading {file_path}: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>299</td>
+                    <td class="mono snippet">            print(f&quot;Error updating {file_path}: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/count-kev-stats.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/count-kev-stats.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">        print(f&quot;Error reading {file_path}: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/enhance-cve-fields.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/assign_tasks.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/assign_tasks.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/assign_tasks.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-readme.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">	except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/update-readme.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">		print(f&quot;Error getting KEV stats: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">            print(f&quot;Error reading {file_path}: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>197</td>
+                    <td class="mono snippet">            print(f&quot;Error updating {file_path}: {e}&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">TEMPLATE-CREATION-GUIDE.md</td>
+                    <td>87</td>
+                    <td class="mono snippet">  tags: cve,cve2018,rce,apache,struts,ognl  # Be specific and comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/osint/phishing/seamless-phish.yaml</td>
+                    <td>10</td>
+                    <td class="mono snippet">    - https://seamless.com</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7481.yaml</td>
+                    <td>13</td>
+                    <td class="mono snippet">    - https://www.crowdstrike.com/blog/how-ecrime-groups-leverage-sonicwall-vulnerability-cve-2019-7481/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2021/CVE-2021-39165.yaml</td>
+                    <td>8</td>
+                    <td class="mono snippet">    Cachet is an open source status page. With Cachet prior to and including 2.3.18, there is a SQL injection which is in the `SearchableTrait#scopeSe</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2021/CVE-2021-27850.yaml</td>
+                    <td>15</td>
+                    <td class="mono snippet">    - https://lists.apache.org/thread.html/r237ff7f286bda31682c254550c1ebf92b0ec61329b32fbeb2d1c8751%40%3Cusers.tapestry.apache.org%3E</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/windows-audit.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'windows-audit' to cover comprehensive scanning of Windows systems.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/privilege-escalation.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'privesc' and 'local' to cover comprehensive detection of local privilege escalation vu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/ai.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># This profile enables comprehensive security testing of AI ecosystems, covering: LLM Application Security, AI Infrastructure/services and AI Developm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/alibaba-cloud-config.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'alibaba-cloud-config' to cover comprehensive scanning of aliyun ACLs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/all.yml</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This configuration file is specifically tailored for performing comprehensive scans using Nuclei, All the avaliable templates are loaded using this </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/aws-cloud-config.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'aws-cloud-config' to cover comprehensive scanning of AWS ACLs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/compliance.yml</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This profile is focused on identifying a wide range of security issues to ensure compliance with various security standards and best practices. It i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/azure-cloud-config.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'azure-cloud-config' to cover comprehensive scanning of Azure ACLs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">profiles/gcp-cloud-config.yml</td>
+                    <td>8</td>
+                    <td class="mono snippet"># This configuration references specific templates tagged with 'gcp-cloud-config' to cover comprehensive scanning of Azure ACLs.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(21 hits · 21 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">network/cves/2019/CVE-2019-5544.yaml</td>
+                    <td>38</td>
+                    <td class="mono snippet">  # Step 1: Verify OpenSLP is actually running by sending a valid SLP ServiceType request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">network/cves/2019/CVE-2019-5544.yaml</td>
+                    <td>53</td>
+                    <td class="mono snippet">  # Step 2: Send heap overflow payload to crash OpenSLP</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">network/cves/2019/CVE-2019-5544.yaml</td>
+                    <td>62</td>
+                    <td class="mono snippet">  # Step 3: Re-query OpenSLP — if the service crashed, we get no response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2022/CVE-2022-42475.yaml</td>
+                    <td>260</td>
+                    <td class="mono snippet">          # Step 1: Pre-flight connectivity check</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2022/CVE-2022-42475.yaml</td>
+                    <td>266</td>
+                    <td class="mono snippet">          # Step 2: Vulnerability check with false positive prevention</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2025/CVE-2025-57819.yaml</td>
+                    <td>51</td>
+                    <td class="mono snippet">  # Step 1: SQL Injection Detection in brand parameter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2025/CVE-2025-57819.yaml</td>
+                    <td>73</td>
+                    <td class="mono snippet">  # Step 2: RCE Exploitation - Create cron job with self-deleting PHP payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>52</td>
+                    <td class="mono snippet">  # Step 1: Set up a fake album slideshow to obtain a usable album_id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>69</td>
+                    <td class="mono snippet">  # Step 2: Use album_id to get access_code and PHPSESSID from slideshow.php</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>91</td>
+                    <td class="mono snippet">  # Step 3: Use directory traversal to extract application token (app_token)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>108</td>
+                    <td class="mono snippet">  # Step 4: Authenticate using the app_token to get NAS_SID</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>126</td>
+                    <td class="mono snippet">  # Step 5: Inject self-deleting PHP payload via SMTP config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>136</td>
+                    <td class="mono snippet">  # Step 6: Trigger slideshow with QMS_SID pointing to dropper path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2019/CVE-2019-7194.yaml</td>
+                    <td>143</td>
+                    <td class="mono snippet">  # Step 7: Execute the dropper (which deletes the file via unlink after poc request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2016/CVE-2016-9299.yaml</td>
+                    <td>54</td>
+                    <td class="mono snippet">            # Step 1: Send the download request without waiting for a response or closing the socket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2016/CVE-2016-9299.yaml</td>
+                    <td>74</td>
+                    <td class="mono snippet">            # Step 2: Send the upload request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2016/CVE-2016-9299.yaml</td>
+                    <td>104</td>
+                    <td class="mono snippet">            # Step 3: After upload request, read the download request's response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2016/CVE-2016-9299.yaml</td>
+                    <td>114</td>
+                    <td class="mono snippet">            # Step 1: Send download request (don't wait for response, keep the socket open)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">http/cves/2016/CVE-2016-9299.yaml</td>
+                    <td>117</td>
+                    <td class="mono snippet">            # Step 2: Send upload request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">javascript/cves/2026/CVE-2026-1731.yaml</td>
+                    <td>64</td>
+                    <td class="mono snippet">      // Step 1: WebSocket upgrade handshake</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">javascript/cves/2026/CVE-2026-1731.yaml</td>
+                    <td>80</td>
+                    <td class="mono snippet">        // Step 2: Build binary WebSocket frame with command injection payload</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(15 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/ssh-gssapiauthentication-disabled.yaml</td>
+                    <td>39</td>
+                    <td class="mono snippet">        # Check if the value is explicitly set to 'no'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/nis-client.yaml</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Check if the nis package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/rsh-client.yaml</td>
+                    <td>26</td>
+                    <td class="mono snippet">        # Check if the rsh-client package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/ftp-client.yaml</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Check if ftp or tnftp packages are installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/talk-client.yaml</td>
+                    <td>26</td>
+                    <td class="mono snippet">        # Check if the talk package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/telnet-client.yaml</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Check if telnet or inetutils-telnet package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/ldap-client.yaml</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Check if the ldap-utils package is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/linux/audit/ssh-hostbasedauth-disabled.yaml</td>
+                    <td>28</td>
+                    <td class="mono snippet">        # Check if the parameter is set to yes (bad)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/windows/audit/kisa/rds-removal-check.yaml</td>
+                    <td>43</td>
+                    <td class="mono snippet">      # Check if IIS (W3SVC) service is present; if not, IIS is not used and RDS is implicitly compliant.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/windows/audit/kisa/unnecessary-accounts-check.yaml</td>
+                    <td>44</td>
+                    <td class="mono snippet">      # Output results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/windows/audit/kisa/remote-system-shutdown.yaml</td>
+                    <td>38</td>
+                    <td class="mono snippet">          # Check if only the Administrators SID (S-1-5-32-544) is present.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">code/cves/2025/CVE-2025-54309.yaml</td>
+                    <td>162</td>
+                    <td class="mono snippet">              # Check if either response contains the user list pattern</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/auto_assign.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Set 0 to add all the reviewers (default: 0)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-kev.py</td>
+                    <td>153</td>
+                    <td class="mono snippet">                        # Check if we've reached the last page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/update-epss.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">            # Check if update is needed</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2025/CVE-2025-25291.yaml</td>
+                    <td>54</td>
+                    <td class="mono snippet">          username='admin@example.com'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2024/CVE-2024-45409.yaml</td>
+                    <td>48</td>
+                    <td class="mono snippet">          username='admin@example.com'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/token-spray/api-mailboxvalidator.yaml</td>
+                    <td>26</td>
+                    <td class="mono snippet">          - '&quot;email_address&quot;:&quot;test@test.com&quot;'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/default-logins/nginx/nginx-proxy-manager-default-login.yaml</td>
+                    <td>22</td>
+                    <td class="mono snippet">        {&quot;identity&quot;: &quot;admin@example.com&quot;,&quot;secret&quot;: &quot;changeme&quot;}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2024/CVE-2024-8698.yaml</td>
+                    <td>51</td>
+                    <td class="mono snippet">      username = b'admin@example.com'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2023/CVE-2023-34362.yaml</td>
+                    <td>77</td>
+                    <td class="mono snippet">        X-siLock-SessVar1: MyPkgSelfProvisionedRecips: SQL Injection'); INSERT INTO activesessions (SessionID) values ('{{sessioncookie}}');UPDATE act</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(5 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/windows/audit/kisa/ftp-directory-permission-check.yaml</td>
+                    <td>32</td>
+                    <td class="mono snippet">      # Define the FTP home directory path (adjust if necessary)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2014/CVE-2014-0160.yaml</td>
+                    <td>119</td>
+                    <td class="mono snippet">          # Create a socket connection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2024/CVE-2024-45409.yaml</td>
+                    <td>77</td>
+                    <td class="mono snippet">          # Create a deep copy of the assertion for digest calculation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">code/cves/2024/CVE-2024-9487.yaml</td>
+                    <td>90</td>
+                    <td class="mono snippet">        # Create a random AES key for encrypting the data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">http/cves/2024/CVE-2024-45488.yaml</td>
+                    <td>241</td>
+                    <td class="mono snippet">              # Create the HMAC (sign) over the entire blob except for the sign field</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — musescore/MuseScore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>musescore/MuseScore</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">516</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1043</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">4,977,730</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">8275</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(319 hits · 638 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyproject.toml</td>
+                    <td>13</td>
+                    <td class="mono snippet"># --------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>169</td>
+                    <td class="mono snippet"># ----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>178</td>
+                    <td class="mono snippet"># --------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>480</td>
+                    <td class="mono snippet"># -------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>529</td>
+                    <td class="mono snippet"># ---------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>575</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>598</td>
+                    <td class="mono snippet"># --------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>622</td>
+                    <td class="mono snippet"># ------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>646</td>
+                    <td class="mono snippet"># ------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>679</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>691</td>
+                    <td class="mono snippet"># --------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>712</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>731</td>
+                    <td class="mono snippet"># --------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>740</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>776</td>
+                    <td class="mono snippet"># -----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>789</td>
+                    <td class="mono snippet"># -----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>801</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>812</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>838</td>
+                    <td class="mono snippet"># ---------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>886</td>
+                    <td class="mono snippet"># -------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>924</td>
+                    <td class="mono snippet"># ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1014</td>
+                    <td class="mono snippet"># --------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1030</td>
+                    <td class="mono snippet"># --------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1095</td>
+                    <td class="mono snippet"># --------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1147</td>
+                    <td class="mono snippet"># -------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1177</td>
+                    <td class="mono snippet"># ---------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1207</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1232</td>
+                    <td class="mono snippet"># ------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1261</td>
+                    <td class="mono snippet"># ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1282</td>
+                    <td class="mono snippet"># -------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1295</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1308</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1333</td>
+                    <td class="mono snippet"># -----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1350</td>
+                    <td class="mono snippet"># ---------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1483</td>
+                    <td class="mono snippet"># -----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1495</td>
+                    <td class="mono snippet"># ---------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1512</td>
+                    <td class="mono snippet"># ------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1523</td>
+                    <td class="mono snippet"># ---------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1625</td>
+                    <td class="mono snippet"># ---------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1648</td>
+                    <td class="mono snippet"># --------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1672</td>
+                    <td class="mono snippet"># ---------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1773</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1804</td>
+                    <td class="mono snippet"># ----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1832</td>
+                    <td class="mono snippet"># ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1845</td>
+                    <td class="mono snippet"># ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1880</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1906</td>
+                    <td class="mono snippet"># ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1919</td>
+                    <td class="mono snippet"># ------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1939</td>
+                    <td class="mono snippet"># ------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1984</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 269 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(84 hits · 168 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/PyKDDockWidgets/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/MyWidget1.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/MyWidget.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/MyMainWindow.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/main.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/MyWidget3.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/python/examples/MyWidget2.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/docs/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/docs/api/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/conan/conanfile.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/src/CMakeLists.txt</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file is part of KDDockWidgets.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googletest/CMakeLists.txt</td>
+                    <td>89</td>
+                    <td class="mono snippet"># Create the CMake package file descriptors.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googletest/README.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">mkdir build          # Create a directory to hold the build output.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1402</td>
+                    <td class="mono snippet"># This file is a library for parsing options in your shell scripts along</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2502</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2512</td>
+                    <td class="mono snippet"># This function implements the same check as func_lalib_p without</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2535</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2545</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2570</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>2710</td>
+                    <td class="mono snippet"># Create a libtool object file (analogous to a &quot;.la&quot; file),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>7472</td>
+                    <td class="mono snippet">    # Create the object directory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>10145</td>
+                    <td class="mono snippet">      # Create the old-style object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>10165</td>
+                    <td class="mono snippet">	# Create an invalid libtool object if no PIC, so that we don't</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>1402</td>
+                    <td class="mono snippet"># This file is a library for parsing options in your shell scripts along</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2594</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2604</td>
+                    <td class="mono snippet"># This function implements the same check as func_lalib_p without</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2627</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2637</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2662</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>2802</td>
+                    <td class="mono snippet"># Create a libtool object file (analogous to a &quot;.la&quot; file),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>7570</td>
+                    <td class="mono snippet">    # Create the object directory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>10249</td>
+                    <td class="mono snippet">      # Create the old-style object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>10269</td>
+                    <td class="mono snippet">	# Create an invalid libtool object if no PIC, so that we don't</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/tests/run_vectors.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet">#  This file is extracted from RFC6716. Please see that RFC for additional</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>1402</td>
+                    <td class="mono snippet"># This file is a library for parsing options in your shell scripts along</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2502</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2512</td>
+                    <td class="mono snippet"># This function implements the same check as func_lalib_p without</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2535</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2545</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2570</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>2710</td>
+                    <td class="mono snippet"># Create a libtool object file (analogous to a &quot;.la&quot; file),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>7472</td>
+                    <td class="mono snippet">    # Create the object directory.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>10145</td>
+                    <td class="mono snippet">      # Create the old-style object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>10165</td>
+                    <td class="mono snippet">	# Create an invalid libtool object if no PIC, so that we don't</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>1402</td>
+                    <td class="mono snippet"># This file is a library for parsing options in your shell scripts along</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>2594</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>2604</td>
+                    <td class="mono snippet"># This function implements the same check as func_lalib_p without</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>2627</td>
+                    <td class="mono snippet"># This function is only a basic sanity check; it will hardly flush out</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 34 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(19 hits · 95 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/update_instruments_xml.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">null='[null]' # value used in TSV when attributes or tags are to be omitted in XML</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/update_instruments_xml.py</td>
+                    <td>535</td>
+                    <td class="mono snippet">    if tag == null or not tag:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">null='[null]' # value to use in TSV when data is not specified in XML</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">def find_text(element, tagName, default='[null]'):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">    name = articulation.get('name', default='[null]')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">            staffTypePreset = stafftype.get('staffTypePreset', default=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">        except AttributeError: minA, maxA = (null, null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">        except AttributeError: minP, maxP = (null, null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">            channel_name = channel.get('name', default=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">            'longName_it':  italian[longName] if longName in italian else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">            'longName_de':  german[longName] if longName in german else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">            'shortName_it': italian[shortName] if shortName in italian else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">            'shortName_de': german[shortName] if shortName in german else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">            'trackName_it': italian[trackName] if trackName in italian else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">            'trackName_de': german[trackName] if trackName in german else null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">        'articulations':    ';'.join(articulation.get('name', default=null) for articulation in instrument.findall('Articulation')),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">            name = articulation.get('name', default=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">            pitch = drum.get('pitch', default=null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/src/tools/glnames.py</td>
+                    <td>5387</td>
+                    <td class="mono snippet">    if ( name == 0 || name &gt;= limit )</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(30 hits · 57 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">share/instruments/update_instruments_xml.py</td>
+                    <td>139</td>
+                    <td class="mono snippet"># Helper functions to facilitate building the XML tree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">share/instruments/update_instruments_xml.py</td>
+                    <td>388</td>
+                    <td class="mono snippet"># Helper functions to facilitate writing instrumentsxml.h</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/notationscene/qml/MuseScore/NotationScene/percussionpanel/percussionpanelpadlistmodel.cpp</td>
+                    <td>179</td>
+                    <td class="mono snippet">        //! NOTE: Pitch + drum name isn't exactly the most robust identifier, but this will probably change with the new percussion ID system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/engraving/dom/realizedharmony.cpp</td>
+                    <td>122</td>
+                    <td class="mono snippet">    case Voicing::AUTO:         //auto is close voicing for now since it is the most robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/CMakeLists.txt</td>
+                    <td>23</td>
+                    <td class="mono snippet">#  Build the test harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/CMakeLists.txt</td>
+                    <td>55</td>
+                    <td class="mono snippet">#  Forces the test harness to be built.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/CMakeLists.txt</td>
+                    <td>153</td>
+                    <td class="mono snippet">#Always build the test harness in developer-mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/src/private/TabWidget.cpp</td>
+                    <td>80</td>
+                    <td class="mono snippet">            // Case #3. window with title bar and single tab, no detaching should happen, just use the title bar.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googletest/include/gtest/gtest-death-test.h</td>
+                    <td>152</td>
+                    <td class="mono snippet">//   This implementation is *not* meant to be as highly tuned or robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googletest/include/gtest/gtest-death-test.h</td>
+                    <td>224</td>
+                    <td class="mono snippet">// In practice, this can be used to test functions that utilize the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googlemock/CMakeLists.txt</td>
+                    <td>194</td>
+                    <td class="mono snippet">  # this binary. To get a more robust shared library coverage, configure with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>331</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>5227</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>9167</td>
+                    <td class="mono snippet">	  # This code stresses the &quot;libraries are programs&quot; paradigm to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>331</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>5319</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>9271</td>
+                    <td class="mono snippet">	  # This code stresses the &quot;libraries are programs&quot; paradigm to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>331</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>5227</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>9167</td>
+                    <td class="mono snippet">	  # This code stresses the &quot;libraries are programs&quot; paradigm to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/stb/stb_vorbis.c</td>
+                    <td>51</td>
+                    <td class="mono snippet">//    1.10    - 2017-03-03 - more robust seeking; fix negative ilog(); clear error in open_memory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>331</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>5319</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>9271</td>
+                    <td class="mono snippet">	  # This code stresses the &quot;libraries are programs&quot; paradigm to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/diagnostics/thirdparty/google_crashpad_client/third_party/mini_chromium/mini_chromium/base/numerics/clamped_math.h</td>
+                    <td>44</td>
+                    <td class="mono snippet">  // This is not an explicit constructor because we want a seamless conversion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/diagnostics/thirdparty/google_crashpad_client/third_party/mini_chromium/mini_chromium/base/numerics/checked_math.h</td>
+                    <td>44</td>
+                    <td class="mono snippet">  // This is not an explicit constructor because we want a seamless conversion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/ft2-layer_management.html</td>
+                    <td>2667</td>
+                    <td class="mono snippet">&lt;p&gt;An &lt;code&gt;&lt;a href=&quot;ft2-layer_management.html#ft_layeriterator&quot;&gt;FT_LayerIterator&lt;/a&gt;&lt;/code&gt; object. For the first call you should set &lt;code&gt;iterator-</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/search/search_index.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;config&quot;:{&quot;lang&quot;:[&quot;en&quot;],&quot;separator&quot;:&quot;[\\s\\-]+&quot;,&quot;pipeline&quot;:[&quot;stopWordFilter&quot;]},&quot;docs&quot;:[{&quot;location&quot;:&quot;index.html&quot;,&quot;title&quot;:&quot;TOC&quot;,&quot;text&quot;:&quot;&lt;p&gt;FreeType \u0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>345</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>5631</td>
+                    <td class="mono snippet"># Sed substitution that helps us do robust quoting.  It backslashifies</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(32 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/testing/thirdparty/googletest/googletest/test/googletest-filter-unittest.py</td>
+                    <td>69</td>
+                    <td class="mono snippet"># Check if this platform can unset environment variables in child processes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>623</td>
+                    <td class="mono snippet"># Set func_arith_result to the result of evaluating TERMs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>647</td>
+                    <td class="mono snippet"># Set func_basename_result to FILE with everything up to and including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>813</td>
+                    <td class="mono snippet"># Set func_len_result to the length of STRING. STRING may not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># Set func_relative_path_result to the relative path from SRCDIR to DSTDIR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>3911</td>
+                    <td class="mono snippet">    # Check if any of the arguments is a wrapper script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/ltmain.sh</td>
+                    <td>9868</td>
+                    <td class="mono snippet">	      # Loop over the list of objects to be linked.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>623</td>
+                    <td class="mono snippet"># Set func_arith_result to the result of evaluating TERMs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>647</td>
+                    <td class="mono snippet"># Set func_basename_result to FILE with everything up to and including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>813</td>
+                    <td class="mono snippet"># Set func_len_result to the length of STRING. STRING may not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># Set func_relative_path_result to the relative path from SRCDIR to DSTDIR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>4003</td>
+                    <td class="mono snippet">    # Check if any of the arguments is a wrapper script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/ltmain.sh</td>
+                    <td>9972</td>
+                    <td class="mono snippet">	      # Loop over the list of objects to be linked.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>623</td>
+                    <td class="mono snippet"># Set func_arith_result to the result of evaluating TERMs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>647</td>
+                    <td class="mono snippet"># Set func_basename_result to FILE with everything up to and including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>813</td>
+                    <td class="mono snippet"># Set func_len_result to the length of STRING. STRING may not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># Set func_relative_path_result to the relative path from SRCDIR to DSTDIR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>3911</td>
+                    <td class="mono snippet">    # Check if any of the arguments is a wrapper script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opusenc/libopusenc-0.2.1/ltmain.sh</td>
+                    <td>9868</td>
+                    <td class="mono snippet">	      # Loop over the list of objects to be linked.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>623</td>
+                    <td class="mono snippet"># Set func_arith_result to the result of evaluating TERMs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>647</td>
+                    <td class="mono snippet"># Set func_basename_result to FILE with everything up to and including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>813</td>
+                    <td class="mono snippet"># Set func_len_result to the length of STRING. STRING may not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># Set func_relative_path_result to the relative path from SRCDIR to DSTDIR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>4003</td>
+                    <td class="mono snippet">    # Check if any of the arguments is a wrapper script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/flac/flac-1.4.3/ltmain.sh</td>
+                    <td>9972</td>
+                    <td class="mono snippet">	      # Loop over the list of objects to be linked.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>379</td>
+                    <td class="mono snippet"># Check if we can use backslash as IFS='\' separator, and set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>666</td>
+                    <td class="mono snippet"># Set func_arith_result to the result of evaluating TERMs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>690</td>
+                    <td class="mono snippet"># Set func_basename_result to FILE with everything up to and including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>856</td>
+                    <td class="mono snippet"># Set func_len_result to the length of STRING. STRING may not</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>1074</td>
+                    <td class="mono snippet"># Set func_relative_path_result to the relative path from SRCDIR to DSTDIR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>4294</td>
+                    <td class="mono snippet">    # Check if any of the arguments is a wrapper script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/builds/unix/ltmain.sh</td>
+                    <td>10242</td>
+                    <td class="mono snippet">	      # Loop over the list of objects to be linked.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">buildscripts/ci/tools/osuosl/publish.sh</td>
+                    <td>98</td>
+                    <td class="mono snippet">            : # Do nothing. zsync file is in the right place on OSUOSL, but don't forget to upload it to GitHub Releases with the AppImage.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">buildscripts/ci/tools/osuosl/publish.sh</td>
+                    <td>98</td>
+                    <td class="mono snippet">            : # Do nothing. zsync file is in the right place on OSUOSL, but don't forget to upload it to GitHub Releases with the AppImage.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/engraving/rendering/score/tlayout.cpp</td>
+                    <td>2521</td>
+                    <td class="mono snippet">    // When changing how bbox is calculated, don't forget to update the centerX and rightX methods too.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/README-WASM.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">- As the build is static, don't forget to initialize KDDW's resources:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/dockwindow/thirdparty/KDDockWidgets/src/private/Position_p.h</td>
+                    <td>41</td>
+                    <td class="mono snippet">// Just a RAII class so we don't forget to unref</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/audio/thirdparty/lame/mpglib/layer3.c</td>
+                    <td>716</td>
+                    <td class="mono snippet"> * don't forget to apply the same changes to III_dequantize_sample_ms() !!!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/include/freetype/fterrors.h</td>
+                    <td>78</td>
+                    <td class="mono snippet">   *   Here is a simple example.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/include/freetype/freetype.h</td>
+                    <td>1385</td>
+                    <td class="mono snippet">   *     for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/include/freetype/internal/ftrfork.h</td>
+                    <td>35</td>
+                    <td class="mono snippet">  /* Don't forget to increment the number if you add a new guessing rule. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/ft2-face_creation.html</td>
+                    <td>2546</td>
+                    <td class="mono snippet">&lt;p&gt;It is not possible to auto-hint such fonts using &lt;code&gt;&lt;a href=&quot;ft2-glyph_retrieval.html#ft_load_xxx&quot;&gt;FT_LOAD_FORCE_AUTOHINT&lt;/a&gt;&lt;/code&gt;; it will al</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/ft2-error_enumerations.html</td>
+                    <td>2069</td>
+                    <td class="mono snippet">&lt;p&gt;Here is a simple example.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/search/search_index.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;config&quot;:{&quot;lang&quot;:[&quot;en&quot;],&quot;separator&quot;:&quot;[\\s\\-]+&quot;,&quot;pipeline&quot;:[&quot;stopWordFilter&quot;]},&quot;docs&quot;:[{&quot;location&quot;:&quot;index.html&quot;,&quot;title&quot;:&quot;TOC&quot;,&quot;text&quot;:&quot;&lt;p&gt;FreeType \u0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/search/search_index.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;config&quot;:{&quot;lang&quot;:[&quot;en&quot;],&quot;separator&quot;:&quot;[\\s\\-]+&quot;,&quot;pipeline&quot;:[&quot;stopWordFilter&quot;]},&quot;docs&quot;:[{&quot;location&quot;:&quot;index.html&quot;,&quot;title&quot;:&quot;TOC&quot;,&quot;text&quot;:&quot;&lt;p&gt;FreeType \u0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/framework/draw/thirdparty/freetype/freetype-2.14.1/docs/reference/search/search_index.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;config&quot;:{&quot;lang&quot;:[&quot;en&quot;],&quot;separator&quot;:&quot;[\\s\\-]+&quot;,&quot;pipeline&quot;:[&quot;stopWordFilter&quot;]},&quot;docs&quot;:[{&quot;location&quot;:&quot;index.html&quot;,&quot;title&quot;:&quot;TOC&quot;,&quot;text&quot;:&quot;&lt;p&gt;FreeType \u0</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(8 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/engraving/automation/internal/automation.cpp</td>
+                    <td>154</td>
+                    <td class="mono snippet">        // Step 1: find the first point &gt;= utickFrom</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/engraving/automation/internal/automation.cpp</td>
+                    <td>160</td>
+                    <td class="mono snippet">        // Step 2: copy affected points</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/engraving/automation/internal/automation.cpp</td>
+                    <td>165</td>
+                    <td class="mono snippet">        // Step 3: erase the original range</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/engraving/automation/internal/automation.cpp</td>
+                    <td>168</td>
+                    <td class="mono snippet">        // Step 4: reinsert with updated keys</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/project/internal/notationproject.cpp</td>
+                    <td>651</td>
+                    <td class="mono snippet">    // Step 1: check writable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/project/internal/notationproject.cpp</td>
+                    <td>668</td>
+                    <td class="mono snippet">    // Step 2: write project</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/project/internal/notationproject.cpp</td>
+                    <td>744</td>
+                    <td class="mono snippet">    // Step 3: create backup if need</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/project/internal/notationproject.cpp</td>
+                    <td>751</td>
+                    <td class="mono snippet">    // Step 4: replace to saved file</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(4 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/translations/process_source_ts_files.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    eprint(f'Error in translatable string: &quot;{message.find(&quot;source&quot;).text}&quot;')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">buildscripts/ci/crashdumps/posix/generate_breakpad_symbols.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">      except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">share/instruments/update_instruments_xml.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    eprint(f&quot;Error: Encoding is '{encoding}': Python is not running in UTF-8 mode.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">share/instruments/generate_tsv.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">    eprint(f&quot;Error: Encoding is '{encoding}': Python is not running in UTF-8 mode.&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/translations/run_lupdate.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/engraving/api/v1/style.h</td>
+                    <td>38</td>
+                    <td class="mono snippet">///   Usage example:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/audio/thirdparty/opus/opus-1.5.2/meson/get-version.py</td>
+                    <td>10</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/diagnostics/thirdparty/google_crashpad_client/third_party/mini_chromium/mini_chromium/base/mac/foundation_util.h</td>
+                    <td>99</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/framework/diagnostics/thirdparty/google_crashpad_client/third_party/mini_chromium/mini_chromium/base/mac/foundation_util.h</td>
+                    <td>162</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/framework/diagnostics/thirdparty/google_crashpad_client/util/stdlib/aligned_allocator.h</td>
+                    <td>39</td>
+                    <td class="mono snippet">//! \brief A standard allocator that aligns its allocations as requested,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

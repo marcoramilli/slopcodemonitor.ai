@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — OWASP/mastg</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>OWASP/mastg</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">6.2</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">6.2</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">125</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">445</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">71,336</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1337</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(31 hits · 310 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/android/MASVS-PLATFORM/MASTG-TEST-0028.md</td>
+                    <td>285</td>
+                    <td class="mono snippet">com.android.internal.os.ZygoteInit.main(ZygoteInit.java)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>67</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.integration.android.SharedPrefKeysetWriter.write(SharedPrefKeysetWriter.java:70)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>68</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.KeysetHandle.writeWithAssociatedData(KeysetHandle.java:869)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>69</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.KeysetHandle.write(KeysetHandle.java:858)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>105</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.integration.android.SharedPrefKeysetWriter.write(SharedPrefKeysetWriter.java:70)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>106</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.KeysetHandle.writeWithAssociatedData(KeysetHandle.java:869)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-STORAGE/MASTG-DEMO-0060/output.json</td>
+                    <td>107</td>
+                    <td class="mono snippet">    &quot;com.google.crypto.tink.KeysetHandle.write(KeysetHandle.java:858)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0082/output.json</td>
+                    <td>7</td>
+                    <td class="mono snippet">com.android.webview.chromium.ContentSettingsAdapter.setDomStorageEnabled(Native Method)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0082/output.json</td>
+                    <td>20</td>
+                    <td class="mono snippet">com.android.webview.chromium.e.deleteAllData(Native Method)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>56</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.SwitchOverStringVisitor.restoreSwitchOverString(SwitchOverStringVisitor.java:109)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>57</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.SwitchOverStringVisitor.visitRegion(SwitchOverStringVisitor.java:66)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>58</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.DepthRegionTraversal.traverseIterativeStepInternal(DepthRegionTraversal.java:77)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>59</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.DepthRegionTraversal.traverseIterativeStepInternal(DepthRegionTraversal.java:82)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>60</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.DepthRegionTraversal.traverseIterative(DepthRegionTraversal.java:31)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CODE/MASTG-DEMO-0101/MastgTest_reversed.java</td>
+                    <td>61</td>
+                    <td class="mono snippet">    	at jadx.core.dex.visitors.regions.SwitchOverStringVisitor.visit(SwitchOverStringVisitor.java:60)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-PRIVACY/MASTG-DEMO-0081/output.json</td>
+                    <td>30</td>
+                    <td class="mono snippet">    &quot;com.google.firebase.analytics.FirebaseAnalytics.logEvent(Native Method)&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>27</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>35</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.dispatchPointerEvent(Suspend</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>39</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:317)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>40</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:303)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>41</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.input.pointer.NodeParent.dispatchMainEventPass(HitPathTracker.kt:185)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>42</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.input.pointer.HitPathTracker.dispatchChanges(HitPathTracker.kt:104)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>46</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at androidx.compose.ui.platform.AndroidComposeView.dispatchTouchEvent(AndroidComposeView.android.kt:1466</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>55</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at com.android.internal.policy.DecorView.superDispatchTouchEvent(DecorView.java:490)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>56</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at com.android.internal.policy.PhoneWindow.superDispatchTouchEvent(PhoneWindow.java:1904)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>58</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at com.android.internal.policy.DecorView.dispatchTouchEvent(DecorView.java:448)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-RESILIENCE/MASTG-DEMO-0037/output.txt</td>
+                    <td>85</td>
+                    <td class="mono snippet">03-26 11:33:23.415  2340  2407 D StrictMode: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CRYPTO/MASTG-DEMO-0072/output.txt</td>
+                    <td>14</td>
+                    <td class="mono snippet">    kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CRYPTO/MASTG-DEMO-0072/output.txt</td>
+                    <td>29</td>
+                    <td class="mono snippet">    kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CRYPTO/MASTG-DEMO-0072/output.txt</td>
+                    <td>45</td>
+                    <td class="mono snippet">    kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">demos/android/MASVS-CRYPTO/MASTG-DEMO-0072/output.txt</td>
+                    <td>61</td>
+                    <td class="mono snippet">    kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(50 hits · 50 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/check-duplicate-ids.yml</td>
+                    <td>77</td>
+                    <td class="mono snippet">            // Step 1: Try to clean up existing comments</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/check-duplicate-ids.yml</td>
+                    <td>111</td>
+                    <td class="mono snippet">            // Step 2: Check if we need to post new notifications</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/check-duplicate-ids.yml</td>
+                    <td>119</td>
+                    <td class="mono snippet">            // Step 3: Post notifications for each duplicate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>4</td>
+                    <td class="mono snippet">    // Step 1: Retrieve the documents directory URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>6</td>
+                    <td class="mono snippet">        // Step 2: Create a file URL for &quot;secret.txt&quot; in the documents directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>8</td>
+                    <td class="mono snippet">        // Step 3: Define the content to write to the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>12</td>
+                    <td class="mono snippet">            // Step 4: Write the content to the file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>14</td>
+                    <td class="mono snippet">            // Step 5: Set the 'isExcludedFromBackup' attribute to true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>18</td>
+                    <td class="mono snippet">            // Step 6: Log a success message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>21</td>
+                    <td class="mono snippet">            // Step 7: Log an error message if an exception occurs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/MastgTest.swift</td>
+                    <td>7</td>
+                    <td class="mono snippet">        // Step 1: Use a hardcoded ECDSA P-256 private key (32 bytes for P-256) in bytes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/MastgTest.swift</td>
+                    <td>26</td>
+                    <td class="mono snippet">        // Step 2: Sign the data with the hardcoded private key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/MastgTest.swift</td>
+                    <td>32</td>
+                    <td class="mono snippet">        // Step 3: Verify the signature with the public key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>6</td>
+                    <td class="mono snippet">    // Step 1: Load P256 Private Key from Embedded Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>19</td>
+                    <td class="mono snippet">        // Step 2: Extract Public Key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>22</td>
+                    <td class="mono snippet">        // Step 3: Create Sample Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>29</td>
+                    <td class="mono snippet">        // Step 4: Sign the Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>32</td>
+                    <td class="mono snippet">        // Step 5: Verify the Signature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>35</td>
+                    <td class="mono snippet">        // Step 6: Convert Keys and Signature to Hex Strings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>41</td>
+                    <td class="mono snippet">        // Step 7: Construct an Output Message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0014/decompiled-o1-review.swift</td>
+                    <td>48</td>
+                    <td class="mono snippet">        // Step 8: Update SwiftUI State Variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/MastgTest.swift</td>
+                    <td>7</td>
+                    <td class="mono snippet">	// Step 1: Use a hardcoded RSA private key (in DER format)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/MastgTest.swift</td>
+                    <td>80</td>
+                    <td class="mono snippet">        // Step 2: Sign the data with the hardcoded private key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/MastgTest.swift</td>
+                    <td>94</td>
+                    <td class="mono snippet">        // Step 3: Verify the signature with the public key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>6</td>
+                    <td class="mono snippet">    // Step 1: Load RSA Private Key from Embedded Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>35</td>
+                    <td class="mono snippet">    // Step 2: Extract Public Key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>42</td>
+                    <td class="mono snippet">    // Step 3: Create Sample Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>49</td>
+                    <td class="mono snippet">    // Step 4: Sign the Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>61</td>
+                    <td class="mono snippet">    // Step 5: Verify the Signature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>68</td>
+                    <td class="mono snippet">    // Step 6: Convert Keys and Signature to Hex Strings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>77</td>
+                    <td class="mono snippet">    // Step 7: Construct an Output Message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0013/decompiled-o1-review.swift</td>
+                    <td>84</td>
+                    <td class="mono snippet">    // Step 8: Update SwiftUI State Variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0011/MastgTest.swift</td>
+                    <td>7</td>
+                    <td class="mono snippet">        // Step 1: Generate an RSA key pair with a 1024-bit key size</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0011/MastgTest.swift</td>
+                    <td>48</td>
+                    <td class="mono snippet">        // Step 2: Sign the data with the private key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0011/MastgTest.swift</td>
+                    <td>62</td>
+                    <td class="mono snippet">        // Step 3: Verify the signature with the public key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0018/decompiled-o1-review.swift</td>
+                    <td>6</td>
+                    <td class="mono snippet">    // Step 1: Define the key and input text</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0018/decompiled-o1-review.swift</td>
+                    <td>10</td>
+                    <td class="mono snippet">    // Step 2: Convert key and input text to Data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0018/decompiled-o1-review.swift</td>
+                    <td>17</td>
+                    <td class="mono snippet">    // Step 3: Set up the output buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0018/decompiled-o1-review.swift</td>
+                    <td>21</td>
+                    <td class="mono snippet">    // Step 4: Perform encryption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/ios/MASVS-CRYPTO/MASTG-DEMO-0018/decompiled-o1-review.swift</td>
+                    <td>43</td>
+                    <td class="mono snippet">    // Step 5: Check the result and return encrypted data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Step 1: Obtain the IPA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">## Step 2: Obtain a Developer Provisioning Profile</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Step 3: Inject the Frida Gadget</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Step 4: Sign the IPA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>29</td>
+                    <td class="mono snippet">## Step 5: Install the App</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0146.md</td>
+                    <td>33</td>
+                    <td class="mono snippet">## Step 6: Launch the App in Debug Mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0026.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Step 1: Obtain the APK</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0026.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">## Step 2: Inject the Frida Gadget</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0026.md</td>
+                    <td>21</td>
+                    <td class="mono snippet">## Step 3: Sign the APK</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0026.md</td>
+                    <td>25</td>
+                    <td class="mono snippet">## Step 4: Install the App</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(13 hits · 26 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/android/MASVS-PLATFORM/MASTG-TEST-0032.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">To test for [WebView protocol handlers (or resource access)](../../../Document/0x05h-Testing-Platform-Interaction.md#webview-local-file-access-setting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/android/MASVS-PLATFORM/MASTG-TEST-0032.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">Use the following [code snippet and best practices](https://github.com/nowsecure/secure-mobile-development/blob/master/en/android/webview-best-practic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/android/MASVS-PLATFORM/MASTG-TEST-0031.md</td>
+                    <td>19</td>
+                    <td class="mono snippet">To test for [JavaScript execution in WebViews](../../../Document/0x05h-Testing-Platform-Interaction.md#javascript-execution-in-webviews &quot;JavaScript Ex</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Document/0x04g-Testing-Cryptography.md</td>
+                    <td>50</td>
+                    <td class="mono snippet">- Through [NIST SP 800-131A - &quot;Transitioning the Use of Cryptographic Algorithms and Key Lengths&quot;, 2024](https://csrc.nist.gov/pubs/sp/800/131/a/r3/ip</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Document/0x05d-Testing-Data-Storage.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">Sensitive data can become vulnerable if improperly protected, potentially stored in various locations, including the device or an external SD card. It</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Document/0x06f-Testing-Local-Authentication.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">A variety of methods are available for integrating local authentication into apps. The [Local Authentication framework](https://developer.apple.com/do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">knowledge/ios/MASVS-AUTH/MASTG-KNOW-0056.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">The [Local Authentication framework](https://developer.apple.com/documentation/localauthentication) provides facilities for requesting a passphrase or</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">knowledge/ios/MASVS-CRYPTO/MASTG-KNOW-0066.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">Apple CryptoKit was released with iOS 13 and is built on top of Apple's native cryptographic library corecrypto which is [FIPS 140-2 validated](https:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests-beta/android/MASVS-RESILIENCE/MASTG-TEST-0247.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">This test verifies whether an app is running on a device with a passcode set. Android apps can determine whether a secure [screen lock (such as PIN, o</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">best-practices/MASTG-BEST-0040.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">1. **Use `HIDE_OVERLAY_WINDOWS` permission and `setHideOverlayWindows(true)`** (API level 31+): Declare the [`HIDE_OVERLAY_WINDOWS`](https://developer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">best-practices/MASTG-BEST-0040.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">1. **Use `HIDE_OVERLAY_WINDOWS` permission and `setHideOverlayWindows(true)`** (API level 31+): Declare the [`HIDE_OVERLAY_WINDOWS`](https://developer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0071.md</td>
+                    <td>8</td>
+                    <td class="mono snippet">To extract strings from an iOS binary, you can use GUI tools such as Ghidra or [iaito](https://github.com/radareorg/iaito &quot;iaito&quot;) or rely on CLI-base</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0108.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">There are multiple tools which perform taint analysis on native code, including [Triton](https://github.com/jonathansalwan/Triton &quot;Triton&quot;), [bincat](</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(11 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/generic/MASTG-TOOL-0031.md</td>
+                    <td>47</td>
+                    <td class="mono snippet">- [Java](https://www.frida.re/docs/javascript-api/#java &quot;Java&quot;): When working on Android you can use this API to enumerate loaded classes, enumerate c</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/generic/MASTG-TOOL-0031.md</td>
+                    <td>48</td>
+                    <td class="mono snippet">- [ObjC](https://www.frida.re/docs/javascript-api/#objc &quot;ObjC&quot;): When working on iOS you can use this API to get a mapping of all registered classes, </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/ios/MASVS-STORAGE/MASTG-TEST-0054.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">To intercept traffic between the client and server, you can perform dynamic analysis by launching a [Machine-in-the-Middle (MITM)](../../../Document/0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/android/MASVS-STORAGE/MASTG-TEST-0004.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">To intercept traffic between the client and server, you can perform dynamic analysis by launching a [Machine-in-the-Middle (MITM)](../../../Document/0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/android/MASVS-PLATFORM/MASTG-TEST-0028.md</td>
+                    <td>288</td>
+                    <td class="mono snippet">In this case we've crafted the deep link including arbitrary parameters (`?message=ok`) and fragment (`#part1`). We still don't know if they are being</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0031/MASTG-DEMO-0031.md</td>
+                    <td>40</td>
+                    <td class="mono snippet">**Note:** For demonstration purposes, the exfiltrated data is displayed on screen. However, in a real attack scenario, the user would not notice as th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0030/MASTG-DEMO-0030.md</td>
+                    <td>41</td>
+                    <td class="mono snippet">**Note:** For demonstration purposes, the exfiltrated data is displayed on screen. However, in a real attack scenario, the user would not notice as th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-CRYPTO/MASTG-DEMO-0058/MastgTest.kt</td>
+                    <td>65</td>
+                    <td class="mono snippet">                .setRandomizedEncryptionRequired(false) // For demonstration purposes, we disable randomized encryption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0074.md</td>
+                    <td>8</td>
+                    <td class="mono snippet">Typically, these domains are stored as strings in the application's binary. One can extract domains by retrieving strings (as discussed above) or by c</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0076.md</td>
+                    <td>60</td>
+                    <td class="mono snippet">In our first step, we observed that the application verifies the input string only when the UI button is pressed. Thus, analyzing the `buttonClick` fu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0012.md</td>
+                    <td>73</td>
+                    <td class="mono snippet">As an example, let's say that you find an application that uses an obfuscated OkHTTP3 library. The [documentation](https://square.github.io/okhttp/3.x</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Document/0x04e-Testing-Authentication-and-Session-Management.md</td>
+                    <td>136</td>
+                    <td class="mono snippet">{&quot;sub&quot;:&quot;1234567890&quot;,&quot;name&quot;:&quot;John Doe&quot;,&quot;admin&quot;:true}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/instructions/mastg-mitmproxy-scripts.instructions.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0097/MastgTestWebView_reversed.java</td>
+                    <td>94</td>
+                    <td class="mono snippet">        editor$iv.putString(HintConstants.AUTOFILL_HINT_NAME, &quot;John Doe&quot;).putString(NotificationCompat.CATEGORY_EMAIL, &quot;john.doe@example.com&quot;).putStri</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0097/MastgTestWebView.kt</td>
+                    <td>199</td>
+                    <td class="mono snippet">            putString(&quot;name&quot;, &quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PRIVACY/MASTG-DEMO-0009/MastgTest_reversed.java</td>
+                    <td>38</td>
+                    <td class="mono snippet">        final Map SENSITIVE_DATA = MapsKt.mapOf(TuplesKt.to(&quot;precise_location_latitude&quot;, &quot;37.7749&quot;), TuplesKt.to(&quot;precise_location_longitude&quot;, &quot;-122.4</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PRIVACY/MASTG-DEMO-0009/MastgTest.kt</td>
+                    <td>20</td>
+                    <td class="mono snippet">            &quot;name&quot; to &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/android/MASVS-PRIVACY/MASTG-DEMO-0009/mitm_sensitive_logger.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/android/MASTG-TECH-0100.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">Document/0x04b-Mobile-App-Security-Testing.md</td>
+                    <td>249</td>
+                    <td class="mono snippet">#### Defining a Test Strategy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/check-duplicate-ids.yml</td>
+                    <td>38</td>
+                    <td class="mono snippet">          # Create a file with the list of new files in this PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">techniques/ios/MASTG-TECH-0079.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">## Creating a signing identity</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/scripts/tools_healthcheck.py</td>
+                    <td>30</td>
+                    <td class="mono snippet"># Create the markdown table</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.github/PULL_REQUEST_TEMPLATE.md</td>
+                    <td>28</td>
+                    <td class="mono snippet">Undisclosed use of AI tools will result in the PR being closed. Large rewrites or bulk changes generated by AI require explicit prior approval from th</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(4 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/instructions/mastg-mitmproxy-scripts.instructions.md</td>
+                    <td>64</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">demos/ios/MASVS-STORAGE/MASTG-DEMO-0019/decompiled-o1-review.swift</td>
+                    <td>22</td>
+                    <td class="mono snippet">            print(&quot;Error creating file: \(error)&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">demos/android/MASVS-PLATFORM/MASTG-DEMO-0030/server.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/scripts/tools_healthcheck.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/check_duplicate_ids.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">            # Check if key is in folder name or folder is in key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/check_duplicate_ids.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">        # Check if this ID already exists</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/android/MASTG-TOOL-0015.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">### Example usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

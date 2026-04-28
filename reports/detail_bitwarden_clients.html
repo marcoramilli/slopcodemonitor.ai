@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — bitwarden/clients</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>bitwarden/clients</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.9</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.9</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1015</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">2214</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,343,566</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">6822</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(839 hits · 1678 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/access-intelligence/services/implementations/persistence/default-report-persistence.service.spec.ts</td>
+                    <td>314</td>
+                    <td class="mono snippet">            &quot;member-1&quot;: { id: &quot;member-1&quot;, userName: &quot;John Doe&quot;, email: &quot;john@example.com&quot; },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/access-intelligence/services/implementations/domain/default-cipher-health.service.spec.ts</td>
+                    <td>36</td>
+                    <td class="mono snippet">        username: options.username ?? &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">              userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>39</td>
+                    <td class="mono snippet">              userName: &quot;Jane Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>335</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>345</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>375</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>385</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/reports/risk-insights/helpers/type-guards/risk-insights-type-guards.spec.ts</td>
+                    <td>395</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/access-intelligence/shared/risk-insights-drawer-dialog.component.spec.ts</td>
+                    <td>131</td>
+                    <td class="mono snippet">          { email: &quot;user@example.com&quot;, atRiskPasswordCount: 5 },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/access-intelligence/shared/risk-insights-drawer-dialog.component.spec.ts</td>
+                    <td>132</td>
+                    <td class="mono snippet">          { email: &quot;admin@example.com&quot;, atRiskPasswordCount: 3 },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/access-intelligence/shared/risk-insights-drawer-dialog.component.spec.ts</td>
+                    <td>151</td>
+                    <td class="mono snippet">        atRiskMemberDetails: [{ email: &quot;user@example.com&quot;, atRiskPasswordCount: 5 }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/access-intelligence/shared/risk-insights-drawer-dialog.component.spec.ts</td>
+                    <td>162</td>
+                    <td class="mono snippet">        atRiskMemberDetails: [{ email: &quot;user@example.com&quot;, atRiskPasswordCount: 5 }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/access-intelligence/shared/app-table-row-scrollable-m11.component.spec.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">        userName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/tools/send/send-ui/src/send-form/components/send-details/send-details.component.spec.ts</td>
+                    <td>170</td>
+                    <td class="mono snippet">      emails: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/myki-csv-importer.spec.ts</td>
+                    <td>561</td>
+                    <td class="mono snippet">    expect(cipher.notes).toBe(&quot;The content of a secure note. Lorem ipsum, etc.&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/msecure-csv-importer.spec.ts</td>
+                    <td>42</td>
+                    <td class="mono snippet">    expect(cipher.card.cardholderName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/arc-csv-importer.spec.ts</td>
+                    <td>20</td>
+                    <td class="mono snippet">        username: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/arc-csv-importer.spec.ts</td>
+                    <td>38</td>
+                    <td class="mono snippet">        username: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/arc-csv-importer.spec.ts</td>
+                    <td>56</td>
+                    <td class="mono snippet">        username: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/arc-csv-importer.spec.ts</td>
+                    <td>74</td>
+                    <td class="mono snippet">        username: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/arc-csv-importer.spec.ts</td>
+                    <td>106</td>
+                    <td class="mono snippet">        username: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>63</td>
+                    <td class="mono snippet">    expect(cipher.card.cardholderName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>86</td>
+                    <td class="mono snippet">    expect(cipher2.name).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>88</td>
+                    <td class="mono snippet">    expect(cipher2.card.cardholderName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>113</td>
+                    <td class="mono snippet">    expect(cipher.identity.fullName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>134</td>
+                    <td class="mono snippet">    expect(cipher2.identity.fullName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>155</td>
+                    <td class="mono snippet">    expect(cipher3.identity.fullName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/dashlane/dashlane-csv-importer.spec.ts</td>
+                    <td>174</td>
+                    <td class="mono snippet">    expect(cipher4.identity.fullName).toBe(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/spec-data/keeper-json/testdata.json.ts</td>
+                    <td>2241</td>
+                    <td class="mono snippet">      login: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/spec-data/onepassword-1pux/secure-note.ts</td>
+                    <td>34</td>
+                    <td class="mono snippet">                  &quot;This is my secure note. \n\nLorem ipsum expecto patronum. \nThe quick brown fox jumped over the lazy dog. &quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/spec-data/onepassword-1pux/sanitized-export.ts</td>
+                    <td>3000</td>
+                    <td class="mono snippet">                  &quot;This is my secure note. \n\nLorem ipsum expecto patronum. \nThe quick brown fox jumped over the lazy dog. &quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/spec-data/myki-csv/user-note.csv.ts</td>
+                    <td>2</td>
+                    <td class="mono snippet">The title of a secure note,active,&quot;The content of a secure note. Lorem ipsum, etc.&quot;`;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/onepassword/onepassword-1pux-importer.spec.ts</td>
+                    <td>649</td>
+                    <td class="mono snippet">      &quot;This is my secure note. \n\nLorem ipsum expecto patronum. \nThe quick brown fox jumped over the lazy dog.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/fsecure/fsecure-fsk-importer.spec.ts</td>
+                    <td>41</td>
+                    <td class="mono snippet">    expect(cipher.card.cardholderName).toEqual(&quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/fsecure/fsk-test-data.ts</td>
+                    <td>46</td>
+                    <td class="mono snippet">      username: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/lastpass/lastpass-csv-importer.spec.ts</td>
+                    <td>45</td>
+                    <td class="mono snippet">        cardholderName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/lastpass/lastpass-csv-importer.spec.ts</td>
+                    <td>101</td>
+                    <td class="mono snippet">        cardholderName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/importer/src/importers/lastpass/lastpass-csv-importer.spec.ts</td>
+                    <td>135</td>
+                    <td class="mono snippet">        cardholderName: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/key-management-ui/src/lock/components/master-password-lock/master-password-lock.component.spec.ts</td>
+                    <td>58</td>
+                    <td class="mono snippet">      email: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/angular/src/auth/password-management/set-initial-password/default-set-initial-password.service.spec.ts</td>
+                    <td>168</td>
+                    <td class="mono snippet">        salt: &quot;user@example.com&quot; as any,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/angular/src/auth/password-management/set-initial-password/default-set-initial-password.service.spec.ts</td>
+                    <td>1029</td>
+                    <td class="mono snippet">      salt: &quot;user@example.com&quot; as unknown as MasterPasswordSalt,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/angular/src/auth/password-management/set-initial-password/default-set-initial-password.service.spec.ts</td>
+                    <td>1053</td>
+                    <td class="mono snippet">        salt: &quot;user@example.com&quot; as unknown as MasterPasswordSalt,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/angular/src/auth/password-management/set-initial-password/default-set-initial-password.service.spec.ts</td>
+                    <td>1266</td>
+                    <td class="mono snippet">        salt: &quot;user@example.com&quot; as MasterPasswordSalt,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/state/src/state-migrations/migrations/51-move-remembered-email-to-state-providers.spec.ts</td>
+                    <td>13</td>
+                    <td class="mono snippet">    global_loginEmail_storedEmail: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/state/src/state-migrations/migrations/51-move-remembered-email-to-state-providers.spec.ts</td>
+                    <td>24</td>
+                    <td class="mono snippet">          rememberedEmail: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/state/src/state-migrations/migrations/51-move-remembered-email-to-state-providers.spec.ts</td>
+                    <td>33</td>
+                    <td class="mono snippet">        global_loginEmail_storedEmail: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/state/src/state-migrations/migrations/51-move-remembered-email-to-state-providers.spec.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">          rememberedEmail: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/state/src/state-migrations/migrations/51-move-remembered-email-to-state-providers.spec.ts</td>
+                    <td>76</td>
+                    <td class="mono snippet">        rememberedEmail: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/components/src/section/section.stories.ts</td>
+                    <td>51</td>
+                    <td class="mono snippet">          &lt;p bitTypography=&quot;body1&quot;&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae congue risus. Interdum et malesuada fames ac an</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 789 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(28 hits · 280 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/admin-console/organizations/manage/scim.component.ts</td>
+                    <td>55</td>
+                    <td class="mono snippet">    this.route.parent.parent.params.subscribe(async (params) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">bitwarden_license/bit-web/src/app/dirt/provider-events/events.component.ts</td>
+                    <td>68</td>
+                    <td class="mono snippet">    this.route.parent.parent.params.subscribe(async (params) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/importer/src/components/import.component.ts</td>
+                    <td>248</td>
+                    <td class="mono snippet">    this.formGroup.controls.chromiumLoader.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/importer/src/components/lastpass/import-lastpass.component.ts</td>
+                    <td>57</td>
+                    <td class="mono snippet">  protected emailHint$ = this.formGroup.controls.email.statusChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>386</td>
+                    <td class="mono snippet">        component.form.controls.custom.controls.hours.setValue(null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>502</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.hours.setValue(0);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>511</td>
+                    <td class="mono snippet">        component.form.controls.custom.controls.hours.setValue(hours);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>734</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.hours.setValue(null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>735</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.minutes.setValue(30);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>745</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.hours.setValue(1);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>746</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.minutes.setValue(null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>756</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.hours.setValue(null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/key-management-ui/src/session-timeout/components/session-timeout-input.component.spec.ts</td>
+                    <td>757</td>
+                    <td class="mono snippet">      component.form.controls.custom.controls.minutes.setValue(null);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/vault/src/components/assign-collections.component.ts</td>
+                    <td>284</td>
+                    <td class="mono snippet">        this.formGroup.controls.collections.value.map((i) =&gt; i.id as CollectionId),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/vault/src/components/assign-collections.component.ts</td>
+                    <td>523</td>
+                    <td class="mono snippet">        this.formGroup.controls.collections.value.map((i) =&gt; i.id as CollectionId),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">libs/vault/src/components/assign-collections.component.ts</td>
+                    <td>530</td>
+                    <td class="mono snippet">      this.formGroup.controls.collections.value.find(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/admin-console/organizations/policies/policy-edit-definitions/vnext-organization-data-ownership.component.ts</td>
+                    <td>91</td>
+                    <td class="mono snippet">    this.data.controls.enableIndividualItemsTransfer.valueChanges.pipe(startWith(false)),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/payment/components/enter-payment-method.component.ts</td>
+                    <td>284</td>
+                    <td class="mono snippet">        this.group().controls.billingAddress.controls.country.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/payment/components/enter-billing-address.component.ts</td>
+                    <td>194</td>
+                    <td class="mono snippet">    this.supportsTaxId$ = this.group.controls.country.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/shared/trial-payment-dialog/trial-payment-dialog.component.ts</td>
+                    <td>182</td>
+                    <td class="mono snippet">      this.formGroup.controls.billingAddress.controls.country.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/shared/trial-payment-dialog/trial-payment-dialog.component.ts</td>
+                    <td>185</td>
+                    <td class="mono snippet">      this.formGroup.controls.billingAddress.controls.postalCode.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/shared/trial-payment-dialog/trial-payment-dialog.component.ts</td>
+                    <td>188</td>
+                    <td class="mono snippet">      this.formGroup.controls.billingAddress.controls.taxId.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/trial-initiation/trial-billing-step/trial-billing-step.component.ts</td>
+                    <td>126</td>
+                    <td class="mono snippet">    const cadenceChanged = this.formGroup.controls.cadence.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/trial-initiation/trial-billing-step/trial-billing-step.component.ts</td>
+                    <td>137</td>
+                    <td class="mono snippet">      this.formGroup.controls.billingAddress.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/individual/upgrade/upgrade-payment/upgrade-payment.component.ts</td>
+                    <td>162</td>
+                    <td class="mono snippet">      this.formGroup.controls.billingAddress.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/web/src/app/billing/individual/upgrade/upgrade-payment/upgrade-payment.component.ts</td>
+                    <td>266</td>
+                    <td class="mono snippet">      this.formGroup.controls.paymentForm.valueChanges.pipe(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/desktop/src/main/messaging.main.ts</td>
+                    <td>109</td>
+                    <td class="mono snippet">      this.main.windowMain.win.webContents.send(&quot;messagingService&quot;, {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">apps/desktop/src/main/messaging.main.ts</td>
+                    <td>228</td>
+                    <td class="mono snippet">    this.main.windowMain.win.webContents.send(&quot;messagingService&quot;, {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(100 hits · 200 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/sl/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/km/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/nn/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/be/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/mr/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/el/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ca/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/te/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ro/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/en_IN/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/sr_CS/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/en_GB/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/si/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ml/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/kn/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/bs/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/my/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ar/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/gl/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/bn/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ne/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/fil/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/af/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/nb/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/hi/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ka/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/ko/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/eo/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/id/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/et/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/en/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/or/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/cy/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/eu/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/web/src/locales/th/messages.json</td>
+                    <td>8037</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/desktop_native/bitwarden_chromium_import_helper/src/windows/crypto.rs</td>
+                    <td>239</td>
+                    <td class="mono snippet">    // Don't forget to free the provider</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/desktop_native/bitwarden_chromium_import_helper/src/windows/crypto.rs</td>
+                    <td>256</td>
+                    <td class="mono snippet">    // Don't forget to free the key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/sl/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/km/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/nn/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/be/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/da/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/mr/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/ja/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/el/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/te/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/ro/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/en_IN/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/en_GB/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/locales/si/messages.json</td>
+                    <td>4134</td>
+                    <td class="mono snippet">    &quot;message&quot;: &quot;Secure password generated! Don't forget to also update your password on the website.&quot;</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 50 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(33 hits · 33 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Step 1: Define the Configuration Class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 2: Define the Template Class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>78</td>
+                    <td class="mono snippet">## Step 3: Update OrganizationIntegrationType</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>89</td>
+                    <td class="mono snippet">## Step 4: Extend OrgIntegrationBuilder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>162</td>
+                    <td class="mono snippet">## Step 5: Add Service Name to OrganizationIntegrationServiceName</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>178</td>
+                    <td class="mono snippet">## Step 6: File Organization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/organization-integrations/services/README.md</td>
+                    <td>220</td>
+                    <td class="mono snippet">## Step 7: Add Tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/fix-angular-fixmes/SKILL.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">## Step 1: Discover all suppressions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/fix-angular-fixmes/SKILL.md</td>
+                    <td>299</td>
+                    <td class="mono snippet">## Step 2: Cleanup checklist per fixed instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/fix-angular-fixmes/SKILL.md</td>
+                    <td>307</td>
+                    <td class="mono snippet">## Step 3: Validate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/angular-modernization/SKILL.md</td>
+                    <td>16</td>
+                    <td class="mono snippet">### Step 1: Run Angular CLI Migrations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/angular-modernization/SKILL.md</td>
+                    <td>92</td>
+                    <td class="mono snippet">### Step 2: Apply Bitwarden Patterns</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/angular-modernization/SKILL.md</td>
+                    <td>104</td>
+                    <td class="mono snippet">### Step 3: Validate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/cipher-type-planner/SKILL.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">### Step 1: Gather Requirements</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/cipher-type-planner/SKILL.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">### Step 2: Enter Plan Mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/cipher-type-planner/SKILL.md</td>
+                    <td>62</td>
+                    <td class="mono snippet">### Step 3: Build the Plan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/key-management-ui/src/lock/services/default-webauthn-prf-unlock.service.ts</td>
+                    <td>105</td>
+                    <td class="mono snippet">    // Step 1: Decrypt PRF encrypted private key using the PRF key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/key-management-ui/src/lock/services/default-webauthn-prf-unlock.service.ts</td>
+                    <td>111</td>
+                    <td class="mono snippet">    // Step 2: Use private key to decrypt user key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/angular/src/vault/services/custom-nudges-services/README.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">### Step 1: Determine if Universal or Client-Specific</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/angular/src/vault/services/custom-nudges-services/README.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">### Step 2: Create the Service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/angular/src/vault/services/custom-nudges-services/README.md</td>
+                    <td>151</td>
+                    <td class="mono snippet">### Step 3: Add NudgeType</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/angular/src/vault/services/custom-nudges-services/README.md</td>
+                    <td>162</td>
+                    <td class="mono snippet">### Step 4: Register in NudgesService</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>20</td>
+                    <td class="mono snippet">    // Step 1: Handle variants (copy files for one-to-many mappings)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>36</td>
+                    <td class="mono snippet">    // Step 2: Generate icon font directly from Figma-named SVGs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>44</td>
+                    <td class="mono snippet">    // Step 3: Update SCSS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>102</td>
+                    <td class="mono snippet">    // Step 4: Update TypeScript icon array</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>133</td>
+                    <td class="mono snippet">    // Step 6: Cleanup temporary files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/material-icons/build-with-bwi-names.ts</td>
+                    <td>147</td>
+                    <td class="mono snippet">    // Step 7: Remove variant copies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/web/src/app/admin-console/organizations/policies/README.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">## Step 1: Adding the Enum</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/web/src/app/admin-console/organizations/policies/README.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 2: Creating the Policy Definition and Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/web/src/app/admin-console/organizations/policies/README.md</td>
+                    <td>209</td>
+                    <td class="mono snippet">## Step 3: Registering the Policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/browser/src/autofill/services/targeting-rules-data.service.ts</td>
+                    <td>205</td>
+                    <td class="mono snippet">    // Step 1: Fetch the lightweight manifest to check if the data has changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/browser/src/autofill/services/targeting-rules-data.service.ts</td>
+                    <td>249</td>
+                    <td class="mono snippet">    // Step 2: Data has changed (or first fetch); download the map file</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/docs/documentation-structure.md</td>
+                    <td>80</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/docs/documentation-structure.md</td>
+                    <td>83</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/docs/documentation-structure.md</td>
+                    <td>127</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">bitwarden_license/bit-common/src/dirt/docs/documentation-structure.md</td>
+                    <td>130</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/tools/generator/core/src/policies/password-generator-options-evaluator.ts</td>
+                    <td>25</td>
+                    <td class="mono snippet">  // This design is not ideal, but it is a step towards a more robust password</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/tools/generator/core/src/policies/passphrase-generator-options-evaluator.ts</td>
+                    <td>16</td>
+                    <td class="mono snippet">  // This design is not ideal, but it is a step towards a more robust passphrase</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/desktop/src/app/services/services.module.ts</td>
+                    <td>418</td>
+                    <td class="mono snippet">    provide: Fido2UserInterfaceServiceAbstraction, // We utilize desktop specific methods when wiring OS API's</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(6 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/repository-management.yml</td>
+                    <td>164</td>
+                    <td class="mono snippet">          # Check if version is newer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/repository-management.yml</td>
+                    <td>250</td>
+                    <td class="mono snippet">          # Check if version is newer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/repository-management.yml</td>
+                    <td>301</td>
+                    <td class="mono snippet">          # Check if version is newer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/repository-management.yml</td>
+                    <td>366</td>
+                    <td class="mono snippet">          # Check if version is newer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/browser/scripts/compress.sh</td>
+                    <td>17</td>
+                    <td class="mono snippet"># Check if build directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/browser/scripts/update-manifest-dev.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet"># Check if build directory exists</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.claude/skills/create-pull-request/SKILL.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">## Creating the PR</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">libs/common/src/tools/integration/README.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">## Sample usage</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

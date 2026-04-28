@@ -1,0 +1,2879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — open-metadata/OpenMetadata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>open-metadata/OpenMetadata</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">5.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">5.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">3977</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">13958</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">2,781,929</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">12627</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(981 hits · 9810 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">openmetadata-spec/src/main/java/org/openmetadata/schema/utils/JsonUtils.java</td>
+                    <td>465</td>
+                    <td class="mono snippet">        com.github.fge.jsonpatch.JsonPatch.fromJson(patchNode);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">            kafka_source_with_ssl.service_connection.schemaRegistrySSL.root.caCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">            kafka_source_with_ssl.service_connection.schemaRegistrySSL.root.sslKey.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">            kafka_source_with_ssl.service_connection.schemaRegistrySSL.root.sslCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">            cassandra_source_with_ssl.service_connection.sslConfig.root.caCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">            cassandra_source_with_ssl.service_connection.sslConfig.root.sslKey.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/test_ssl_manager.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">            cassandra_source_with_ssl.service_connection.sslConfig.root.sslCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">from azure.core.exceptions import ResourceNotFoundError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflowapi.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">from metadata.utils.helpers import datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_tableau.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">            self.tableau.config.serviceConnection.root.config.sslConfig.root.sslCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_tableau.py</td>
+                    <td>525</td>
+                    <td class="mono snippet">            self.tableau.config.serviceConnection.root.config.sslConfig.root.sslKey.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_tableau.py</td>
+                    <td>529</td>
+                    <td class="mono snippet">            self.tableau.config.serviceConnection.root.config.sslConfig.root.caCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_tableau.py</td>
+                    <td>547</td>
+                    <td class="mono snippet">            self.tableau.config.serviceConnection.root.config.sslConfig.root.caCertificate.get_secret_value(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_tableau_client.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">        self.client.tableau_server.users.get_by_id.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/drive/test_googledrive.py</td>
+                    <td>223</td>
+                    <td class="mono snippet">        mock_client.drive_service.files.return_value.list.assert_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/drive/test_googledrive.py</td>
+                    <td>375</td>
+                    <td class="mono snippet">        mock_client.drive_service.files.return_value.list.assert_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/unit/topology/drive/test_googledrive.py</td>
+                    <td>428</td>
+                    <td class="mono snippet">        mock_client.sheets_service.spreadsheets.return_value.get.assert_called_with(spreadsheetId=&quot;sheet_001&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/conftest.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/conftest.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/conftest.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_service_api.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">        assert service.connection.config.authType.password.get_secret_value() == &quot;openmetadata_password&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_service_api.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">        assert service.connection.config.authType.password.get_secret_value() == &quot;tb_pwd&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_test_suite.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">from metadata.utils.helpers import datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_pipeline_api.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">from metadata.utils.helpers import datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_patch.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">from metadata.utils.helpers import find_column_in_table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/ometa/test_ometa_workflow_api.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        assert res.request.connection.config.authType.password.get_secret_value() == &quot;password&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/auto_classification/databases/test_global_sample_data_config.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/auto_classification/databases/test_global_sample_data_config.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/auto_classification/databases/test_tag_processor.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/auto_classification/databases/test_tag_processor.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/data_quality/conftest.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">            &quot;type&quot;: postgres_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/data_quality/test_failed_row_samples.py</td>
+                    <td>262</td>
+                    <td class="mono snippet">            &quot;type&quot;: postgres_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/data_quality/test_failed_row_samples.py</td>
+                    <td>290</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/kafka/conftest.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/sdk/conftest.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">            &quot;type&quot;: db_service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/sources/database/delta_lake/test_deltalake_storage.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">            type=service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/sources/mlmodels/mlflow/test_mlflow.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">            type=service.connection.config.type.value.lower(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/tests/integration/profiler/test_nosql_profiler.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">from metadata.utils.helpers import datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/airflow_provider_openmetadata/lineage/runner.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">from metadata.utils.helpers import clean_uri, datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/airflow_provider_openmetadata/lineage/status.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">from metadata.utils.helpers import datetime_to_ts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/clients/domo_client.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">from metadata.utils.helpers import clean_uri</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/parsers/protobuf_parser.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">from metadata.utils.helpers import snake_to_camel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/query_parser_source.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">from metadata.utils.helpers import get_start_and_end, retry_with_docker_host</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/sql_column_handler.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">from metadata.utils.helpers import clean_up_starting_ending_double_quotes_in_string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/sample_data.py</td>
+                    <td>190</td>
+                    <td class="mono snippet">from metadata.utils.helpers import get_standard_chart_type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/common_db_source.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">from metadata.utils.helpers import retry_with_docker_host</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/lineage_source.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        # from metadata.utils.helpers import can_spawn_child_process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/common_nosql_source.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">from metadata.utils.helpers import retry_with_docker_host</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/stored_procedures_mixin.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">from metadata.utils.helpers import pprint_format_object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/unitycatalog/metadata.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">from metadata.utils.helpers import retry_with_docker_host</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 931 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(1621 hits · 1628 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    except Exception as in_cluster_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        except Exception as kubeconfig_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">    except Exception as unexpected_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">            except Exception as list_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">                except Exception as pod_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">                        except Exception as container_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">        except Exception as status_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>301</td>
+                    <td class="mono snippet">                    except Exception as event_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>421</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>432</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>444</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>453</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>462</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>496</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>499</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>570</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>578</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/operators/docker/exit_handler.py</td>
+                    <td>589</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_column_type_parser.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_workflow_parse_example_config.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">                    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt_ingest.py</td>
+                    <td>285</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_fallback.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_class.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">                    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_module.py</td>
+                    <td>164</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_module.py</td>
+                    <td>197</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_module.py</td>
+                    <td>229</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_module.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/test_parser_connection_module.py</td>
+                    <td>403</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_common_db_source.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_common_db_source.py</td>
+                    <td>533</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_common_db_source.py</td>
+                    <td>559</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow.py</td>
+                    <td>506</td>
+                    <td class="mono snippet">        except Exception:  # pylint: disable=broad-exception-caught</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_looker_multi_repo.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/utils/test_datalake.py</td>
+                    <td>516</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/utils/test_datalake.py</td>
+                    <td>582</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/utils/test_memory_limit.py</td>
+                    <td>736</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sqa_profiler_interface.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sqa_profiler_interface.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">        print(f&quot;Error during table setup: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sqa_profiler_interface.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sqa_profiler_interface.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">        print(f&quot;Error during cleanup: {str(e)}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>340</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>388</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/helpers.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 1571 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(410 hits · 820 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>116</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>118</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>145</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>147</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>190</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>192</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>248</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>250</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_status.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    # ── as_string ────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_status.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">    # ── failed / fail_all ────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_status.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # ── calculate_success ────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_status.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">    # ── warning / filter ─────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_status.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">    # ── truncation of stack traces ───────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_query_parser.py</td>
+                    <td>418</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_query_parser.py</td>
+                    <td>420</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>41</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>43</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>88</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>90</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>132</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>134</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>306</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>308</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>420</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>422</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>482</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>484</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>551</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>553</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>569</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_scaffold.py</td>
+                    <td>571</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/test_queue.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">        # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>28</td>
+                    <td class="mono snippet"># ── fixtures ──────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ── get_connection: URL construction ─────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>144</td>
+                    <td class="mono snippet"># ── IometeSource.create ───────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>185</td>
+                    <td class="mono snippet"># ── get_schema_definition ─────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>257</td>
+                    <td class="mono snippet"># ── get_database_names ────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_iomete.py</td>
+                    <td>287</td>
+                    <td class="mono snippet"># ── set_inspector ─────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake_azure_blob_client.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    # =========================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>44</td>
+                    <td class="mono snippet"># ── Helpers ─────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ── try_exchange_jwt ─────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>124</td>
+                    <td class="mono snippet"># ── build_access_token_callback ──────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>149</td>
+                    <td class="mono snippet"># ── build_basic_auth_callback ────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>197</td>
+                    <td class="mono snippet"># ── build_gcp_token_callback ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow_connection.py</td>
+                    <td>338</td>
+                    <td class="mono snippet"># ── GCP credential type coverage ─────────────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 360 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(219 hits · 438 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>1752</td>
+                    <td class="mono snippet">        self.assertTrue(validate_email_format(&quot;user@example.com&quot;))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>1902</td>
+                    <td class="mono snippet">        is_valid, error, value = validate_custom_property_value(&quot;testProp&quot;, &quot;email&quot;, None, &quot;user@example.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>1904</td>
+                    <td class="mono snippet">        self.assertEqual(value, &quot;user@example.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks_get_columns.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">            (&quot;Owner&quot;, &quot;user@example.com&quot;, None),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_redshift_incremental_table_processor.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">    &quot;COMMENT ON VIEW {table_name} IS 'lorem ipsum'&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_redshift_incremental_table_processor.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    &quot;   \tCOMMENT \n  ON VIEW  {table_name}\n\t\n IS 'lorem ipsum'&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">        updatedBy=&quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">        createdBy=&quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">                &quot;updatedBy&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>603</td>
+                    <td class="mono snippet">                &quot;createdBy&quot;: &quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>669</td>
+                    <td class="mono snippet">                updatedBy=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_grafana.py</td>
+                    <td>670</td>
+                    <td class="mono snippet">                createdBy=&quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>566</td>
+                    <td class="mono snippet">            &quot;displayName&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>587</td>
+                    <td class="mono snippet">            &quot;displayName&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>596</td>
+                    <td class="mono snippet">    root=[EntityReference(id=uuid.uuid4(), name=&quot;John Doe&quot;, type=&quot;user&quot;)]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>823</td>
+                    <td class="mono snippet">        self.assertEqual(owner_ref.root[0].name, &quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>839</td>
+                    <td class="mono snippet">        self.assertEqual(owner_ref.root[0].name, &quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>973</td>
+                    <td class="mono snippet">                    return EntityReferenceList(root=[EntityReference(id=uuid.uuid4(), name=&quot;John Doe&quot;, type=&quot;user&quot;)])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>988</td>
+                    <td class="mono snippet">            self.assertIn(&quot;John Doe&quot;, owner_names)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/fixtures/grafana_fixtures.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">        &quot;updatedBy&quot;: &quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/drive/test_googledrive.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">                    owners=[GoogleDriveOwner(displayName=&quot;John Doe&quot;)],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/pii/test_ner_scanner.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">                &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam consequat quam sagittis convallis cursus.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/pii/test_ner_scanner.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">                &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam consequat quam sagittis convallis cursus.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/pii/test_ner_scanner.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">                '{&quot;email&quot;: &quot;johndoe@example.com&quot;, &quot;address&quot;: {&quot;street&quot;: &quot;123 Main St&quot;}}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/resources/datasets/databricks_pipeline_resource.json</td>
+                    <td>136</td>
+                    <td class="mono snippet">              &quot;name&quot;: &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/source/database/test_json_schema_extractor.py</td>
+                    <td>410</td>
+                    <td class="mono snippet">        json_values = [{&quot;user-name&quot;: &quot;John&quot;, &quot;email@domain&quot;: &quot;test@test.com&quot;}]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/data_quality/conftest.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">                fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/data_quality/conftest.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">                fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/data_quality/test_validations_datalake.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">        &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/data_quality/test_validations_datalake.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/custom_types/test_custom_types.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/custom_types/test_custom_types.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sqa_profiler_interface.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">        User(name=&quot;John&quot;, fullname=&quot;John Doe&quot;, nickname=&quot;johnny b goode&quot;, age=30),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sample.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sample.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_sample.py</td>
+                    <td>317</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_metrics.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">                fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_metrics.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">                fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_profiler.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">            User(name=&quot;John&quot;, fullname=&quot;John Doe&quot;, nickname=&quot;johnny b goode&quot;, age=30),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_runner.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/sqlalchemy/test_runner.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">                    fullname=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/observability/profiler/pandas/test_profiler.py</td>
+                    <td>305</td>
+                    <td class="mono snippet">        # Test with fullname column - it has repeated values (&quot;John Doe&quot;, &quot;Jone Doe&quot; appear twice each)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_table_entity.py</td>
+                    <td>291</td>
+                    <td class="mono snippet">            rows=[[&quot;1&quot;, &quot;user@example.com&quot;]],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_table_entity.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">            self.assertEqual(result.rows[0][1], &quot;user@example.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_user_entity.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">            displayName=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_user_entity.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">        expected_user.displayName = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_sdk_entities.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">            displayName=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_improved_entities.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">        create_request = CreateUserRequest(name=&quot;john.doe&quot;, email=&quot;john.doe@company.com&quot;, displayName=&quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_dashboard_entity.py</td>
+                    <td>197</td>
+                    <td class="mono snippet">            displayName=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/sdk/test_dashboard_entity.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">        self.assertEqual(result.owner.displayName, &quot;John Doe&quot;)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 169 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(80 hits · 400 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>550</td>
+                    <td class="mono snippet">            &quot;default&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>698</td>
+                    <td class="mono snippet">        self.parse_schema_assert_without_child(UNION_EXAMPLE_1, &quot;UNION&lt;null,int&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>699</td>
+                    <td class="mono snippet">        self.parse_schema_assert_without_child(UNION_EXAMPLE_2, &quot;UNION&lt;null,int,string,boolean&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>700</td>
+                    <td class="mono snippet">        self.parse_schema_assert_one_child(UNION_EXAMPLE_3, &quot;UNION&lt;null,record&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>701</td>
+                    <td class="mono snippet">        self.parse_schema_assert_without_child(UNION_EXAMPLE_4, &quot;UNION&lt;null,record,record&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>702</td>
+                    <td class="mono snippet">        self.parse_schema_assert_without_child(UNION_OF_ARRAY, &quot;UNION&lt;null,ARRAY&lt;int&gt;&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/test_avro_parser.py</td>
+                    <td>704</td>
+                    <td class="mono snippet">        self.parse_schema_assert_one_child(UNION_OF_ARRAY_OF_RECORD, &quot;UNION&lt;null,ARRAY&lt;record&gt;&gt;&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_datalake.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">    {&quot;name&quot;:&quot;John&quot;,&quot;age&quot;:16,&quot;sex&quot;:&quot;M&quot;,&quot;address&quot;:null},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_kafkaconnect.py</td>
+                    <td>739</td>
+                    <td class="mono snippet">        # Create CDC topic with only 'before' field having data (after only has null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        &quot;dbt_version&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">        &quot;raw_dbt_version&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        &quot;deferring_job_definition_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        &quot;deferring_environment_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        &quot;lifecycle_webhooks_url&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">        &quot;job_completion_trigger_condition&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">        &quot;next_run&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">            &quot;owner_thread_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">            &quot;deferring_run_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">            &quot;should_start_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">            &quot;trigger&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">            &quot;job&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">            &quot;environment&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">            &quot;retrying_run_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">            &quot;is_running&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">            &quot;git_branch&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">            &quot;git_sha&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>229</td>
+                    <td class="mono snippet">            &quot;status_message&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">            &quot;owner_thread_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>231</td>
+                    <td class="mono snippet">            &quot;executed_by_thread_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>232</td>
+                    <td class="mono snippet">            &quot;deferring_run_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>234</td>
+                    <td class="mono snippet">            &quot;artifact_s3_path&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">            &quot;dequeued_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">            &quot;started_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">            &quot;finished_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>246</td>
+                    <td class="mono snippet">            &quot;last_checked_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">            &quot;last_heartbeat_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">            &quot;should_start_at&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">            &quot;trigger&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">            &quot;job&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">            &quot;environment&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>267</td>
+                    <td class="mono snippet">            &quot;retrying_run_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">            &quot;is_running&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">          &quot;rawSql&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">          &quot;rawSql&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_dbtcloud.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">          &quot;rawSql&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">    Source = Value.NativeQuery(Databricks.Catalogs(Databricks_Server, Databricks_HTTP_Path, [Catalog=&quot;DEMO_CATALOG&quot;, Database=null, EnableAutomaticPro</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        [Catalog=&quot;DEMO_CATALOG&quot;, Database=null, EnableAutomaticProxyDiscovery=null])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">            &quot;select * from PUBLIC.STG_CUSTOMERS&quot;, null, [EnableFolding=true])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">    Source = Value.NativeQuery(Databricks.Catalogs(Databricks_Server, Databricks_HTTP_Path, [   Catalog=   &quot;DEMO_CATALOG&quot;, Database=null, EnableAutoma</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_powerbi.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">    Source = Value.NativeQuery(Databricks.Catalogs(Databricks_Server, Databricks_HTTP_Path, [Catalog=&quot;DEMO_CATALOG&quot;, Database=null, EnableAutomaticPro</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 30 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(355 hits · 355 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/my_db/CONNECTOR_CONTEXT.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">## Step 1: Read the Reference Connector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/my_db/CONNECTOR_CONTEXT.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">## Step 2: Implement the Connector Files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/my_db/CONNECTOR_CONTEXT.md</td>
+                    <td>74</td>
+                    <td class="mono snippet">## Step 3: Register the Connector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/my_db/CONNECTOR_CONTEXT.md</td>
+                    <td>96</td>
+                    <td class="mono snippet">## Step 4: Code Generation and Formatting</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/my_db/CONNECTOR_CONTEXT.md</td>
+                    <td>107</td>
+                    <td class="mono snippet">## Step 5: Write Tests and Validate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/dbt/metadata.py</td>
+                    <td>447</td>
+                    <td class="mono snippet">            # Step 1: Check if property exists in OpenMetadata</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/dbt/metadata.py</td>
+                    <td>463</td>
+                    <td class="mono snippet">            # Step 2: Validate and convert value (single pass)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/metadata.py</td>
+                    <td>814</td>
+                    <td class="mono snippet">                    # Step 1: Create Kafka topic -&gt; DLT table lineage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/metadata.py</td>
+                    <td>896</td>
+                    <td class="mono snippet">                    # Step 2: Create table-to-table lineage for downstream dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/cli/scaffold.py</td>
+                    <td>1386</td>
+                    <td class="mono snippet">    s.append(&quot;## Step 1: Read the Reference Connector&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/cli/scaffold.py</td>
+                    <td>1411</td>
+                    <td class="mono snippet">    s.append(&quot;## Step 2: Implement the Connector Files&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/cli/scaffold.py</td>
+                    <td>1514</td>
+                    <td class="mono snippet">    s.append(&quot;## Step 3: Register the Connector&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/cli/scaffold.py</td>
+                    <td>1538</td>
+                    <td class="mono snippet">    s.append(&quot;## Step 4: Code Generation and Formatting&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/cli/scaffold.py</td>
+                    <td>1551</td>
+                    <td class="mono snippet">    s.append(&quot;## Step 5: Write Tests and Validate&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/profiler/metrics/hybrid/cardinality_distribution.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        # Step 1: Get value counts and ranks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/profiler/metrics/hybrid/cardinality_distribution.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        # Step 3: Final aggregation with simple GROUP BY</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">### Step 1: Environment Setup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">### Step 2: Find Optimal Concurrency (Optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>95</td>
+                    <td class="mono snippet">### Step 3: Run Progressive Benchmark</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>165</td>
+                    <td class="mono snippet">### Step 4: Analyze Results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>223</td>
+                    <td class="mono snippet">### Step 5: Apply Recommendations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/CLUSTER-SIZING-RUNBOOK.md</td>
+                    <td>314</td>
+                    <td class="mono snippet">### Step 6: Re-validate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4272</td>
+                    <td class="mono snippet">    // Step 1: Ingestion creates entities (no tags)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4277</td>
+                    <td class="mono snippet">    // Step 2: User adds tags to entities via PATCH</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4295</td>
+                    <td class="mono snippet">    // Step 3: Ingestion re-runs — bulk update with only description changes (no tags in request)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4302</td>
+                    <td class="mono snippet">    // Step 4: Verify tags are still present after re-ingestion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4322</td>
+                    <td class="mono snippet">    // Step 1: Ingestion creates entities (no owners)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4327</td>
+                    <td class="mono snippet">    // Step 2: User adds owners via PATCH</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4338</td>
+                    <td class="mono snippet">    // Step 3: Re-ingestion with only description changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/BaseEntityIT.java</td>
+                    <td>4345</td>
+                    <td class="mono snippet">    // Step 4: Verify owners preserved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2830</td>
+                    <td class="mono snippet">    // Step 1: Create a dedicated glossary for this test to avoid interference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2837</td>
+                    <td class="mono snippet">    // Step 2: Create two terms - both should start as APPROVED (default status when no reviewers)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2854</td>
+                    <td class="mono snippet">    // Step 3: Update the second term to IN_REVIEW status</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2859</td>
+                    <td class="mono snippet">    // Step 4: Search without entityStatus filter - both terms should be returned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2876</td>
+                    <td class="mono snippet">    // Step 5: Search with APPROVED status - only the first term should be returned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/GlossaryTermResourceIT.java</td>
+                    <td>2898</td>
+                    <td class="mono snippet">    // Step 6: Search with IN_REVIEW status - only the second term should be returned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1597</td>
+                    <td class="mono snippet">    // Step 1: Get the existing Certification classification (seeded by the system)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1602</td>
+                    <td class="mono snippet">    // Step 2: Create a new tag under Certification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1612</td>
+                    <td class="mono snippet">    // Step 3: Create the DB hierarchy and a DatabaseSchema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1619</td>
+                    <td class="mono snippet">    // Step 4: Apply the certification tag to the DatabaseSchema via setCertification()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1643</td>
+                    <td class="mono snippet">    // Step 5: Verify search finds the schema by the original tag FQN</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1678</td>
+                    <td class="mono snippet">    // Step 6: Rename the certification tag (change its name — this changes the FQN)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1686</td>
+                    <td class="mono snippet">    // Step 7: Wait until certification tagFQN propagates to the entity</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1709</td>
+                    <td class="mono snippet">    // Step 8: Search must find the schema under the new tag FQN</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/TagResourceIT.java</td>
+                    <td>1745</td>
+                    <td class="mono snippet">    // Step 9: Delete the certification tag and verify the schema no longer has a certification</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/DataProductDomainMigrationIT.java</td>
+                    <td>68</td>
+                    <td class="mono snippet">    // Step 1: Create two domains - source and target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/DataProductDomainMigrationIT.java</td>
+                    <td>72</td>
+                    <td class="mono snippet">    // Step 2: Create a data product in the source domain</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/DataProductDomainMigrationIT.java</td>
+                    <td>85</td>
+                    <td class="mono snippet">    // Step 3: Create tables with source domain and add them as assets to the data product</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/DataProductDomainMigrationIT.java</td>
+                    <td>115</td>
+                    <td class="mono snippet">    // Step 4: Change the data product's domain from source to target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-integration-tests/src/test/java/org/openmetadata/it/tests/DataProductDomainMigrationIT.java</td>
+                    <td>135</td>
+                    <td class="mono snippet">    // Step 5: Verify assets now have target domain via API (database check - THE KEY TEST)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 305 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(166 hits · 332 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_ometa_utils.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">        # Create a mock JWT payload</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_ometa_utils.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">        # Create a mock JWT token (header.payload.signature)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_ometa_utils.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">        # Create a payload that will need padding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>736</td>
+                    <td class="mono snippet">        # Create a mock manifest node with openmetadata.owner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>752</td>
+                    <td class="mono snippet">        # Create a mock manifest node with old format owner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>812</td>
+                    <td class="mono snippet">        # Create a mock manifest node with list of owners</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>829</td>
+                    <td class="mono snippet">        # Create a mock manifest node with list of owners</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>2285</td>
+                    <td class="mono snippet">        # Create a mock source node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_db_utils.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">        # Create a mock table entity</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_db_utils.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        # Create a mock source table entity for lineage tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_db_utils.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Create a mock TableView</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_db_utils.py</td>
+                    <td>272</td>
+                    <td class="mono snippet">        # Create a valid AddLineageRequest for the mock</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_lineage_empty_result.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">        # Create an in-memory SQLite database for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_lineage_empty_result.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">        # Create a test table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/test_context_manager.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        # Create a new thread context based on the main thread</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/test_context_manager.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">            # Create the new thread context based on the main thread one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/test_context_manager.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">            # Create the new thread context based on the main thread one</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/test_queue.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">        # Create a new QueueItem and add it to the queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_burstiq_metadata.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">        # Create a mock source instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks.py</td>
+                    <td>906</td>
+                    <td class="mono snippet">        # Create a mock inspector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks.py</td>
+                    <td>914</td>
+                    <td class="mono snippet">        # Create a mock dialect with get_table_names method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks.py</td>
+                    <td>938</td>
+                    <td class="mono snippet">        # Create a mock inspector</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks.py</td>
+                    <td>946</td>
+                    <td class="mono snippet">        # Create a mock dialect with get_view_names method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_databricks.py</td>
+                    <td>971</td>
+                    <td class="mono snippet">        # Create a mock dialect instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_sap_hana.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">    # Create a mock engine and connection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_sap_hana.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    # Create a DataSource with DATA_BASE_TABLE type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_sap_hana.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">    # Create a simple parsed lineage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_sap_hana.py</td>
+                    <td>708</td>
+                    <td class="mono snippet">    # Create a scenario with circular dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_deltalake.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">        # Create the DF as a tmp view to be able to run Spark SQL statements on top</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_deltalake.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">        # Create a database. We will be ingesting that as a schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_athena_utils.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">        # Create a column object that raises AttributeError when accessing parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_athena_utils.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">        # Create a column object without parameters attribute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_athena_utils.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">        # Create a column object with None parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>501</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>514</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>530</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>569</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>582</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>622</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>661</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>692</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>722</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>744</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>765</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_postgres.py</td>
+                    <td>811</td>
+                    <td class="mono snippet">        # Create a mock source config with the required attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow.py</td>
+                    <td>453</td>
+                    <td class="mono snippet">        # Create a mock serialized DAG result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow.py</td>
+                    <td>492</td>
+                    <td class="mono snippet">        # Create a mock serialized DAG result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_airflow.py</td>
+                    <td>773</td>
+                    <td class="mono snippet">        # Create a new AirflowSource instance (or use self.airflow if safe)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_kafkaconnect.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">            # Create a minimal source instance</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 116 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(96 hits · 96 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">generate_ts.sh</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Check if a file path is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/noxfile.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    # Check if we are in GitHub Actions (i.e., if the 'PYTHON_VERSIONS' environment variable is set)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_athena_utils.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">            # Check if this is a non-current Iceberg column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/database/test_glue.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">            # Check if this is a non-current Iceberg column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/dashboard/test_looker_standalone_views.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">            # Check if this is the last explore</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/utils/test_streamable_logger.py</td>
+                    <td>581</td>
+                    <td class="mono snippet">        # Add logs to queue after stop event is set (simulating final drainage)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/metadata/utils/dependency_injector/test_dependency_injector.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">        # Increment counter</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/cli_e2e/test_cli_tableau.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">                        # Check if field type matches expected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/airflow_provider_openmetadata/lineage/status.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # Check if we already have a pipelineStatus for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/airflow_provider_openmetadata/lineage/config/loader.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">        # Check if value is a literal string `true`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/pii/scanners/custom_ner_scanner.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">                # Check if confidence meets threshold</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/ometa/mixins/patch_mixin.py</td>
+                    <td>689</td>
+                    <td class="mono snippet">        # Check if domains are already the same, skip if identical</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/sample_data.py</td>
+                    <td>808</td>
+                    <td class="mono snippet">            # Check if service already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/lineage_source.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">                    # Check if the process has timed out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/glue/metadata.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">        # Check if this is an Iceberg table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/glue/metadata.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">                    # Check if this is a non-current Iceberg column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/glue/metadata.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">                    # Check if this is a non-current Iceberg column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/unitycatalog/metadata.py</td>
+                    <td>467</td>
+                    <td class="mono snippet">            # Check if the referred table exists in OpenMetadata before adding constraint</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/dbt/metadata.py</td>
+                    <td>487</td>
+                    <td class="mono snippet">            # Check if conversion failed (converted_value is None)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/dbt/dbt_utils.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">    # Check if columns match exactly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/databricks/client.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">                # Check if queries executed successfully by fetching results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/bigquery/metadata.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        # Check if the engine is established before setting project IDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/redshift/incremental_table_processor.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">        # Check if Schema is present</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/saphana/cdata_parser.py</td>
+                    <td>414</td>
+                    <td class="mono snippet">    # Check if we've already processed this node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/athena/utils.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    # Check if this is an Iceberg table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/athena/utils.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">                # Check if this is a non-current Iceberg column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/airflow/lineage_parser.py</td>
+                    <td>273</td>
+                    <td class="mono snippet">    # Check if we can properly build the OMEntity class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/airflow/api/client.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">        # Check if this is MWAA (AWS credentials)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/metadata.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">                    # Check if it's a Databricks or Unity Catalog service</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/metadata.py</td>
+                    <td>787</td>
+                    <td class="mono snippet">                    # Check if we have anything to process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/metadata.py</td>
+                    <td>905</td>
+                    <td class="mono snippet">                                    # Check if source is a view/table that reads from S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/kafka_parser.py</td>
+                    <td>410</td>
+                    <td class="mono snippet">                # Check if it reads from Kafka</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/kafka_parser.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">                # Check if it reads from S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/databrickspipeline/kafka_parser.py</td>
+                    <td>472</td>
+                    <td class="mono snippet">            # Check if snapshot table is built</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>254</td>
+                    <td class="mono snippet">                    # Check if any broker hostname matches</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>679</td>
+                    <td class="mono snippet">            # Check if this is a Debezium CDC envelope structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>691</td>
+                    <td class="mono snippet">                    # Check if schemaText has CDC envelope fields</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>764</td>
+                    <td class="mono snippet">            # Check if it's a direct field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>768</td>
+                    <td class="mono snippet">            # Check if it's a child field (nested - one level deep)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>802</td>
+                    <td class="mono snippet">            # Check if this is a CDC envelope field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>1313</td>
+                    <td class="mono snippet">                # Check if this is a container dataset (storage sink)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/metadata.py</td>
+                    <td>1341</td>
+                    <td class="mono snippet">                    # Check if we have any topics to process</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/client.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        # Check if topic starts with the server name prefix</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/client.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        # Check if topic exactly matches server name (edge case)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/pipeline/kafkaconnect/client.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">            # Check if this is Confluent Cloud format (array of {config, value})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/storage/s3/metadata.py</td>
+                    <td>699</td>
+                    <td class="mono snippet">            # Check if custom console endpoint URL is configured (for external S3-compatible storage)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/storage/s3/metadata.py</td>
+                    <td>723</td>
+                    <td class="mono snippet">            # Check if custom console endpoint URL is configured (for external S3-compatible storage)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/storage/gcs/metadata.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">                    # Check if we have entries in the manifest file belonging to this bucket</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/dashboard/looker/metadata.py</td>
+                    <td>497</td>
+                    <td class="mono snippet">            # Check if filtered</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/dashboard/looker/bulk_parser.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        # Check if any suffix is in our extension list</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 46 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(29 hits · 55 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">[OpenMetadata](https://open-metadata.org/)  is a unified metadata platform for data discovery, data observability, and data governance powered by a ce</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt_ingest.py</td>
+                    <td>252</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive URL validation scenarios including valid and invalid URLs&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt_ingest.py</td>
+                    <td>512</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Integration test using actual test resources with comprehensive validation&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/test_dbt.py</td>
+                    <td>1748</td>
+                    <td class="mono snippet">    # New comprehensive tests for custom property validation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>204</td>
+                    <td class="mono snippet"># Additional comprehensive tests for enhanced functionality</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Extended test suite for comprehensive validation of custom Pydantic functionality.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">        # Test with comprehensive table properties</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>361</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive DashboardDataModel scenarios.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive CreateRequest scenarios.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/models/test_custom_pydantic.py</td>
+                    <td>574</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive table constraints scenarios.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/test_complex_query_patterns.py</td>
+                    <td>2370</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test 5-level star schema joins with comprehensive column lineage&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/test_complex_query_patterns.py</td>
+                    <td>4053</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test 3-branch UNION ALL with comprehensive column mapping&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/unit/lineage/queries/test_complex_query_patterns.py</td>
+                    <td>4929</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test UNION with subqueries and joins - comprehensive lineage&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/cli_e2e/test_cli_tableau.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive metadata ingestion validation - runs after base ingestion&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/cli_e2e/test_cli_tableau.py</td>
+                    <td>220</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive lineage validation - Enable actual lineage testing&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/tests/integration/airflow/test_airflow_api_connection.py</td>
+                    <td>548</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test comprehensive DAG metadata extraction with Airflow 3.x data.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/bigquery/metadata.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">        # Upon invoking the set_project_id method, we retrieve a comprehensive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/snowflake/models.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">                # If removing the () leaves us with nothing, then just return the parenthesis</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/source/database/redshift/queries.py</td>
+                    <td>584</td>
+                    <td class="mono snippet"># For now, we just use the number of queries as a placeholder until we figure out</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/models/topology.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">        # We can leverage this to guarantee we keep track of the MainThread ID.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/ingestion/models/topology.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Cleans the TopologyContext of a given thread in order to lower the Memory Profile.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/utils/execution_time_tracker.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;ExecutionTimeTracker is implemented as a Singleton in order to hold state globally.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/utils/execution_time_tracker.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;When instantiated we can pass if we want it enabled or disabled in order to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/utils/uuid_encoder.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">            # if the obj is uuid, we simply return the value of uuid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ingestion/src/metadata/utils/datalake/datalake_utils.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;A column parser object. This serves as a Creator class for the appropriate column parser object parser</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-service/src/main/java/org/openmetadata/service/notifications/template/handlebars/helpers/TextDiffHelper.java</td>
+                    <td>110</td>
+                    <td class="mono snippet">    // Compute token diff with LCS (simple, robust, dependency-free)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-k8s-operator/src/main/java/org/openmetadata/operator/controller/OMJobReconciler.java</td>
+                    <td>159</td>
+                    <td class="mono snippet">    // Check if main pod already exists (using selectors for robust discovery)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/playwright/doc-generator/markdown.js</td>
+                    <td>179</td>
+                    <td class="mono snippet">    // Add explicit anchor div to ensure robust linking</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/public/locales/en-US/Database/workflows/profiler.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">We recommend to check the &lt;a href=&quot;https://docs.open-metadata.org/how-to-guides/data-quality-observability/profiler/workflow#profiler-best-practices&quot; </td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(9 hits · 9 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/development/docker-compose.redis.yml</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/development/docker-compose.multiserver.yml</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/docker-compose-quickstart/docker-compose-fuseki-arm64.yml</td>
+                    <td>46</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/docker-compose-quickstart/docker-compose-fuseki-standalone.yml</td>
+                    <td>40</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/docker-compose-quickstart/docker-compose-opensearch-standalone.yml</td>
+                    <td>78</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/distributed-test/scripts/gc-reindex-report.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/scripts/ui-checkstyle-playwright-changed.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/scripts/ui-checkstyle-changed.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">openmetadata-ui-core-components/src/main/resources/ui/scripts/ui-checkstyle-changed.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/public/locales/en-US/Database/Db2.md</td>
+                    <td>83</td>
+                    <td class="mono snippet">Contents of your license file if applicable, make sure to replace new lines with `\n` before pasting it here.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/src/utils/TagClassBase.ts</td>
+                    <td>238</td>
+                    <td class="mono snippet">      description: 'This is a sample tag for demonstration purposes',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui/src/main/resources/ui/src/utils/DataProduct/DataProductClassBase.ts</td>
+                    <td>235</td>
+                    <td class="mono snippet">      description: 'This is a sample data product for demonstration purposes',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">openmetadata-ui-core-components/src/main/resources/ui/src/stories/SlideoutMenu.stories.tsx</td>
+                    <td>86</td>
+                    <td class="mono snippet">                    defaultValue=&quot;A sample dataset for demonstration purposes.&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_databricks_kafka_parser.py</td>
+                    <td>400</td>
+                    <td class="mono snippet">        def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/tests/unit/topology/pipeline/test_databricks_kafka_parser.py</td>
+                    <td>441</td>
+                    <td class="mono snippet">        def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/pii/scanners/ner_scanner.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">    def process_data(self, row: str, entities_score: Dict[str, StringAnalysis]) -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/utils/execution_time_tracker.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">        def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/utils/execution_time_tracker.py</td>
+                    <td>241</td>
+                    <td class="mono snippet">        def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/utils/dependency_injector/dependency_injector.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">            def my_function(db: Inject[Database]):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ingestion/src/metadata/utils/dependency_injector/README.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">   def my_function(db: Inject[Database]):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

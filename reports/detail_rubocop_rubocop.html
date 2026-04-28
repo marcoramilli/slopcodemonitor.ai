@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — rubocop/rubocop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>rubocop/rubocop</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.1</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.1</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">200</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">399</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">378,539</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">2023</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(13 hits · 130 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/lint/redundant_safe_navigation.rb</td>
+                    <td>224</td>
+                    <td class="mono snippet">              range_with_default = node.lhs.source_range.end.begin.join(node.source_range.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/lint/loop.rb</td>
+                    <td>70</td>
+                    <td class="mono snippet">          node.body.loc.end.end.join(node.source_range.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/lint/useless_assignment.rb</td>
+                    <td>200</td>
+                    <td class="mono snippet">          corrector.remove(node.parent.location.operator.end.adjust(begin_pos: -1))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/layout/block_end_newline.rb</td>
+                    <td>78</td>
+                    <td class="mono snippet">          node.children.compact.last.source_range.end.join(node.loc.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/mixin/trailing_comma.rb</td>
+                    <td>146</td>
+                    <td class="mono snippet">        after_last_item = node.children.last.source_range.end.join(node.source_range.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/reverse_find.rb</td>
+                    <td>41</td>
+                    <td class="mono snippet">          range = node.children.first.loc.selector.join(node.loc.selector)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/combinable_loops.rb</td>
+                    <td>114</td>
+                    <td class="mono snippet">          corrector.remove(node.left_sibling.body.source_range.end.join(node.left_sibling.loc.end))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/map_compact_with_conditional_block.rb</td>
+                    <td>159</td>
+                    <td class="mono snippet">          node.receiver.send_node.loc.selector.begin.join(node.source_range.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/semicolon.rb</td>
+                    <td>140</td>
+                    <td class="mono snippet">                space = node.parent.loc.selector.end.join(node.source_range.begin)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/infinite_loop.rb</td>
+                    <td>96</td>
+                    <td class="mono snippet">          corrector.remove(node.body.loc.end.end.join(node.source_range.end))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/multiple_comparison.rb</td>
+                    <td>117</td>
+                    <td class="mono snippet">          values.first.parent.source_range.begin.join(values.last.parent.source_range.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/style/redundant_double_splat_hash_braces.rb</td>
+                    <td>86</td>
+                    <td class="mono snippet">          node.children.last.source_range.end.join(node.loc.end)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">lib/rubocop/cop/internal_affairs/processed_source_buffer_name.rb</td>
+                    <td>33</td>
+                    <td class="mono snippet">          offense_range = node.children.first.loc.selector.begin.join(node.source_range.end)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(94 hits · 94 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/comment_config_spec.rb</td>
+                    <td>301</td>
+                    <td class="mono snippet">          def process_data(input)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/comment_config_spec.rb</td>
+                    <td>482</td>
+                    <td class="mono snippet">          def process_data(input)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cli/autocorrect_spec.rb</td>
+                    <td>486</td>
+                    <td class="mono snippet">        def do_something(arg)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cli/autocorrect_spec.rb</td>
+                    <td>501</td>
+                    <td class="mono snippet">        def do_something(arg)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>10</td>
+                    <td class="mono snippet">          def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>21</td>
+                    <td class="mono snippet">            def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>46</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>69</td>
+                    <td class="mono snippet">            def do_something(bar)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>80</td>
+                    <td class="mono snippet">            def do_something(*items)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>92</td>
+                    <td class="mono snippet">            def do_something(*items)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>113</td>
+                    <td class="mono snippet">            def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>126</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>138</td>
+                    <td class="mono snippet">            def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>148</td>
+                    <td class="mono snippet">            def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>162</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>177</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>191</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>206</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>222</td>
+                    <td class="mono snippet">                def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>240</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>256</td>
+                    <td class="mono snippet">                def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>275</td>
+                    <td class="mono snippet">            def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>288</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>304</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>316</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>329</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>346</td>
+                    <td class="mono snippet">                def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>366</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>383</td>
+                    <td class="mono snippet">                def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>403</td>
+                    <td class="mono snippet">              def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>419</td>
+                    <td class="mono snippet">                def do_something(foo)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/shadowed_argument_spec.rb</td>
+                    <td>436</td>
+                    <td class="mono snippet">            def do_something(foo, bar)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/to_enum_arguments_spec.rb</td>
+                    <td>181</td>
+                    <td class="mono snippet">        def do_something(*)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/lint/to_enum_arguments_spec.rb</td>
+                    <td>193</td>
+                    <td class="mono snippet">        def do_something(**)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/layout/multiline_method_parameter_line_breaks_spec.rb</td>
+                    <td>146</td>
+                    <td class="mono snippet">        def do_something(foo, bar, baz,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/layout/multiline_method_parameter_line_breaks_spec.rb</td>
+                    <td>154</td>
+                    <td class="mono snippet">        def do_something(foo,#{trailing_whitespace}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/multiple_comparison_spec.rb</td>
+                    <td>297</td>
+                    <td class="mono snippet">      def do_something(foo, bar)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/trailing_body_on_method_definition_spec.rb</td>
+                    <td>50</td>
+                    <td class="mono snippet">      def do_stuff(thing) process(thing)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/trailing_body_on_method_definition_spec.rb</td>
+                    <td>58</td>
+                    <td class="mono snippet">      def do_stuff(thing)#{trailing_whitespace}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>20</td>
+                    <td class="mono snippet">          def my_method() = x</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>59</td>
+                    <td class="mono snippet">          def my_method(a, b) = x</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>64</td>
+                    <td class="mono snippet">          def my_method(a, b)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>84</td>
+                    <td class="mono snippet">          def my_method() = x</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>96</td>
+                    <td class="mono snippet">          def my_method(a, b) = x</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>110</td>
+                    <td class="mono snippet">          def my_method() = x.foo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>161</td>
+                    <td class="mono snippet">          def my_method() = begin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>178</td>
+                    <td class="mono snippet">          def my_method(a, b) = x.foo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>185</td>
+                    <td class="mono snippet">          def my_method(a, b)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>199</td>
+                    <td class="mono snippet">          def my_method() = x</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">spec/rubocop/cop/style/endless_method_spec.rb</td>
+                    <td>211</td>
+                    <td class="mono snippet">          def my_method(a, b) = x</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 44 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(36 hits · 72 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.rubocop.yml</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # This file is intentionally empty to catch rubocop cops failing on empty files.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">AGENTS.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">## Creating a New Cop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/config_spec.rb</td>
+                    <td>601</td>
+                    <td class="mono snippet">        # This file is in an 'app' subdirectory of the project, so it should match.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cli_spec.rb</td>
+                    <td>1412</td>
+                    <td class="mono snippet">      # This file contains configuration for an unknown cop. This would cause a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/config_obsoletion.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This class handles obsolete configuration.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cache_config.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This class represents the cache config of the caching RuboCop runs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/platform.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This module provides information on the platform that RuboCop is being run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/util.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This module contains a collection of useful utility methods.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/config.rb</td>
+                    <td>7</td>
+                    <td class="mono snippet">  # This class represents the configuration of the RuboCop application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/config_regeneration.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This class handles collecting the options for regenerating a TODO file.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/comment_config.rb</td>
+                    <td>11</td>
+                    <td class="mono snippet">    # This class provides an API compatible with RuboCop::DirectiveComment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/options.rb</td>
+                    <td>12</td>
+                    <td class="mono snippet">  # This class handles command line options.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/options.rb</td>
+                    <td>518</td>
+                    <td class="mono snippet">  # This module contains help texts for command line options.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/pending_cops_reporter.rb</td>
+                    <td>6</td>
+                    <td class="mono snippet">  # This class is responsible for displaying warnings when new cops have been added to RuboCop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/runner.rb</td>
+                    <td>6</td>
+                    <td class="mono snippet">  # This class handles the processing of files, which includes dealing with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/feature_loader.rb</td>
+                    <td>4</td>
+                    <td class="mono snippet">  # This class handles loading files (a.k.a. features in Ruby) specified</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/config_loader.rb</td>
+                    <td>13</td>
+                    <td class="mono snippet">  # This class represents the configuration of the RuboCop application</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/client_command/status.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a client command to show server process status.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/client_command/restart.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a client command to restart server process.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/client_command/start.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a client command to start server process.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/client_command/exec.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a client command to execute server process.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/client_command/stop.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a client command to stop server process.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/server_command/exec.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a server command to execute `rubocop` command using `RuboCop::CLI.new#run`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/server/server_command/stop.rb</td>
+                    <td>15</td>
+                    <td class="mono snippet">      # This class is a server command to stop server process.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/formatter/html_formatter.rb</td>
+                    <td>62</td>
+                    <td class="mono snippet">      # This class provides helper methods used in the ERB template.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/formatter/html_formatter.rb</td>
+                    <td>136</td>
+                    <td class="mono snippet">      # This class provides helper methods used in the ERB CSS template.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/rspec/cop_helper.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet"># This module provides methods that make it easier to test Cops.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/util.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet">    # This module contains a collection of useful utility methods.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/variable_force/reference.rb</td>
+                    <td>6</td>
+                    <td class="mono snippet">      # This class represents each reference of a variable.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/variable_force/assignment.rb</td>
+                    <td>6</td>
+                    <td class="mono snippet">      # This class represents each assignment of a variable.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/correctors/line_break_corrector.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet">    # This class handles autocorrection for code that needs to be moved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/mixin/nil_methods.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet">    # This module provides a list of methods that are:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/mixin/configurable_numbering.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet">    # This module provides functionality for checking if numbering match the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/mixin/configurable_naming.rb</td>
+                    <td>5</td>
+                    <td class="mono snippet">    # This module provides functionality for checking if names match the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/mixin/method_complexity.rb</td>
+                    <td>7</td>
+                    <td class="mono snippet">    # This module handles measurement and reporting of complexity in methods.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/style/arguments_forwarding.rb</td>
+                    <td>99</td>
+                    <td class="mono snippet">      #   # The following code can replace the arguments with `...`,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(21 hits · 42 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>462</td>
+                    <td class="mono snippet">            1st offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>462</td>
+                    <td class="mono snippet">            1st offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>465</td>
+                    <td class="mono snippet">              no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>465</td>
+                    <td class="mono snippet">              no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>467</td>
+                    <td class="mono snippet">            2nd offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>467</td>
+                    <td class="mono snippet">            2nd offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>470</td>
+                    <td class="mono snippet">            no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore mag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>470</td>
+                    <td class="mono snippet">            no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore mag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>472</td>
+                    <td class="mono snippet">              no offense (nested inside permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>472</td>
+                    <td class="mono snippet">              no offense (nested inside permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>474</td>
+                    <td class="mono snippet">            no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore mag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>474</td>
+                    <td class="mono snippet">            no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore mag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>476</td>
+                    <td class="mono snippet">            3rd offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>476</td>
+                    <td class="mono snippet">            3rd offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>479</td>
+                    <td class="mono snippet">              no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>479</td>
+                    <td class="mono snippet">              no offense (permitted): Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>481</td>
+                    <td class="mono snippet">            4th offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>481</td>
+                    <td class="mono snippet">            4th offense: Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/layout/line_length_spec.rb</td>
+                    <td>497</td>
+                    <td class="mono snippet">          # Lorem ipsum dolar sit amet.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/trailing_comma_in_arguments_spec.rb</td>
+                    <td>143</td>
+                    <td class="mono snippet">                email: &quot;foo@bar.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/trailing_comma_in_arguments_spec.rb</td>
+                    <td>162</td>
+                    <td class="mono snippet">                email: &quot;foo@bar.com&quot;</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(19 hits · 38 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">config/default.yml</td>
+                    <td>3541</td>
+                    <td class="mono snippet">  # methods use braces. For example, you can use this to enforce Sorbet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cli/options_spec.rb</td>
+                    <td>2257</td>
+                    <td class="mono snippet">        C:  1:  3: [Correctable] Style/SpecialGlobalVars: Prefer $INPUT_RECORD_SEPARATOR or $RS from the stdlib 'English' module (don't forget to requ</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cli/options_spec.rb</td>
+                    <td>2297</td>
+                    <td class="mono snippet">        C:  1:  3: [Corrected] Style/SpecialGlobalVars: Prefer $INPUT_RECORD_SEPARATOR or $RS from the stdlib 'English' module (don't forget to requir</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cli/options_spec.rb</td>
+                    <td>2319</td>
+                    <td class="mono snippet">        C:  1:  3: [Corrected] Style/SpecialGlobalVars: Prefer $INPUT_RECORD_SEPARATOR or $RS from the stdlib 'English' module (don't forget to requir</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/generator_spec.rb</td>
+                    <td>66</td>
+                    <td class="mono snippet">                # In many cases, you can use a node matcher for matching node pattern.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>49</td>
+                    <td class="mono snippet">               ^^ Prefer `$PROCESS_ID` or `$PID` from the stdlib 'English' module (don't forget to require it) over `$$`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>60</td>
+                    <td class="mono snippet">               ^^ Prefer `$ARGV` from the stdlib 'English' module (don't forget to require it) or `ARGV` over `$*`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">          ^^ Prefer `$INPUT_RECORD_SEPARATOR` or `$RS` from the stdlib 'English' module (don't forget to require it) over `$/`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>97</td>
+                    <td class="mono snippet">             ^^ Prefer `$ERROR_INFO` from the stdlib 'English' module (don't forget to require it) over `$!`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>120</td>
+                    <td class="mono snippet">          ^^ Prefer `$ERROR_INFO` from the stdlib 'English' module (don't forget to require it) over `$!`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>142</td>
+                    <td class="mono snippet">                 ^^ Prefer `$PROCESS_ID` or `$PID` from the stdlib 'English' module (don't forget to require it) over `$$`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>158</td>
+                    <td class="mono snippet">                   ^^ Prefer `$PROCESS_ID` or `$PID` from the stdlib 'English' module (don't forget to require it) over `$$`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>178</td>
+                    <td class="mono snippet">                 ^^ Prefer `$ARGV` from the stdlib 'English' module (don't forget to require it) or `ARGV` over `$*`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>180</td>
+                    <td class="mono snippet">                 ^^ Prefer `$ARGV` from the stdlib 'English' module (don't forget to require it) or `ARGV` over `$*`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>209</td>
+                    <td class="mono snippet">                 ^^ Prefer `$PROCESS_ID` or `$PID` from the stdlib 'English' module (don't forget to require it) over `$$`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">spec/rubocop/cop/style/special_global_vars_spec.rb</td>
+                    <td>221</td>
+                    <td class="mono snippet">                 ^^ Prefer `$PROCESS_ID` or `$PID` from the stdlib 'English' module (don't forget to require it) over `$$`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/rspec/expect_offense.rb</td>
+                    <td>75</td>
+                    <td class="mono snippet">    # If your code has variables of different lengths, you can use the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/generator.rb</td>
+                    <td>59</td>
+                    <td class="mono snippet">                # In many cases, you can use a node matcher for matching node pattern.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lib/rubocop/cop/lint/missing_super.rb</td>
+                    <td>20</td>
+                    <td class="mono snippet">      # not meant to be called with `super`. In those cases, you can use the</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(13 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CHANGELOG.md</td>
+                    <td>394</td>
+                    <td class="mono snippet">* [#14469](https://github.com/rubocop/rubocop/issues/14469): Fix an incorrect autocorrect for `Style/BitwisePredicate` when using `&amp;` with LHS flags i</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/magic_comment.rb</td>
+                    <td>52</td>
+                    <td class="mono snippet">    # just return `frozen_string_literal` since an invalid magic comment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/server/cache.rb</td>
+                    <td>40</td>
+                    <td class="mono snippet">          # If we can't find a Gemfile, just use the current directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/lint/rand_one.rb</td>
+                    <td>18</td>
+                    <td class="mono snippet">      #   0 # just use 0 instead</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/lint/unmodified_reduce_accumulator.rb</td>
+                    <td>11</td>
+                    <td class="mono snippet">      # block will just return a transformation of the last element value, and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/style/hash_syntax.rb</td>
+                    <td>65</td>
+                    <td class="mono snippet">      #   {c: 2, 'd' =&gt; 3} # should just use hash rockets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/style/encoding.rb</td>
+                    <td>8</td>
+                    <td class="mono snippet">      # these comments are no longer necessary and just add noise.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/naming/predicate_method.rb</td>
+                    <td>253</td>
+                    <td class="mono snippet">          # so just return an `array` sexp for simplicity.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">relnotes/v0.56.0.md</td>
+                    <td>6</td>
+                    <td class="mono snippet">* [#4136](https://github.com/rubocop/rubocop/issues/4136): Allow more robust `Layout/ClosingParenthesisIndentation` detection including method chainin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">relnotes/v0.56.0.md</td>
+                    <td>6</td>
+                    <td class="mono snippet">* [#4136](https://github.com/rubocop/rubocop/issues/4136): Allow more robust `Layout/ClosingParenthesisIndentation` detection including method chainin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">relnotes/CHANGELOG_v0.md</td>
+                    <td>1478</td>
+                    <td class="mono snippet">* [#4136](https://github.com/rubocop/rubocop/issues/4136): Allow more robust `Layout/ClosingParenthesisIndentation` detection including method chainin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">relnotes/CHANGELOG_v0.md</td>
+                    <td>1478</td>
+                    <td class="mono snippet">* [#4136](https://github.com/rubocop/rubocop/issues/4136): Allow more robust `Layout/ClosingParenthesisIndentation` detection including method chainin</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">relnotes/v1.80.0.md</td>
+                    <td>3</td>
+                    <td class="mono snippet">* [#14469](https://github.com/rubocop/rubocop/issues/14469): Fix an incorrect autocorrect for `Style/BitwisePredicate` when using `&amp;` with LHS flags i</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop.rb</td>
+                    <td>842</td>
+                    <td class="mono snippet">unless File.exist?(&quot;#{__dir__}/../rubocop.gemspec&quot;) # Check if we are a gem</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/mixin/frozen_string_literal.rb</td>
+                    <td>47</td>
+                    <td class="mono snippet">        # Check if a magic string literal comment specifies what to do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/style/redundant_line_continuation.rb</td>
+                    <td>161</td>
+                    <td class="mono snippet">          # Check if source is still valid without the continuation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/rubocop/cop/style/fetch_env_var.rb</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Check if the node is a receiver and receives a message with dot syntax.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

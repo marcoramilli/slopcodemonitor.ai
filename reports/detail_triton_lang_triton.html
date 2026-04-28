@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — triton-lang/triton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>triton-lang/triton</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.1</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.1</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">525</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1062</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">346,455</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1176</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(361 hits · 722 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/cuda/test_libdevice_cuda.py</td>
+                    <td>12</td>
+                    <td class="mono snippet"># -----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/cuda/test_libdevice_cuda.py</td>
+                    <td>14</td>
+                    <td class="mono snippet"># -----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>62</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_standard.py</td>
+                    <td>64</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>369</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>371</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>515</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>556</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>558</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>583</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>585</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>615</td>
+                    <td class="mono snippet"># ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>617</td>
+                    <td class="mono snippet"># ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>664</td>
+                    <td class="mono snippet"># ------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>666</td>
+                    <td class="mono snippet"># ------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>681</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>683</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>792</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>794</td>
+                    <td class="mono snippet"># ----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>808</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>810</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>902</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>904</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>916</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>918</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>987</td>
+                    <td class="mono snippet"># -------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>989</td>
+                    <td class="mono snippet"># -------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1048</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1050</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1095</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1097</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1129</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1131</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1156</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1158</td>
+                    <td class="mono snippet"># ----------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1315</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1317</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1827</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>1829</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2273</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2275</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2779</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2781</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2829</td>
+                    <td class="mono snippet"># ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>2831</td>
+                    <td class="mono snippet"># ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>3026</td>
+                    <td class="mono snippet"># ---------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 311 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(15 hits · 150 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>3896</td>
+                    <td class="mono snippet">    if not is_interpreter() and triton.runtime.driver.active.utils.get_device_properties(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/unit/language/test_matmul.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    shared_mem_avail = triton.runtime.driver.active.utils.get_device_properties(0)[&quot;max_shared_mem&quot;]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>717</td>
+                    <td class="mono snippet">    %0 = tt.call @triton.experimental.gluon.language.nvidia.ampere.mbarrier.allocate_mbarrier__cNone_cTrue() : () -&gt; !ttg.memdesc&lt;1xi64, #shared, #sme</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>722</td>
+                    <td class="mono snippet">  tt.func private @triton.experimental.gluon.language.nvidia.ampere.mbarrier.allocate_mbarrier__cNone_cTrue() -&gt; !ttg.memdesc&lt;1xi64, #shared, #smem, m</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>3351</td>
+                    <td class="mono snippet">    %13 = tt.call @triton.experimental.gluon.language._standard.zeros__Tc1T_cfp16_cAL() : () -&gt; tensor&lt;1xf16, #gluon.auto_encoding&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>3379</td>
+                    <td class="mono snippet">  tt.func private @triton.experimental.gluon.language._standard.zeros__Tc1T_cfp16_cAL() -&gt; tensor&lt;1xf16, #gluon.auto_encoding&gt; attributes {noinline = </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>3410</td>
+                    <td class="mono snippet">    %1 = tt.call @triton.experimental.gluon.language._standard.zeros__Tc1T_cbf16_cAL() : () -&gt; tensor&lt;1xbf16, #gluon.auto_encoding&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/test/gluon/test_frontend.py</td>
+                    <td>3428</td>
+                    <td class="mono snippet">  tt.func private @triton.experimental.gluon.language._standard.zeros__Tc1T_cbf16_cAL() -&gt; tensor&lt;1xbf16, #gluon.auto_encoding&gt; attributes {noinline =</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">python/triton/language/core.py</td>
+                    <td>3314</td>
+                    <td class="mono snippet">        triton.runtime.driver.active.utils.set_printf_fifo_size(size_bytes)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/proton/proton/hooks/instrumentation.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">        max_shared_mem = triton.runtime.driver.active.utils.get_device_properties(device)[&quot;max_shared_mem&quot;]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/proton/proton/hooks/instrumentation.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">                arch = triton.runtime.driver.active.utils.get_device_properties(device)[&quot;arch&quot;].split(&quot;:&quot;)[0]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/amd/backend/driver.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">    return triton.runtime.driver.active.utils.build_signature_metadata(kernel_signature)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/nvidia/backend/driver.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">    return triton.runtime.driver.active.utils.build_signature_metadata(kernel_signature)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/nvidia/backend/driver.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">        cu_tensor_map = triton.runtime.driver.active.utils.fill_tma_descriptor_im2col(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">third_party/nvidia/backend/driver.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">        cu_tensor_map = triton.runtime.driver.active.utils.fill_tma_descriptor_tiled(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(45 hits · 45 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>260</td>
+                    <td class="mono snippet"># Step 1: Run the kernel once to dump kernel's IRs and ptx/amdgcn in $TRITON_DUMP_DIR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>261</td>
+                    <td class="mono snippet"># Step 2: Copy $TRITON_DUMP_DIR/&lt;kernel_hash&gt; to $TRITON_OVERRIDE_DIR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>262</td>
+                    <td class="mono snippet"># Step 3: Delete the stages that you do not want to override and modify the stage you do want to override</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>263</td>
+                    <td class="mono snippet"># Step 4: Run the kernel again to see the overridden result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/jit.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">        # The purpose of this function is to visit everything in `arguments`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tutorials/gluon/13-conv-im2col.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">#     Step 1: Extract patches for each output position</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tutorials/gluon/13-conv-im2col.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">#     Step 2: Stack patches into im2col matrix A (M=4, K=4)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tutorials/gluon/13-conv-im2col.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">#     Step 3: Reshape filter into weight matrix W (Co=1, K=4)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/tutorials/gluon/13-conv-im2col.py</td>
+                    <td>171</td>
+                    <td class="mono snippet">#     Step 4: Output = A @ W^T</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>515</td>
+                    <td class="mono snippet">    // Step 1: Right shift for 8 lanes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>518</td>
+                    <td class="mono snippet">    // Step 2: Right shift for 4 lanes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>521</td>
+                    <td class="mono snippet">    // Step 3: Right shift for 2 lanes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>524</td>
+                    <td class="mono snippet">    // Step 4: Right shift for 1 lane.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>527</td>
+                    <td class="mono snippet">    // Step 5: Broadcast lane 15 of each row to all the lanes of its next row.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>530</td>
+                    <td class="mono snippet">    // Step 6: Broadcast lane 31 to lane 32-63.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/TargetInfo.cpp</td>
+                    <td>535</td>
+                    <td class="mono snippet">    // Step 7: Read the reduction result from lane 63 and broadcast with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>935</td>
+                    <td class="mono snippet">    // Step 1: extract EM bits for elements 0,2,4,6 and 1,3,5,7 respectively.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>942</td>
+                    <td class="mono snippet">    // Step 2: convert fp4 to fp8 using LUT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>952</td>
+                    <td class="mono snippet">    // Step 3: extract sign bits</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>956</td>
+                    <td class="mono snippet">    // Step 4:  assemble 4 packed fp8 values w/ sign</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>960</td>
+                    <td class="mono snippet">    // Step 5: convert fp8 to fp32</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>1042</td>
+                    <td class="mono snippet">  // Step 1: extract EM bits for elements 0,2,4,6 and 1,3,5,7 respectively.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>1050</td>
+                    <td class="mono snippet">  // Step 2: extract S bit for elements 0,2,4,6 and 1,3,5,7</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>1058</td>
+                    <td class="mono snippet">  // Step 3: Upcast elements 0,2,4,6 to 4 16-bit elements</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>1087</td>
+                    <td class="mono snippet">  // Step 4: Upcast elements 1,3,5,7 to 4 16-bit elements</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/Utility.cpp</td>
+                    <td>1117</td>
+                    <td class="mono snippet">  // Step 5: Reorder 16-bit elements to be 0,1,2,3,4,5,6,7</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/DotOpToLLVM/MFMA.cpp</td>
+                    <td>485</td>
+                    <td class="mono snippet">          // Step 1: construct each kBase-element vector by</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/DotOpToLLVM/MFMA.cpp</td>
+                    <td>497</td>
+                    <td class="mono snippet">          // Step 2: process rawElems based on element type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/DotOpToLLVM/MFMA.cpp</td>
+                    <td>517</td>
+                    <td class="mono snippet">            // Step 3: Insert the processed vals into the ValueTable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1229</td>
+                    <td class="mono snippet">  // Step 1: collect all communications between producers and consumers.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1240</td>
+                    <td class="mono snippet">  // Step 2: group channels</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1249</td>
+                    <td class="mono snippet">  // Step 3: reorder producer ops and the backward slices of the producer ops.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1252</td>
+                    <td class="mono snippet">  // Step 4: find top-level ops that contain a channel, also create new ForOps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1272</td>
+                    <td class="mono snippet">  // Step 5: Create buffers. An array of buffers for each channel.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1280</td>
+                    <td class="mono snippet">  // Step 6: Lower the loads. Also add local copy ops for non-load</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1290</td>
+                    <td class="mono snippet">  // Step 7: Create tokens. A set of tokens for each group of channels for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSCodePartition.cpp</td>
+                    <td>1301</td>
+                    <td class="mono snippet">  // Step 8: add async communication ops (ProducerAcquire etc). Also lower</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSBuffer.cpp</td>
+                    <td>305</td>
+                    <td class="mono snippet">  // Step 1: Append accumCnts as forOp arguments.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSBuffer.cpp</td>
+                    <td>309</td>
+                    <td class="mono snippet">  // Step 2: Add accumCnts to yieldOp.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSBuffer.cpp</td>
+                    <td>318</td>
+                    <td class="mono snippet">  // Step 3: Create loop arguments for the new ForOp.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSBuffer.cpp</td>
+                    <td>327</td>
+                    <td class="mono snippet">  // Step 4: Create newForOp and take the region of the original forOp.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/hopper/lib/Transforms/WarpSpecialization/WSBuffer.cpp</td>
+                    <td>333</td>
+                    <td class="mono snippet">  // Step 5: Replace forOp with newForOp.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/lib/NVGPUToLLVM/NVGPUToLLVMPass.cpp</td>
+                    <td>604</td>
+                    <td class="mono snippet">  // TODO: pred will have a long liverange, we need to check if this is a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp</td>
+                    <td>1023</td>
+                    <td class="mono snippet">  // Step 3: Along the &quot;register&quot; dim, remove any all-zero bases.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lib/Dialect/TritonInstrument/Transforms/ConcurrencySanitizer.cpp</td>
+                    <td>523</td>
+                    <td class="mono snippet">        // Op is writing to the buffer, we need to check if anything else</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(38 hits · 39 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>532</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/runtime/test_cache.py</td>
+                    <td>767</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>4939</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/language/test_decorator.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/backend/test_mir_stage.py</td>
+                    <td>11</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/_internal_testing.py</td>
+                    <td>262</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/experimental/gsan/symmetric_memory.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/experimental/gsan/symmetric_memory.py</td>
+                    <td>252</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/experimental/gsan/symmetric_memory.py</td>
+                    <td>444</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/experimental/gsan/_utils.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/cache.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/cache.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/_async_compile.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/interpreter.py</td>
+                    <td>1297</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/interpreter.py</td>
+                    <td>1338</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/interpreter.py</td>
+                    <td>1431</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/autotuner.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/compiler.py</td>
+                    <td>308</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/code_generator.py</td>
+                    <td>1348</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/code_generator.py</td>
+                    <td>1399</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/code_generator.py</td>
+                    <td>1570</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/code_generator.py</td>
+                    <td>1605</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/examples/gluon/02-conv-dgrad.py</td>
+                    <td>980</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/examples/gluon/02-conv-wgrad.py</td>
+                    <td>735</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_instrumentation.py</td>
+                    <td>938</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>375</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/test_api.py</td>
+                    <td>385</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/test/reproducers/cupti_graph_replay_heap_growth.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/proton/proton.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/proton/proton/proton.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        print(&quot;An error occurred while executing the script:&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/python/test/test_gluon_gfx1250.py</td>
+                    <td>1906</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/backend/driver.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/nvidia/backend/driver.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/build_helpers.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">    # Create a stable symlink that doesn't include revision</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/gluon/test_core.py</td>
+                    <td>2448</td>
+                    <td class="mono snippet">    # Create a test matrix with known values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/gluon/test_core.py</td>
+                    <td>2665</td>
+                    <td class="mono snippet">    # Create a test matrix [N, M]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/gluon/test_core.py</td>
+                    <td>2826</td>
+                    <td class="mono snippet">    # Create a test tensor [N, M, P]</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/experimental/gluon/language/_semantic.py</td>
+                    <td>572</td>
+                    <td class="mono snippet">        # Create the warp specialize op.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/experimental/gluon/language/_layouts.py</td>
+                    <td>617</td>
+                    <td class="mono snippet">        # Create a idendity mapping based on shape_per_cta + order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/runtime/jit.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">    # Create the function argument list and the dict entries for the return statement</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/runtime/jit.py</td>
+                    <td>1129</td>
+                    <td class="mono snippet">        # Create a bound function to support constexpr_function methods</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/language/core.py</td>
+                    <td>1626</td>
+                    <td class="mono snippet">    # Define the wrapped Triton value type.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/02-fused-softmax.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">    # Create a number of persistent programs.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/01-vector-add.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">    # Create a mask to guard memory operations against out-of-bounds accesses.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/conf.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/proton/proton/hooks/instrumentation.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">        # Create the buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/proton/proton/hooks/instrumentation.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">    # Create the appropriate mode instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/amd/python/test/test_gluon_gfx1250.py</td>
+                    <td>2124</td>
+                    <td class="mono snippet">        # Create a flattened view into the nD reference to unify the indexing logic over all dimensions</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(16 hits · 29 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/tools/triton_to_gluon_translator/slice_kernel.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">        # HACK: An AST rewrite would be more robust, but this works for now.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton/runtime/cache.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        # use temp dir to be robust against program interruptions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/runtime/interpreter.py</td>
+                    <td>1335</td>
+                    <td class="mono snippet">        # e.g., dynamically generated functions, we cannot rewrite it so just return the original function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton_kernels/bench/bench_dense_matmul.py</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This is not meant to be a comprehensive benchmark of triton_kernels.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/triton_kernels/bench/bench_dense_matmul.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">    # even for the fp16 benchmark path. Match that when reproducing the OpenAI harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/09-persistent-matmul.py</td>
+                    <td>411</td>
+                    <td class="mono snippet">    # Enable warp specialization to leverage async warp scheduling in the GPU.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/10-block-scaled-matmul.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">    # With 256 elements we better utilize the L2 and don't require the TMA</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/14-multicta.py</td>
+                    <td>342</td>
+                    <td class="mono snippet"># when used in conjunction with TMA, the TMA barrier needs to be `two_ctas=True`.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/11-tcgen05-mma-scaled.py</td>
+                    <td>654</td>
+                    <td class="mono snippet">    # elements. With 256 bytes along the inner dimension, we better utilize the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/08-warp-specialization.py</td>
+                    <td>369</td>
+                    <td class="mono snippet"># specialization is especially powerful when used to build intricate schedules</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/02-layouts.py</td>
+                    <td>868</td>
+                    <td class="mono snippet"># Linear layouts are extremely poweful, and can be used in conjunction with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/07-persistence.py</td>
+                    <td>817</td>
+                    <td class="mono snippet">#   work in conjunction with the GPU, getting the best of both worlds. This is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/python/test/test_gluon_gfx1250.py</td>
+                    <td>2688</td>
+                    <td class="mono snippet">    # In practice, since we know that phase is initialized to 0, we can just set count = NUM_WARPS * WARP_SIZE and call directly ttgl.amd.gfx1250.mbar</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/python/test/test_gluon_gfx1250.py</td>
+                    <td>2749</td>
+                    <td class="mono snippet">    # In practice, since we know that phase is initialized to 0, we can just set count = NUM_WARPS and call directly ttgl.amd.gfx1250.mbarrier.wait(ba</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUTransforms/ScheduleLoops.cpp</td>
+                    <td>212</td>
+                    <td class="mono snippet">/// which is not coalesced. To better utilize global memory bandwidth,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">third_party/amd/lib/TritonAMDGPUToLLVM/LoadStoreOpToLLVM.cpp</td>
+                    <td>2168</td>
+                    <td class="mono snippet">    // In the case of unpaired f16 elements utilize dpp instructions to</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(17 hits · 17 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">                def helper() -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">def helper() -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">                def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>397</td>
+                    <td class="mono snippet">def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>417</td>
+                    <td class="mono snippet">                def helper():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>432</td>
+                    <td class="mono snippet">def helper():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>455</td>
+                    <td class="mono snippet">                def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>474</td>
+                    <td class="mono snippet">def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>494</td>
+                    <td class="mono snippet">                def helper():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">def helper():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>536</td>
+                    <td class="mono snippet">                def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>555</td>
+                    <td class="mono snippet">def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>578</td>
+                    <td class="mono snippet">                def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>597</td>
+                    <td class="mono snippet">def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>620</td>
+                    <td class="mono snippet">                def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>636</td>
+                    <td class="mono snippet">def helper() -&gt; None:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/test/unit/tools/test_slice_kernel.py</td>
+                    <td>652</td>
+                    <td class="mono snippet">                def helper() -&gt; int:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">CMakeLists.txt</td>
+                    <td>488</td>
+                    <td class="mono snippet">  # Check if the platform is MacOS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/build_helpers.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">    # Set timeout to 300 seconds to prevent the request from hanging forever.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/triton/compiler/code_generator.py</td>
+                    <td>131</td>
+                    <td class="mono snippet"># Check if the given syntax node has an &quot;early&quot; return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">utils/generate-test-checks.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">        # Check if an existing variable exists for this name.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">utils/generate-test-checks.py</td>
+                    <td>320</td>
+                    <td class="mono snippet">        # Check if this is an attribute definition and process it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/proton/proton/hooks/hook.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">        # Check if any other sessions rely on this hook</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/python/test/address_sanitizer_helper.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    #Set access to go out of bounds for ASAN test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">third_party/amd/backend/driver.py</td>
+                    <td>330</td>
+                    <td class="mono snippet">        # Check if cooperative groups are supported on the device.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/integration-tests-nvidia.yml</td>
+                    <td>41</td>
+                    <td class="mono snippet">          # Check if files exist before proceeding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/integration-tests-amd.yml</td>
+                    <td>66</td>
+                    <td class="mono snippet">          # Check if files exist before proceeding</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/build-macos.yml</td>
+                    <td>37</td>
+                    <td class="mono snippet">          # Check if files exist before proceeding</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/test/unit/tools/test_aot.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    while (fscanf(file, &quot;%hd,&quot;, &amp;buffer[index]) != EOF &amp;&amp; index &lt; size) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/triton/experimental/gsan/symmetric_memory.py</td>
+                    <td>396</td>
+                    <td class="mono snippet">        stack.push(listener)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(4 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/test/unit/language/test_core.py</td>
+                    <td>6340</td>
+                    <td class="mono snippet">            # reuse the temp variable and make sure to check that it isn't creating incorrect IR.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/01-vector-add.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">    #  - Don't forget to pass meta-parameters as keywords arguments.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/14-multicta.py</td>
+                    <td>349</td>
+                    <td class="mono snippet"># It's worth noting that the pattern changes a bit once the TMA has to wait on the tcgen05_mma</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/tutorials/gluon/02-layouts.py</td>
+                    <td>839</td>
+                    <td class="mono snippet"># require reordering registers within a thread (which is free), you can use</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/triton-tensor-layout.cpp</td>
+                    <td>23</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

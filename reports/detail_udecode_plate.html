@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — udecode/plate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>udecode/plate</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.6</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.6</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">232</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">774</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">496,722</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">4790</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(48 hits · 480 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">docs/solutions/logic-errors/2026-04-17-code-block-browser-highlight-must-match-server-output.md</td>
+                    <td>129</td>
+                    <td class="mono snippet">- `editor.plugins.code_block.options.lowlight.highlight('python', ...)`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/pipeInjectNodeProps.tsx</td>
+                    <td>17</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.inject.nodeProps.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>105</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.node.isContainer.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>111</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.inject.nodeProps.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>122</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.node.isLeaf.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>126</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.node.isText.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>130</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.node.leafProps.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>134</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.node.textProps.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>138</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.aboveEditable.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>142</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.aboveSlate.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>146</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.afterEditable.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>150</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.beforeEditable.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>154</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.rules.match.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>158</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.afterContainer.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>162</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.beforeContainer.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>166</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.belowRootNodes.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>178</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.aboveNodes.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>182</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.render.belowNodes.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>190</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.handlers.onChange.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>193</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.handlers.onNodeChange.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>196</td>
+                    <td class="mono snippet">      editor.meta.pluginCache.handlers.onTextChange.push(plugin.key);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pipeRenderElementStatic.tsx</td>
+                    <td>40</td>
+                    <td class="mono snippet">        {editor.meta.pluginCache.render.belowRootNodes.map((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderLeafStatic.tsx</td>
+                    <td>56</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.isLeaf.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderLeafStatic.tsx</td>
+                    <td>64</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.leafProps.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderTextStatic.tsx</td>
+                    <td>57</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.isText.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderTextStatic.tsx</td>
+                    <td>65</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.textProps.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderElementStatic.tsx</td>
+                    <td>40</td>
+                    <td class="mono snippet">    editor.meta.pluginCache.render.belowNodes.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderElementStatic.tsx</td>
+                    <td>57</td>
+                    <td class="mono snippet">        {editor.meta.pluginCache.render.belowRootNodes.map((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/pluginRenderElementStatic.tsx</td>
+                    <td>66</td>
+                    <td class="mono snippet">    editor.meta.pluginCache.render.aboveNodes.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/components/PlateStatic.tsx</td>
+                    <td>226</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.beforeEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/components/PlateStatic.tsx</td>
+                    <td>240</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.afterEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/static/components/PlateStatic.tsx</td>
+                    <td>276</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.aboveEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/lib/utils/pipeOnNodeChange.ts</td>
+                    <td>11</td>
+                    <td class="mono snippet">  return editor.meta.pluginCache.handlers.onNodeChange.some((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/lib/utils/pipeOnTextChange.ts</td>
+                    <td>13</td>
+                    <td class="mono snippet">  return editor.meta.pluginCache.handlers.onTextChange.some((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pipeOnChange.ts</td>
+                    <td>10</td>
+                    <td class="mono snippet">  return editor.meta.pluginCache.handlers.onChange.some((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pluginRenderElement.tsx</td>
+                    <td>42</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.belowNodes.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pluginRenderElement.tsx</td>
+                    <td>64</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.aboveNodes.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pluginRenderElement.tsx</td>
+                    <td>85</td>
+                    <td class="mono snippet">      {editor.meta.pluginCache.render.belowRootNodes.map((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pipeRenderLeaf.tsx</td>
+                    <td>22</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.isLeaf.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/utils/pipeRenderLeaf.tsx</td>
+                    <td>30</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.node.leafProps.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateContainer.tsx</td>
+                    <td>28</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.beforeContainer.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateContainer.tsx</td>
+                    <td>42</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.afterContainer.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateContent.tsx</td>
+                    <td>88</td>
+                    <td class="mono snippet">    editor.meta.pluginCache.render.beforeEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateContent.tsx</td>
+                    <td>102</td>
+                    <td class="mono snippet">    editor.meta.pluginCache.render.afterEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateContent.tsx</td>
+                    <td>127</td>
+                    <td class="mono snippet">    editor.meta.pluginCache.render.aboveEditable.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/react/components/PlateSlate.tsx</td>
+                    <td>37</td>
+                    <td class="mono snippet">  editor.meta.pluginCache.render.aboveSlate.forEach((key) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/basic-nodes/src/lib/BaseHeadingInputRules.spec.tsx</td>
+                    <td>25</td>
+                    <td class="mono snippet">      editor.meta.inputRules.plugins.h1.rules.map((rule) =&gt; rule.id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/basic-nodes/src/lib/BaseHeadingInputRules.spec.tsx</td>
+                    <td>28</td>
+                    <td class="mono snippet">      editor.meta.inputRules.plugins.h3.rules.map((rule) =&gt; rule.id)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(32 hits · 62 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/plans/2026-03-30-next-best-issue.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">- `#4111` has the best mix of leverage and tractability:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/solutions/test-failures/2026-03-25-warning-path-react-specs-should-capture-debug-warn-in-their-harness.md</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Warning-path React specs should capture debug.warn in their harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/editor-benchmarks/2026-04-03-performance-doc-benchmark-plan.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">### 4. Make the harness configurable and reproducible</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/docx-io/src/lib/internal/helpers/xml-builder.ts</td>
+                    <td>1209</td>
+                    <td class="mono snippet">          // Essentially if background color needs to be across the row</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/CHANGELOG.md</td>
+                    <td>359</td>
+                    <td class="mono snippet">- [#4431](https://github.com/udecode/plate/pull/4431) by [@felixfeng33](https://github.com/felixfeng33) – Added comprehensive copy functionality and v</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/ce-compound-refresh/SKILL.md</td>
+                    <td>668</td>
+                    <td class="mono snippet">      docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/ce-compound/SKILL.md</td>
+                    <td>244</td>
+                    <td class="mono snippet">      docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/ce-compound-refresh/SKILL.md</td>
+                    <td>668</td>
+                    <td class="mono snippet">      docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/ce-compound/SKILL.md</td>
+                    <td>244</td>
+                    <td class="mono snippet">      docs/solutions/  # documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/ai-api.json</td>
+                    <td>53</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;import type { ChatMessage } from '@/registry/components/editor/use-chat';\nimport type { SlateEditor } from 'platejs';\n\nimport ded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/www/public/r/api-react-utils-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: React Utils\ndescription: API reference for @udecode/react-utils.\n---\n\n`@udecode/react-utils` contains utility functi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/editor-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Editor Configuration\ndescription: Learn how to configure and customize the Plate editor.\n---\n\nThis guide covers the </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-rules-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Rules\ndescription: Configure common editing behaviors.\n---\n\nPlugin Rules control how editor nodes respond to </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-index-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Major Releases\n---\n\n&lt;Callout type=\&quot;info\&quot;&gt;\n  This page only covers **major breaking changes**. For patch and minor </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-index-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Major Releases\n---\n\n&lt;Callout type=\&quot;info\&quot;&gt;\n  This page only covers **major breaking changes**. For patch and minor </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/markdown-streaming-demo.json</td>
+                    <td>14</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;'use client';\nimport {\n  type HTMLAttributes,\n  useCallback,\n  useReducer,\n  useRef,\n  useState,\n} from 'react';\n\nimport { </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/markdown-streaming-demo.json</td>
+                    <td>14</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;'use client';\nimport {\n  type HTMLAttributes,\n  useCallback,\n  useReducer,\n  useRef,\n  useState,\n} from 'react';\n\nimport { </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-v48-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Major Releases\n---\n\n&lt;Callout type=\&quot;info\&quot;&gt;\n  This page covers **major breaking changes** for Plate up to v48. For t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-v48-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Major Releases\n---\n\n&lt;Callout type=\&quot;info\&quot;&gt;\n  This page covers **major breaking changes** for Plate up to v48. For t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-v48-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Major Releases\n---\n\n&lt;Callout type=\&quot;info\&quot;&gt;\n  This page covers **major breaking changes** for Plate up to v48. For t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/components-changelog-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Changelog\ndescription: Latest component updates and announcements.\ntoc: true\n---\n\nSince Plate UI is not a component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/www/public/r/components-changelog-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Changelog\ndescription: Latest component updates and announcements.\ntoc: true\n---\n\nSince Plate UI is not a component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-methods-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Methods\ndescription: Explore the various methods available for extending Plate plugins.\n---\n\n## Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/index-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Introduction\ndescription: Rich-text editor framework with AI, MCP, and shadcn/ui\n---\n\nPlate is a comprehensive toolk</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/index-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Introduction\ndescription: Rich-text editor framework with AI, MCP, and shadcn/ui\n---\n\nPlate is a comprehensive toolk</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/installation-mcp-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: MCP Server\ndescription: Use the Model Context Protocol with Plate.\n---\n\nPlate has an official MCP server. This lets </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/media-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Media\ndocs:\n  - route: https://pro.platejs.org/docs/examples/media\n    title: Plus\n  - route: /docs/components/media</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/installation-plate-ui-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plate UI Installation\ndescription: How to set up Plate UI in your project.\n---\n\nThis guide details how to install Pl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/copilot-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Copilot\ndescription: AI-powered text completion suggestions.\ndocs:\n  - route: https://pro.platejs.org/docs/examples/c</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-slate-to-plate-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Migrating from Slate to Plate\ndescription: Learn how to migrate from Slate to Plate.\n---\n\nPlate is built on top of S</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-slate-to-plate-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Migrating from Slate to Plate\ndescription: Learn how to migrate from Slate to Plate.\n---\n\nPlate is built on top of S</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/config/docs-plugins.ts</td>
+                    <td>291</td>
+                    <td class="mono snippet">          // ! Wait for more robust implementation</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(49 hits · 49 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit/SKILL.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">### Step 1: Gather context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit/SKILL.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">### Step 2: Determine commit message convention</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit/SKILL.md</td>
+                    <td>47</td>
+                    <td class="mono snippet">### Step 3: Consider logical commits</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit/SKILL.md</td>
+                    <td>56</td>
+                    <td class="mono snippet">### Step 4: Stage and commit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit/SKILL.md</td>
+                    <td>78</td>
+                    <td class="mono snippet">### Step 5: Confirm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-clean-gone-branches/SKILL.md</td>
+                    <td>12</td>
+                    <td class="mono snippet">### Step 1: Discover gone branches</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-clean-gone-branches/SKILL.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">### Step 2: Present branches and ask for confirmation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-clean-gone-branches/SKILL.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">### Step 3: Delete confirmed branches</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>76</td>
+                    <td class="mono snippet">### Step 1: Gather context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">### Step 2: Determine conventions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>125</td>
+                    <td class="mono snippet">### Step 3: Check for existing PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>142</td>
+                    <td class="mono snippet">### Step 4: Branch, stage, and commit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>149</td>
+                    <td class="mono snippet">### Step 5: Push</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>155</td>
+                    <td class="mono snippet">### Step 6: Write the PR description</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>302</td>
+                    <td class="mono snippet">### Step 7: Create or update the PR</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-commit-push-pr/SKILL.md</td>
+                    <td>335</td>
+                    <td class="mono snippet">### Step 8: Report</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">### Step 1: Extract Keywords from Feature Description</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>45</td>
+                    <td class="mono snippet">### Step 2: Category-Based Narrowing (Optional but Recommended)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>59</td>
+                    <td class="mono snippet">### Step 3: Content-Search Pre-Filter (Critical for Efficiency)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>98</td>
+                    <td class="mono snippet">### Step 4: Read Frontmatter of Candidates Only</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>116</td>
+                    <td class="mono snippet">### Step 5: Score and Rank Relevance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>135</td>
+                    <td class="mono snippet">### Step 6: Full Read of Relevant Files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/learnings-researcher/SKILL.md</td>
+                    <td>143</td>
+                    <td class="mono snippet">### Step 7: Return Distilled Summaries</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>39</td>
+                    <td class="mono snippet">### Step 1: Precondition Checks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">### Step 2: Fetch Issues (Token-Efficient)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>110</td>
+                    <td class="mono snippet">### Step 3: Cluster by Theme</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>137</td>
+                    <td class="mono snippet">### Step 4: Selective Full Body Reads (Only When Needed)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>148</td>
+                    <td class="mono snippet">### Step 5: Synthesize Themes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/issue-intelligence-analyst/SKILL.md</td>
+                    <td>167</td>
+                    <td class="mono snippet">### Step 6: Handle Edge Cases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/SKILL.md</td>
+                    <td>557</td>
+                    <td class="mono snippet">#### Step 1: Build the action sets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/SKILL.md</td>
+                    <td>565</td>
+                    <td class="mono snippet">#### Step 2: Choose policy by mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/SKILL.md</td>
+                    <td>605</td>
+                    <td class="mono snippet">#### Step 3: Apply fixes with one fixer and bounded rounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/SKILL.md</td>
+                    <td>614</td>
+                    <td class="mono snippet">#### Step 4: Emit artifacts and downstream handoff</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/SKILL.md</td>
+                    <td>626</td>
+                    <td class="mono snippet">#### Step 5: Final next steps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/references/resolve-base.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Step 1: Try PR metadata (handles fork workflows)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/references/resolve-base.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Step 2: Fall back to origin/HEAD</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/references/resolve-base.sh</td>
+                    <td>34</td>
+                    <td class="mono snippet"># Step 3: Fall back to gh repo view</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/ce-review/references/resolve-base.sh</td>
+                    <td>39</td>
+                    <td class="mono snippet"># Step 4: Fall back to common branch names</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>95</td>
+                    <td class="mono snippet">### Step 1: Fix English Docs Page</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>127</td>
+                    <td class="mono snippet">### Step 2: Create CN Docs Route</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>156</td>
+                    <td class="mono snippet">### Step 3: Fix Client-Side Locale Detection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>179</td>
+                    <td class="mono snippet">### Step 4: Fix Locale Link Helper</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>201</td>
+                    <td class="mono snippet">### Step 5: Update Next.js Config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/plans/2026-01-23-fix-vercel-caching-costs-plan.md</td>
+                    <td>236</td>
+                    <td class="mono snippet">### Step 6: Fix Home Page (Also Uses searchParams!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>492</td>
+                    <td class="mono snippet">  // Step 1: Resolve, flatten, and merge all plugins</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>495</td>
+                    <td class="mono snippet">  // Step 2: Filter out disabled plugins</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>500</td>
+                    <td class="mono snippet">  // Step 3: Sort plugins by priority</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/core/src/internal/plugin/resolvePlugins.ts</td>
+                    <td>503</td>
+                    <td class="mono snippet">  // Step 4: Reorder based on dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">apps/www/public/r/installation-mcp-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: MCP Server\ndescription: Use the Model Context Protocol with Plate.\n---\n\nPlate has an official MCP server. This lets </td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(17 hits · 34 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/shadcn/SKILL.md</td>
+                    <td>197</td>
+                    <td class="mono snippet"># Create a new project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/shadcn/SKILL.md</td>
+                    <td>201</td>
+                    <td class="mono snippet"># Create a monorepo project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/git-worktree/SKILL.md</td>
+                    <td>66</td>
+                    <td class="mono snippet"># Create a new worktree (copies .env files automatically)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/git-worktree/scripts/worktree-manager.sh</td>
+                    <td>199</td>
+                    <td class="mono snippet"># Create a new worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/todo-create/SKILL.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">### Creating a New Todo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/vercel-react-best-practices/README.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Creating a New Rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/solutions/style.md</td>
+                    <td>191</td>
+                    <td class="mono snippet">### Create a form schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/shadcn/SKILL.md</td>
+                    <td>198</td>
+                    <td class="mono snippet"># Create a new project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/shadcn/SKILL.md</td>
+                    <td>202</td>
+                    <td class="mono snippet"># Create a monorepo project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/vercel-react-best-practices/README.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Creating a New Rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/shadcn/SKILL.md</td>
+                    <td>198</td>
+                    <td class="mono snippet"># Create a new project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/shadcn/SKILL.md</td>
+                    <td>202</td>
+                    <td class="mono snippet"># Create a monorepo project.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/vercel-react-best-practices/README.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">## Creating a New Rule</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/installation-node-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Node.js\ndescription: Install and configure Plate for Node.js\n---\n\nThis guide demonstrates how to use Plate in a Node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/installation-rsc-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: RSC\ndescription: Install and configure Plate for React Server Components\n---\n\nThis guide demonstrates how to use Pla</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/combobox-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Combobox\ndocs:\n  - route: /docs/components/inline-combobox\n    title: Inline Combobox\n---\n\n&lt;Cards&gt;\n\n&lt;Card icon=\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/static-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Static Rendering\ndescription: A minimal, memoized, read-only version of Plate with RSC/SSR support.\n---\n\n`&lt;PlateStat</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(15 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/src/app/api/ai/command/prompt/getEditPrompt.ts</td>
+                    <td>49</td>
+                    <td class="mono snippet">        Hey, here's how you can set things up quickly.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/typescript-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: TypeScript\ndescription: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.\n---\n\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/ai-api.json</td>
+                    <td>53</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;import type { ChatMessage } from '@/registry/components/editor/use-chat';\nimport type { SlateEditor } from 'platejs';\n\nimport ded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/editor-methods-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Editor Methods\ndescription: Explore the various methods available for interacting with and customizing the Plate editor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/editor-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Editor Configuration\ndescription: Learn how to configure and customize the Plate editor.\n---\n\nThis guide covers the </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/block-selection-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Block Selection\ndocs:\n  - route: /docs/components/block-selection\n    title: Block Selection\n---\n\n&lt;ComponentPrevie</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-methods-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Methods\ndescription: Explore the various methods available for extending Plate plugins.\n---\n\n## Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-context-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Context\ndescription: Understanding and utilizing the Plugin Context in Plate plugins.\n---\n\nThe Plugin Context</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/toolbar-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Toolbar\ndescription: Fixed and floating toolbars for your editor.\ndocs:\n  - route: https://pro.platejs.org/docs/examp</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/controlled-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Controlled Editor Value\ndescription: How to control the editor value.\n---\n\nImplementing a fully controlled editor va</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Configuration\ndescription: How to configure and customize Plate plugins.\n---\n\nPlate plugins are highly config</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/installation-docs-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Local Docs\ndescription: Set up Plate's documentation locally for version-controlled, AI-enhanced development.\n---\n\nH</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/migration-slate-to-plate-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Migrating from Slate to Plate\ndescription: Learn how to migrate from Slate to Plate.\n---\n\nPlate is built on top of S</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/public/r/plugin-shortcuts-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: Plugin Shortcuts\ndescription: Learn how to configure keyboard shortcuts.\n---\n\nKeyboard shortcuts are essential for a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts</td>
+                    <td>50</td>
+                    <td class="mono snippet">        Hey, here's how you can set things up quickly.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(21 hits · 27 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">        print(f&quot;Error creating tutorial: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/setup_tutorials.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">        print(f&quot;Error indexing tutorials: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">        print(f&quot;Error creating tutorial: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/setup_tutorials.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">        print(f&quot;Error indexing tutorials: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/create_tutorial.py</td>
+                    <td>202</td>
+                    <td class="mono snippet">        print(f&quot;Error creating tutorial: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/setup_tutorials.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">templates/plate-template/.agents/skills/coding-tutor/scripts/index_tutorials.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">        print(f&quot;Error indexing tutorials: {e}&quot;, file=sys.stderr)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(5 hits · 25 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">packages/comment/CHANGELOG.md</td>
+                    <td>48</td>
+                    <td class="mono snippet">- [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Enhanced comment plugin to support AI-genera</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">packages/comment/CHANGELOG.md</td>
+                    <td>48</td>
+                    <td class="mono snippet">- [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Enhanced comment plugin to support AI-genera</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">apps/www/public/r/ai-api.json</td>
+                    <td>47</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;import type { ChatMessage } from '@/registry/components/editor/use-chat';\nimport type { SlateEditor } from 'platejs';\n\nimport { g</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">apps/www/public/r/ai-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: AI\ndescription: AI-powered writing assistance.\ndocs:\n  - route: https://pro.platejs.org/docs/examples/ai\n    title: </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">apps/www/public/r/ai-docs.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">      &quot;content&quot;: &quot;---\ntitle: AI\ndescription: AI-powered writing assistance.\ndocs:\n  - route: https://pro.platejs.org/docs/examples/ai\n    title: </td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(12 hits · 24 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/markdown/src/lib/deserializer/deserializeMentionLink.spec.tsx</td>
+                    <td>20</td>
+                    <td class="mono snippet">        &lt;hmention key=&quot;john_doe&quot; value=&quot;John Doe&quot;&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/markdown/src/lib/serializer/serializeMention.spec.ts</td>
+                    <td>69</td>
+                    <td class="mono snippet">            value: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/markdown/src/lib/serializer/serializeMention.spec.ts</td>
+                    <td>91</td>
+                    <td class="mono snippet">            value: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/yjs/README.md</td>
+                    <td>232</td>
+                    <td class="mono snippet">metadata.set('author', 'John Doe');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/slate/src/interfaces/editor/editor-transforms.ts</td>
+                    <td>584</td>
+                    <td class="mono snippet">   * example, if `ipsum` was selected in a `Text` node with `lorem ipsum dolar`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/slate/src/interfaces/editor/editor-transforms.ts</td>
+                    <td>586</td>
+                    <td class="mono snippet">   * `Text` node. If `split: false`, the entire `Text` node `lorem ipsum dolar`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/docx/src/lib/docx-cleaner/__tests__/input/v-shapes.html</td>
+                    <td>30</td>
+                    <td class="mono snippet">&lt;p class=MsoNormal&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/docx/src/lib/docx-cleaner/__tests__/input/v-shapes.html</td>
+                    <td>30</td>
+                    <td class="mono snippet">&lt;p class=MsoNormal&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/__tests__/package-integration/docx/align.slow.tsx</td>
+                    <td>17</td>
+                    <td class="mono snippet">          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/__tests__/package-integration/docx/align.slow.tsx</td>
+                    <td>17</td>
+                    <td class="mono snippet">          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/__tests__/package-integration/docx/align.html</td>
+                    <td>291</td>
+                    <td class="mono snippet">            &gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">apps/www/src/__tests__/package-integration/docx/align.html</td>
+                    <td>291</td>
+                    <td class="mono snippet">            &gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(10 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/react/stores/plate/createPlateStore.ts</td>
+                    <td>169</td>
+                    <td class="mono snippet">// ─── Selectors ───────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/react/stores/plate/createPlateStore.ts</td>
+                    <td>250</td>
+                    <td class="mono snippet">// ─── Actions ─────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>4</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>6</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>72</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>74</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>124</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>126</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>188</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/utils/src/lib/plate-types.ts</td>
+                    <td>190</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(12 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>151</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>167</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>152</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>168</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>152</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/vercel-react-best-practices/AGENTS.md</td>
+                    <td>168</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>15</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/vercel-react-best-practices/rules/async-defer-await.md</td>
+                    <td>31</td>
+                    <td class="mono snippet">async function handleRequest(userId: string, skipProcessing: boolean) {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(11 hits · 11 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tooling/scripts/brl.sh</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Check if the src/react directory exists and run barrelsby if it does and if index.tsx doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tooling/scripts/brl.sh</td>
+                    <td>55</td>
+                    <td class="mono snippet"># Check if the src/static directory exists and run barrelsby if it does and if index.tsx doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/planning-with-files/scripts/check-complete.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># Check if all phases in task_plan.md are complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/planning-with-files/scripts/session-catchup.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    # Check if planning files exist (indicates active task)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-worktree/scripts/worktree-manager.sh</td>
+                    <td>174</td>
+                    <td class="mono snippet"># Check if a config file is unchanged from the base branch.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-worktree/scripts/worktree-manager.sh</td>
+                    <td>211</td>
+                    <td class="mono snippet">  # Check if worktree already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/git-worktree/scripts/worktree-manager.sh</td>
+                    <td>340</td>
+                    <td class="mono snippet">    # Check if we're currently in a worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/planning-with-files/scripts/check-complete.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># Check if all phases in task_plan.md are complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-playground-template/.agents/skills/planning-with-files/scripts/session-catchup.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">    # Check if planning files exist (indicates active task)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/planning-with-files/scripts/check-complete.sh</td>
+                    <td>2</td>
+                    <td class="mono snippet"># Check if all phases in task_plan.md are complete</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">templates/plate-template/.agents/skills/planning-with-files/scripts/session-catchup.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">    # Check if planning files exist (indicates active task)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

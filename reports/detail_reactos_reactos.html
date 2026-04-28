@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — reactos/reactos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>reactos/reactos</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">92</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">187</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">9,231,795</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">17924</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Slop Phrases <small>(26 hits · 52 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/network/tcpip/lwip/src/core/netif.c</td>
+                    <td>280</td>
+                    <td class="mono snippet"> * IPv6: Don't forget to call netif_create_ip6_linklocal_address() after</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/storage/mountmgr/device.c</td>
+                    <td>1407</td>
+                    <td class="mono snippet">                    /* And don't forget to nullify */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/storage/port/scsiport/scsi.c</td>
+                    <td>1292</td>
+                    <td class="mono snippet">        /* Nothing - just return (don't forget to release the spinlock */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/multimedia/audio/sndblst.old/dma.c</td>
+                    <td>11</td>
+                    <td class="mono snippet">    // Don't forget to check for Compaq machines (they can't be configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/c++/stlport/stl/config/user_config.h</td>
+                    <td>217</td>
+                    <td class="mono snippet"> * If you customize the STLport generated library names don't forget to give</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/reactos/libs/mbedtls/blowfish.h</td>
+                    <td>67</td>
+                    <td class="mono snippet">#define MBEDTLS_BLOWFISH_ROUNDS      16         /**&lt; Rounds to use. When increasing this value, make sure to extend the initialisation vectors */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/drivers/csq/csq.c</td>
+                    <td>45</td>
+                    <td class="mono snippet"> *     - Don't forget to release the cancel spinlock ASAP --&gt; #1 hot lock in the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/rtl/heap.c</td>
+                    <td>1937</td>
+                    <td class="mono snippet">                        /* Don't forget to update previous size of the next entry! */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/3rdparty/freetype/include/freetype/fterrors.h</td>
+                    <td>78</td>
+                    <td class="mono snippet">   *   Here is a simple example.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/3rdparty/freetype/include/freetype/freetype.h</td>
+                    <td>1182</td>
+                    <td class="mono snippet">   *     for demonstration purposes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/3rdparty/freetype/include/freetype/internal/ftrfork.h</td>
+                    <td>35</td>
+                    <td class="mono snippet">  /* Don't forget to increment the number if you add a new guessing rule. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ntoskrnl/fsrtl/oplock.c</td>
+                    <td>351</td>
+                    <td class="mono snippet">    /* Don't forget to release the mutex */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ntoskrnl/cc/copy.c</td>
+                    <td>370</td>
+                    <td class="mono snippet">        /* And don't forget to release master */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/win32/cabinet/fdi.c</td>
+                    <td>2378</td>
+                    <td class="mono snippet"> *     This notification is important, don't forget to implement it.  This</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/win32/advapi32/sec/misc.c</td>
+                    <td>480</td>
+                    <td class="mono snippet">         * more than 0xFFFF (USHORT) characters! Also don't forget to explicitly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/win32/browseui/travellog.cpp</td>
+                    <td>505</td>
+                    <td class="mono snippet">    // don't forget to patch ampersands before adding to menu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/directx/wine/ddraw/utils.c</td>
+                    <td>1222</td>
+                    <td class="mono snippet">     * though. Don't forget to set ddsCaps.dwCaps2/3/4 to 0 when removing this */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/directx/wine/wined3d/arb_program_shader.c</td>
+                    <td>7077</td>
+                    <td class="mono snippet">     * Don't forget to clamp the y values in into the range, otherwise we'll get filtering</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dll/opengl/glu32/src/libutil/mipmap.c</td>
+                    <td>4536</td>
+                    <td class="mono snippet">	  free(newMipmapImage); /* don't forget to free it! */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">win32ss/user/ntuser/class.c</td>
+                    <td>2979</td>
+                    <td class="mono snippet">// Don't forget to use DesktopPtrToUser( ? ) with return pointer in user space.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rosapps/applications/net/ncftp/sio/sio.html</td>
+                    <td>738</td>
+                    <td class="mono snippet">&lt;P&gt;This is &lt;TT&gt;&lt;A HREF=&quot;#SSendto&quot;&gt;SSendto()&lt;/A&gt;&lt;/TT&gt;, only you can use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rosapps/applications/net/ncftp/libncftp/cmds.c</td>
+                    <td>1157</td>
+                    <td class="mono snippet">		/* Don't forget to change back to the original directory. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rosapps/applications/net/ncftp/libncftp/cmds.c</td>
+                    <td>1305</td>
+                    <td class="mono snippet">			/* Don't forget to change back to the original directory. */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">base/applications/regedit/framewnd.c</td>
+                    <td>740</td>
+                    <td class="mono snippet">    pd.hDevMode    = NULL;     /* Don't forget to free or store hDevMode*/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">base/applications/regedit/framewnd.c</td>
+                    <td>741</td>
+                    <td class="mono snippet">    pd.hDevNames   = NULL;     /* Don't forget to free or store hDevNames*/</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">base/services/nfsd/nfs41_daemon.c</td>
+                    <td>53</td>
+                    <td class="mono snippet">#ifndef STANDALONE_NFSD //make sure to define it in &quot;sources&quot; not here</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(24 hits · 46 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/network/tcpip/lwip/src/include/lwip/sockets.h</td>
+                    <td>214</td>
+                    <td class="mono snippet">#define SO_DONTROUTE    0x0010 /* Unimplemented: just use interface addresses */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/storage/partmgr/partition.c</td>
+                    <td>865</td>
+                    <td class="mono snippet">            // so we just return success. A more robust algorithm would be</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/filesystems/udfs/write.cpp</td>
+                    <td>749</td>
+                    <td class="mono snippet">                    FALSE,      // We will not utilize pin access for this file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/filesystems/udfs/read.cpp</td>
+                    <td>640</td>
+                    <td class="mono snippet">                    FALSE,      // We will not utilize pin access for this file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/filesystems/udfs/read.cpp</td>
+                    <td>768</td>
+                    <td class="mono snippet">            // Also, at this point, the FSD might choose to utilize the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/filesystems/fastfat/easup.c</td>
+                    <td>3232</td>
+                    <td class="mono snippet">    //  nice and more robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/filesystems/fastfat/close.c</td>
+                    <td>674</td>
+                    <td class="mono snippet">    //  make sure we fully utilize the acquisition of the volume, which can</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/c++/stlport/stl/config/_apple.h</td>
+                    <td>97</td>
+                    <td class="mono snippet">#define _STLP_VENDOR_GLOBAL_STD          // mpw's c++ libs do not utilize namespace std yet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/c++/stlport/stl/config/_apple.h</td>
+                    <td>97</td>
+                    <td class="mono snippet">#define _STLP_VENDOR_GLOBAL_STD          // mpw's c++ libs do not utilize namespace std yet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/psdk/twain.h</td>
+                    <td>1311</td>
+                    <td class="mono snippet">#define DG_CONTROL          0x0001L /* data pertaining to control       */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/psdk/twain.h</td>
+                    <td>1312</td>
+                    <td class="mono snippet">#define DG_IMAGE            0x0002L /* data pertaining to raster images */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/psdk/twain.h</td>
+                    <td>1314</td>
+                    <td class="mono snippet">#define DG_AUDIO            0x0004L /* data pertaining to audio */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/ucrt/corecrt.h</td>
+                    <td>89</td>
+                    <td class="mono snippet">// C28719: Banned API, use a more robust and secure replacement.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/include/ucrt/corecrt.h</td>
+                    <td>90</td>
+                    <td class="mono snippet">// C28726: Banned or deprecated API, use a more robust and secure replacement.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/drivers/wdf/shared/inc/private/common/fxdeviceinit.hpp</td>
+                    <td>247</td>
+                    <td class="mono snippet">    // If set, the Cx/Client intends to leverage Self IO Target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/drivers/wdf/shared/inc/private/common/fxioqueue.hpp</td>
+                    <td>541</td>
+                    <td class="mono snippet">    // The IoQueue is designed to be robust in that multiple events</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/drivers/wdf/shared/targets/usb/fxusbdevice.cpp</td>
+                    <td>1535</td>
+                    <td class="mono snippet">    // but can't leverage on that as that sends the select interface URB down</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/ucrt/stdio/fopen.cpp</td>
+                    <td>38</td>
+                    <td class="mono snippet">    // subjected to direct user input and thus must be robust to that rather</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/lib/ucrt/heap/debug_heap.cpp</td>
+                    <td>1772</td>
+                    <td class="mono snippet">// alignment.cpp, but these functions (suffixed with _dbg instead of _base) utilize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">subsystems/mvdm/ntvdm/bios/vidbios.c</td>
+                    <td>3351</td>
+                    <td class="mono snippet">                    // Certainly in BL and not in BX as said by Ralf Brown...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">subsystems/mvdm/ntvdm/bios/vidbios.c</td>
+                    <td>3369</td>
+                    <td class="mono snippet">                    // Certainly in BL and not in BX as said by Ralf Brown...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">subsystems/mvdm/ntvdm/bios/vidbios.c</td>
+                    <td>3429</td>
+                    <td class="mono snippet">                    // Certainly in BL and not in BX as said by Ralf Brown...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">win32ss/drivers/displays/vga/vgaddi.h</td>
+                    <td>188</td>
+                    <td class="mono snippet">                                      // one seamless 64K bank</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/rosapps/applications/devutils/btrfstools/btrfs_structures.py</td>
+                    <td>889</td>
+                    <td class="mono snippet">      # sizes, because that's how it gets cowed. We don't just use 1 or 2</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(11 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/gdi32/font.c</td>
+                    <td>2393</td>
+                    <td class="mono snippet">            &quot;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/gdi32/font.c</td>
+                    <td>2393</td>
+                    <td class="mono snippet">            &quot;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do &quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/txtsrv.c</td>
+                    <td>124</td>
+                    <td class="mono snippet">static const WCHAR lorem[] = L&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna ali</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/txtsrv.c</td>
+                    <td>124</td>
+                    <td class="mono snippet">static const WCHAR lorem[] = L&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna ali</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/editor.c</td>
+                    <td>7306</td>
+                    <td class="mono snippet">    result = SendMessageA(hwnd, WM_SETTEXT, 0, (LPARAM)&quot;Lorem ipsum\rdolor sit\rnamet&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/editor.c</td>
+                    <td>7309</td>
+                    <td class="mono snippet">    /* [|Lorem ipsum] [dolor sit] [amet] */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/editor.c</td>
+                    <td>7319</td>
+                    <td class="mono snippet">    /* [Lorem ipsum|] [dolor sit] [amet] */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/editor.c</td>
+                    <td>7326</td>
+                    <td class="mono snippet">    /* [Lorem ipsum] [|dolor sit] [amet] */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/winetests/riched20/editor.c</td>
+                    <td>7333</td>
+                    <td class="mono snippet">    /* [Lorem ipsum|] [dolor sit] [amet] */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/apitests/winspool/EnumPrinters.c</td>
+                    <td>129</td>
+                    <td class="mono snippet">                ok(!EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_NAME, L&quot;LOREM IPSUM&quot;, Level, NULL, 0, &amp;cbNeeded, &amp;dwReturned), &quot;EnumPrintersW retu</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/apitests/winspool/EnumPrinters.c</td>
+                    <td>168</td>
+                    <td class="mono snippet">            ok(!EnumPrintersW(PRINTER_ENUM_LOCAL, L&quot;LOREM IPSUM&quot;, Level, NULL, 0, &amp;cbNeeded, &amp;dwReturned), &quot;EnumPrintersW returns TRUE for Level %lu!\</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(2 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">drivers/network/tcpip/lwip/src/apps/snmp/snmp_core.c</td>
+                    <td>258</td>
+                    <td class="mono snippet"> * device a &gt; 1.3.6.1.4.1.XXX(ent-oid).1(devices).1(device a)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">drivers/network/tcpip/lwip/src/apps/snmp/snmp_core.c</td>
+                    <td>259</td>
+                    <td class="mono snippet"> * device b &gt; 1.3.6.1.4.1.XXX(ent-oid).1(devices).2(device b)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(8 hits · 16 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CMakeLists.txt</td>
+                    <td>380</td>
+                    <td class="mono snippet">    # Create the registry hives</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/network/tcpip/lwip/codespell_changed_files.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is subject to the terms and conditions of the GNU Lesser</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/network/tcpip/lwip/codespell_check.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># This file is subject to the terms and conditions of the GNU Lesser</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">drivers/base/bootvid/CMakeLists.txt</td>
+                    <td>35</td>
+                    <td class="mono snippet">    # Create the actual target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">boot/remaster.sh</td>
+                    <td>157</td>
+                    <td class="mono snippet">## Create a mkisofs sort file to specify an explicit ordering for the boot files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hal/halx86/CMakeLists.txt</td>
+                    <td>17</td>
+                    <td class="mono snippet">    # Create the actual target</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rosapps/applications/net/ncftp/ncftp/pref.c</td>
+                    <td>715</td>
+                    <td class="mono snippet">		(void) fprintf(fp, &quot;%s&quot;, &quot;# NcFTP 3 preferences file\n# This file is loaded and overwritten each time NcFTP is run.\n#\n&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rosapps/applications/devutils/btrfstools/crc32c.py</td>
+                    <td>3</td>
+                    <td class="mono snippet"># This file is part of the python-btrfs module.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(15 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/network/tcpip/lwip/src/apps/mdns/mdns.c</td>
+                    <td>614</td>
+                    <td class="mono snippet">   * comparison. So if we get passed the class and type comparison we need to check if the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/bus/acpi/acpica/executer/exmisc.c</td>
+                    <td>209</td>
+                    <td class="mono snippet">         * We need to check if the shiftcount is larger than the integer bit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/bus/acpi/acpica/executer/exmisc.c</td>
+                    <td>221</td>
+                    <td class="mono snippet">         * We need to check if the shiftcount is larger than the integer bit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/storage/class/cdrom/cdrom.c</td>
+                    <td>1085</td>
+                    <td class="mono snippet">    The purpose of this function is to send SYNC CACHE command and STOP UNIT command if it's necessary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">drivers/filesystems/cdfs/dirsup.c</td>
+                    <td>241</td>
+                    <td class="mono snippet">        find.  This may already point to a dirent so we need to check if</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">sdk/lib/cportlib/cport_pc98.c</td>
+                    <td>439</td>
+                    <td class="mono snippet">         * To avoid an infinite loop, we need to check if the other side is ready</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">sdk/lib/ucrt/internal/locks.cpp</td>
+                    <td>16</td>
+                    <td class="mono snippet">// This variable stores the number of locks that have been successfully</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ntoskrnl/io/pnpmgr/devaction.c</td>
+                    <td>1108</td>
+                    <td class="mono snippet">    // Step 1: Write the DeviceDesc value if does not exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ntoskrnl/io/pnpmgr/devaction.c</td>
+                    <td>1157</td>
+                    <td class="mono snippet">    // Step 2: LocaltionInformation is overwritten unconditionally</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dll/win32/shell32/CDefView.cpp</td>
+                    <td>4349</td>
+                    <td class="mono snippet">    /* We need to check if we drag the selection over itself */</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">win32ss/user/ntuser/security.c</td>
+                    <td>18</td>
+                    <td class="mono snippet"> * context of the caller. The purpose of this function is to query</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">base/setup/lib/utils/partlist.c</td>
+                    <td>3336</td>
+                    <td class="mono snippet">// Step 1 : Check the system disk.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">base/setup/lib/utils/partlist.c</td>
+                    <td>3456</td>
+                    <td class="mono snippet">// Step 2 : No active partition found: Check the alternative disk if specified.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">base/services/umpnpmgr/install.c</td>
+                    <td>533</td>
+                    <td class="mono snippet">    // Step 1: install all drivers which were configured during the boot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">base/services/umpnpmgr/install.c</td>
+                    <td>580</td>
+                    <td class="mono snippet">    // Step 2: start the wait-loop for newly added devices</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(2 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">drivers/storage/class/sfloppy/floppy.c</td>
+                    <td>3061</td>
+                    <td class="mono snippet">    // If we don't get as much data as requested, it is not an error.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">ntoskrnl/mm/ARM3/virtual.c</td>
+                    <td>5080</td>
+                    <td class="mono snippet">            // And now write the invalid demand-zero PTE as requested</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sdk/tools/winesync/winesync.py</td>
+                    <td>297</td>
+                    <td class="mono snippet">                    print(f'Error while reverting patch {patch_file_name}')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">modules/rostests/apitests/crt/gen_math_tests.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        print(f&quot;Error: Unsupported function '{function_name}'. Available tables: {', '.join(TABLE_FUNCTIONS.keys())}&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">boot/remaster.sh</td>
+                    <td>51</td>
+                    <td class="mono snippet">## Usage example:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">modules/rostests/apitests/crt/gen_math_tests.py</td>
+                    <td>282</td>
+                    <td class="mono snippet">    # Check if the table name is valid</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

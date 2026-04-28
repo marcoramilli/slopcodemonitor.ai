@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — topoteretes/cognee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>topoteretes/cognee</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1130</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1691</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">242,257</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1917</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(539 hits · 555 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/run_migrations.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/codingagents/coding_rule_associations.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/cognify_agent_trace_feedback.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/extract_agent_trace_feedbacks.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">                except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/extract_agent_trace_feedbacks.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">    except Exception as error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/sync_graph_to_session.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/sync_graph_to_session.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/sync_graph_to_session.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/get_triplet_datapoints.py</td>
+                    <td>243</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/get_triplet_datapoints.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/cognify_session.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/extract_user_sessions.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/memify/extract_user_sessions.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/entity_completion/entity_extractors/regex_entity_extractor.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/entity_completion/entity_extractors/llm_entity_extractor.py</td>
+                    <td>70</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/resolve_dlt_sources.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/ingest_dlt_source.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/ingest_dlt_source.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/ingest_dlt_source.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/ingest_dlt_source.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/temporal_awareness/index_graphiti_objects.py</td>
+                    <td>19</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>302</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>366</td>
+                    <td class="mono snippet">            except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/default_url_crawler.py</td>
+                    <td>434</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/web_scraper/utils.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/translate_content.py</td>
+                    <td>174</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/detect_language.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/azure_provider.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/azure_provider.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/llm_provider.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/llm_provider.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/google_provider.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/google_provider.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/google_provider.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/google_provider.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/storage/index_graph_edges.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/chunks/create_chunk_associations.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/chunks/create_chunk_associations.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/chunks/create_chunk_associations.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/chunks/create_chunk_associations.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/cleanup/cleanup_unused_data.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_shared_node_preservation.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_chunk_associations.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_delete_by_id.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_delete_by_id.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_delete_by_id.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 489 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(236 hits · 472 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/__init__.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/__init__.py</td>
+                    <td>20</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/__init__.py</td>
+                    <td>45</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/__init__.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/resolve_dlt_sources.py</td>
+                    <td>161</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/resolve_dlt_sources.py</td>
+                    <td>163</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>10</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>42</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/pipelines/test_bound_task_pipeline.py</td>
+                    <td>44</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>76</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>78</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>135</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>137</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>183</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>185</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>243</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>245</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>293</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/api/test_api_error_responses.py</td>
+                    <td>295</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>11</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>43</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>45</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>89</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>91</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>130</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_unified_store_engine.py</td>
+                    <td>132</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_neptune_analytics_hybrid.py</td>
+                    <td>45</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_neptune_analytics_hybrid.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_neptune_analytics_hybrid.py</td>
+                    <td>113</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_neptune_analytics_hybrid.py</td>
+                    <td>115</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>33</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>125</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>127</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>172</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>174</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>199</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>201</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>222</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>224</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>261</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>263</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>306</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>308</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>316</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/memify_tasks/test_sync_graph_to_session.py</td>
+                    <td>318</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 186 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(41 hits · 205 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/tests/test_neptune_analytics_vector.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">    # Always return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>424</td>
+                    <td class="mono snippet">  const defs = schemaData.$defs || schemaData['$defs'] || {};</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>439</td>
+                    <td class="mono snippet">      .filter(([,v]) =&gt; !v.$ref &amp;&amp; !v['$ref'] &amp;&amp; !(v.type === 'array' &amp;&amp; v.items &amp;&amp; (v.items.$ref || v.items['$ref'])))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>443</td>
+                    <td class="mono snippet">    schemaNodes.push(node);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>457</td>
+                    <td class="mono snippet">      let targetName = null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>459</td>
+                    <td class="mono snippet">      if (fieldDef.$ref || fieldDef['$ref']) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>460</td>
+                    <td class="mono snippet">        targetName = (fieldDef.$ref || fieldDef['$ref']).split('/').pop();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>462</td>
+                    <td class="mono snippet">        const ref = fieldDef.items.$ref || fieldDef.items['$ref'];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>465</td>
+                    <td class="mono snippet">      if (targetName &amp;&amp; nodeMap[targetName]) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>466</td>
+                    <td class="mono snippet">        schemaLinks.push({ source: sourceName, target: targetName, label: field, isArray: isArray });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>535</td>
+                    <td class="mono snippet">        .on('end', (e, d) =&gt; { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>600</td>
+                    <td class="mono snippet">if (!nodes || nodes.length === 0) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>649</td>
+                    <td class="mono snippet">var maxDeg=Math.max(1,Math.max.apply(null,Object.values(degreeMap)));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>668</td>
+                    <td class="mono snippet">  if(!n.color)n.color=colorByType[n.type]||null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>826</td>
+                    <td class="mono snippet">var zoomAnim=null; // {fromScale,toScale,fromTx,toTx,fromTy,toTy,startTime,duration}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>839</td>
+                    <td class="mono snippet">  else{zoomAnim=null}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>927</td>
+                    <td class="mono snippet">var quadtree=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1006</td>
+                    <td class="mono snippet">var hoveredNode=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1033</td>
+                    <td class="mono snippet">  var desc=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1050</td>
+                    <td class="mono snippet">  if(n.ontology_valid!==undefined&amp;&amp;n.ontology_valid!==null){var ovStyle=n.ontology_valid===true?'color:#D8D8D8;font-weight:600':'color:var(--text2)';h</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1075</td>
+                    <td class="mono snippet">  if(e.weight!=null)html+='&lt;div class=&quot;panel-row&quot;&gt;&lt;span class=&quot;k&quot;&gt;Weight&lt;/span&gt;&lt;span class=&quot;v&quot;&gt;'+e.weight+&quot;&lt;/span&gt;&lt;/div&gt;&quot;;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1102</td>
+                    <td class="mono snippet">    return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1105</td>
+                    <td class="mono snippet">  var best=null,bestD=Infinity;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1139</td>
+                    <td class="mono snippet">  return null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1157</td>
+                    <td class="mono snippet">var isDragging=false,dragNode=null,isPanning=false;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1203</td>
+                    <td class="mono snippet">    dragNode.fx=null;dragNode.fy=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1206</td>
+                    <td class="mono snippet">  isDragging=false;dragNode=null;isPanning=false;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1211</td>
+                    <td class="mono snippet">  if(isDragging&amp;&amp;dragNode){dragNode.fx=null;dragNode.fy=null;simulation.alphaTarget(0)}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1212</td>
+                    <td class="mono snippet">  isDragging=false;dragNode=null;isPanning=false;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1213</td>
+                    <td class="mono snippet">  hoveredNode=null;draw();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1232</td>
+                    <td class="mono snippet">  if(zoomAnim)zoomAnim=null; // cancel any running animation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1256</td>
+                    <td class="mono snippet">var heatmapGrid=null; // {cols,rows,ox,oy,data:[]} global density</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1257</td>
+                    <td class="mono snippet">var typeGrids=null; // {type:{cols,rows,ox,oy,data:[],rgb:[]}} per-type density</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1433</td>
+                    <td class="mono snippet">  var neighborSet=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1512</td>
+                    <td class="mono snippet">        if(isHover){hoverEdges.push(entry);if(!skipArrows&amp;&amp;alpha&gt;0.1)arrowEdges.push(entry)}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1513</td>
+                    <td class="mono snippet">        else if(isSearch){searchEdges.push(entry);if(!skipArrows&amp;&amp;alpha&gt;0.1)arrowEdges.push(entry)}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1514</td>
+                    <td class="mono snippet">        else{normalEdges.push(entry)}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1736</td>
+                    <td class="mono snippet">var densityTimer=null;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">cognee/modules/visualization/cognee_network_visualization.py</td>
+                    <td>1755</td>
+                    <td class="mono snippet">var minimapBounds=null; // {minX,maxX,minY,maxY}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">distributed/deploy/modal_app.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">    1. pip install modal &amp;&amp; modal setup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">distributed/deploy/daytona_sandbox.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">    sandbox.process.exec(&quot;pkill -f uvicorn || true&quot;, timeout=5)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(96 hits · 192 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>86</td>
+                    <td class="mono snippet">### Create a Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CLAUDE.md</td>
+                    <td>485</td>
+                    <td class="mono snippet">### Creating a Custom Pipeline Task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/migrate_relational_database.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">    # Create a mapping of node_id to node objects for referencing in edge creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/migrate_relational_database.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">    # Create a mapping of node_id to node objects for referencing in edge creation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/migrate_relational_database.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">            # Create a TableType node for each table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/migrate_relational_database.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">                # Create a node ID in the format &quot;table_name:primary_key_value&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tasks/ingestion/migrate_relational_database.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">                # Create a TableRow node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_custom_data_label.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_delete_data_and_dataset_if_empty.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_relational_db_migration.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # Create the dataset so search can find it by name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_graph_visualization_permissions.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">    # Create a user without any permissions to the dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_graph_model_from_schema.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_graph_model_from_schema.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    # Define a custom graph model for programming languages.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_custom_model.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">    # Define a custom graph model for programming languages.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_dataset_database_handler.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_telemetry.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">            # Create the file with a test ID if it doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_dataset_delete.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_multi_tenancy.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">    # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/entity_extraction/regex_entity_extraction_test.py</td>
+                    <td>265</td>
+                    <td class="mono snippet">    # Create a minimal test config file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/test_embedding_rate_limiting_realistic.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">    # Create a fresh config instance and verify settings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/test_embedding_rate_limiting_realistic.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">    # Create a mock embedding engine</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/test_embedding_rate_limiting_realistic.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">    # Create a list of tasks to simulate concurrent requests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/test_embedding_rate_limiting_realistic.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    # Create a mock engine configured to fail every 3rd request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_rate_limiter.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">        # Create a fresh instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_rate_limiter.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">        # Create a fresh instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/retrieval/graph_completion_retriever_context_extension_test.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">    # Create a second edge for extension rounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/retrieval/graph_completion_retriever_context_extension_test.py</td>
+                    <td>632</td>
+                    <td class="mono snippet">    # Create a second edge for extension rounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/retrieval/graph_completion_retriever_context_extension_test.py</td>
+                    <td>881</td>
+                    <td class="mono snippet">    # Create a second edge for extension rounds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/retrieval/test_brute_force_triplet_search.py</td>
+                    <td>413</td>
+                    <td class="mono snippet">    # Create a mock fragment that will raise EntityNotFoundError when project_graph_from_db is called</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_tutorial_notebook_creation.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        # Create a tutorial directory with cells and config.json</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_tutorial_notebook_creation.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">        # Create a tutorial directory with cells but no config.json</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_tutorial_notebook_creation.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">        # Create a file that will cause an error (invalid extension that passes filter)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_tutorial_notebook_creation.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">        # Create a file that will cause an error when trying to determine cell type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/tasks/translation/translate_content_test.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    # Create a minimal Document for the is_part_of field</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/cli_tests/cli_unit_tests/test_cli_edge_cases.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    # Create an event loop and run the coroutine</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/cli_tests/cli_unit_tests/test_cli_commands.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    # Create an event loop and run the coroutine</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/api/test_backend_auth.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">        # Create an API key using the bearer token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/api/test_backend_auth.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">        # Create an API key with HASH_API_KEY=True active</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/e2e/postgres/test_postgres_adapter.py</td>
+                    <td>322</td>
+                    <td class="mono snippet">    # Create a fake type with __name__ == &quot;Entity&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/shared/graph_model_utils.py</td>
+                    <td>169</td>
+                    <td class="mono snippet">        # Create a clean slate for cognee -- reset data and system state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/shared/graph_model_utils.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">        # Define a custom graph model for programming languages.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/shared/utils.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">    # Create the server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">                # Create the log entry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>517</td>
+                    <td class="mono snippet">            # Create a new log file name with the cognee start time</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/eval_framework/benchmark_adapters/hotpot_qa_adapter.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">        # Create a mapping of title to sentences for easy lookup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/ui/node_setup.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">        # Create a temporary script file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/ui/ui.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">        # Create a temporary directory for download</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/config/config.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">&quot;&quot;&quot;This module is used to set the configuration of the system.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/responses/routers/get_responses_router.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">                # Create a format the dispatcher can handle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/responses/routers/get_responses_router.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">        # Create the response object with all processed tool calls</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 46 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(85 hits · 85 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/root_dir.py</td>
+                    <td>24</td>
+                    <td class="mono snippet">    # Check if it's an S3 URL - S3 URLs are absolute by definition</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/resolve_data_directories.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        if isinstance(item, str):  # Check if the item is a path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/ingestion/ingest_data.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">                # Check if data is already in dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/detect_language.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">        # Check if translation is needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tasks/translation/providers/llm_provider.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">            # Check if API key is configured (required for most providers)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_shared_node_preservation.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">    # Check if Germany is still in vector index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_custom_data_label.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">    # Display results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_custom_data_label.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">    # Check if label is properly added and stored</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_delete_data_and_dataset_if_empty.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">        # Check if databases are properly created and exist before deletion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_search_db.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    # Check if Triplet_text collection was created</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_graph_model_from_schema.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    # Display results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_dataset_database_handler.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # Display results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_starter_pipelines.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">        # Check if required environment variables are set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_telemetry.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        # Check if .anon_id exists in the project root</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_telemetry.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">        # Set ENV to dev which should disable telemetry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_dataset_delete.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Check if databases are properly created and exist before deletion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/test_cognee_server_start.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">        # Check if server started with errors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/databases/test_rate_limiter.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">        # Print the results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/graph_model_utils.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">        # Display results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/cache.py</td>
+                    <td>174</td>
+                    <td class="mono snippet">        # Check if already cached and valid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">            # Check if stream is available before trying to write</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>339</td>
+                    <td class="mono snippet">            # Check if this is a LiteLLM-related logger</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">        # Check if there's an exc_info that needs to be processed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/shared/logging_utils.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">        # Check if we already have a log file path from the environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/ui/node_setup.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">        # Check if nvm is available in the shell</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/ui/node_setup.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">            # Check if nvm is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/ui/node_setup.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">        # Check if nvm is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/ui/ui.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">    # Check if already downloaded and up to date</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/ui/ui.py</td>
+                    <td>650</td>
+                    <td class="mono snippet">        # Check if process is still running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/datasets/routers/get_datasets_router.py</td>
+                    <td>467</td>
+                    <td class="mono snippet">        # Check if matching_data contains an element</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/responses/routers/get_responses_router.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        # Check if there are function tool calls in the output</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/routers/get_sync_router.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">            # Check if user has any running sync operations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/alembic/versions/211ab850ef3d_add_sync_operations_table.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    # Check if table already exists (it might be created by Base.metadata.create_all() in initial migration)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/alembic/versions/6ee94db7381f_remove_unique_constraint_tenant_name.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        # Check if there's a unique index on the name column. If third element in row is 1, it's a unique index</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/alembic/versions/46a6ce2bd2b2_expand_dataset_database_with_json_.py</td>
+                    <td>279</td>
+                    <td class="mono snippet">            # Check if the constraint covers ONLY the target column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/alembic/versions/46a6ce2bd2b2_expand_dataset_database_with_json_.py</td>
+                    <td>286</td>
+                    <td class="mono snippet">            # Check if the constraint covers ONLY the target column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/relational/sqlalchemy/SqlAlchemyAdapter.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">            # Check if any references to this data_id still exist in the DatasetData table</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/relational/sqlalchemy/SqlAlchemyAdapter.py</td>
+                    <td>348</td>
+                    <td class="mono snippet">            # Check if other data objects point to the same raw data location</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/relational/sqlalchemy/SqlAlchemyAdapter.py</td>
+                    <td>413</td>
+                    <td class="mono snippet">                # Check if table is in list of tables for the given schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/config.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">            # Check if absolute path is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/kuzu/kuzu_migrate.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    # Check if old database exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/kuzu/kuzu_migrate.py</td>
+                    <td>162</td>
+                    <td class="mono snippet">        # Check if export files were created and have content</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/config.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        # Check if BAML is selected as structured output framework but not available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/baml/baml_client/runtime.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">        # Check if already aborted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/baml/baml_client/runtime.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">        # Check if already aborted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/baml/baml_client/async_client.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        # Check if on_tick is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/baml/baml_client/sync_client.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">        # Check if on_tick is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/litellm_instructor/llm/get_llm_client.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">    # Check if max_token value is defined in liteLLM for given model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/extract_event_entities.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # Check if the prompt path is an absolute path or just a filename</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/knowledge_graph/extract_content_graph.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        # Check if the prompt path is an absolute path or just a filename</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 35 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(66 hits · 66 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">### Step 1: Install Cognee</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">### Step 2: Configure the LLM</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">README.md</td>
+                    <td>126</td>
+                    <td class="mono snippet">### Step 3: Run the Pipeline</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/unit/api/test_ontology_endpoint.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">    # Step 1: Upload two ontologies (one-by-one)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/unit/api/test_ontology_endpoint.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">    # Step 2: Verify ontologies are listed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/unit/api/test_ontology_endpoint.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">    # Step 3: Test cognify with multiple ontologies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/run_beam_eval.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # Step 1: Build corpus (ingest conversation into cognee)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/run_beam_eval.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Step 2: Answer probing questions (routed by question type)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/run_beam_eval.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    # Step 3: Evaluate with rubric metric</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/run_beam_eval.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">    # Step 4: Dashboard</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/evaluation/run_evaluation_module.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">    # Step 1: Evaluate answers if requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/eval_framework/evaluation/run_evaluation_module.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">    # Step 2: Calculate metrics if requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/add/add.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">        # Step 1: Add your data (text content or file path)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/add/add.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">        # Step 2: Process into knowledge graph</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/add/add.py</td>
+                    <td>127</td>
+                    <td class="mono snippet">        # Step 3: Search and query</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">    # Step 1: Check for saved credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>174</td>
+                    <td class="mono snippet">    # Step 2: Device Code Flow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    # Step 3: Discover or create tenant</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">    # Step 4: Get service URL</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">    # Step 5: Get or create API key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    # Step 6: Save credentials</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/serve.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">    # Step 7: Connect</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/device_auth.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">        # Step 1: Request device code</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/device_auth.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        # Step 2: Show the user what to do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/serve/device_auth.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">        # Step 3: Poll for token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">        # Step 1: Sync files for all datasets concurrently</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>320</td>
+                    <td class="mono snippet">        # Step 2: Trigger cognify processing once for all datasets (only if any files were uploaded)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>342</td>
+                    <td class="mono snippet">        # Step 3: Trigger local cognify processing if any files were downloaded</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>419</td>
+                    <td class="mono snippet">        # Step 1: Extract local file info with stored hashes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>427</td>
+                    <td class="mono snippet">        # Step 2: Check what files are missing on cloud</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">        # Step 3: Upload files that are missing on cloud</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/api/v1/sync/sync.py</td>
+                    <td>448</td>
+                    <td class="mono snippet">        # Step 4: Download files that are missing locally</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>584</td>
+                    <td class="mono snippet">        // Step 1: Collect all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>588</td>
+                    <td class="mono snippet">        // Step 2: Find all connected components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>598</td>
+                    <td class="mono snippet">        // Step 3: Aggregate components</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>601</td>
+                    <td class="mono snippet">        // Step 4: Identify the largest connected component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>608</td>
+                    <td class="mono snippet">        // Step 5: Find nodes not in the largest connected component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>1167</td>
+                    <td class="mono snippet">            # Step 2: Fetch all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neo4j_driver/adapter.py</td>
+                    <td>1178</td>
+                    <td class="mono snippet">            # Step 3: Fetch all edges between collected nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neptune_driver/adapter.py</td>
+                    <td>689</td>
+                    <td class="mono snippet">            # Step 1: Find all neighbor node IDs within depth hops</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neptune_driver/adapter.py</td>
+                    <td>709</td>
+                    <td class="mono snippet">            # Step 2: Fetch all nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/graph/neptune_driver/adapter.py</td>
+                    <td>718</td>
+                    <td class="mono snippet">            # Step 3: Fetch all edges between collected nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>698</td>
+                    <td class="mono snippet">        &quot;before_code&quot;: &quot;                if literal(expr) == LITERAL_TYPE:\n                    vartype = type_map[expr]\n                    return se</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>699</td>
+                    <td class="mono snippet">        &quot;after_code&quot;: &quot;                if literal(expr) == LITERAL_TYPE:\n                    vartype = type_map[expr]\n                    return sel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>700</td>
+                    <td class="mono snippet">        &quot;diff_context&quot;: &quot;                if literal(expr) == LITERAL_TYPE:\n                    vartype = type_map[expr]\n                    return s</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/onboarding/ServeOnboarding.tsx</td>
+                    <td>44</td>
+                    <td class="mono snippet">// Step 1: Verify connection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/onboarding/ServeOnboarding.tsx</td>
+                    <td>73</td>
+                    <td class="mono snippet">// Step 2: SDK quickstart</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/onboarding/ServeOnboarding.tsx</td>
+                    <td>110</td>
+                    <td class="mono snippet">// Step 3: Test from UI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/onboarding/ServeOnboarding.tsx</td>
+                    <td>195</td>
+                    <td class="mono snippet">// Step 4: Done</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/onboarding/page.tsx</td>
+                    <td>323</td>
+                    <td class="mono snippet">      // Step 2: Cognify (extracting + building)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 16 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(28 hits · 56 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/infrastructure/engine/test_identity_fields.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">        p1 = PersonWithIdentity(name=&quot;John Doe&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_conditional_authentication.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">            email=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/modules/users/test_conditional_authentication.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">            email=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/unit/interfaces/graph/test_weighted_edges.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">        name=&quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">Seeds the database with Lorem Ipsum data: add → cognify → search.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">Verifies that the current branch can search the v0.5.7 cognified data, then adds + cognifies new Lorem Ipsum data with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">SEARCH_QUERY = &quot;What is Lorem Ipsum and where does it come from?&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase1_seed.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">    print(&quot;Adding Lorem Ipsum text...&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>6</td>
+                    <td class="mono snippet">Seeds the database with Lorem Ipsum data: add → cognify → search.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">Verifies that the current branch can search the v0.5.7 cognified data, then adds + cognifies new Lorem Ipsum data with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">Loren Ipsum Dolor sit amet, Lorem ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">Loren Ipsum Dolor sit amet, Lorem ipsum.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">SEARCH_QUERY = &quot;What is Lorem Ipsum and where does it come from?&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/backwards_compatibility/phase2_verify.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">    print(&quot;\n[Step 2] Adding Lorem Ipsum text with current branch...&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>2</td>
+                    <td class="mono snippet">  &quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>3</td>
+                    <td class="mono snippet">  &quot;It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.\n\tThe point of using </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>4</td>
+                    <td class="mono snippet">  &quot;Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>4</td>
+                    <td class="mono snippet">  &quot;Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>5</td>
+                    <td class="mono snippet">  &quot;The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from \&quot;de Finibus Bon</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/infrastructure/llm/extraction/texts.json</td>
+                    <td>6</td>
+                    <td class="mono snippet">  &quot;There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or rand</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee-starter-kit/src/data/people.json</td>
+                    <td>3</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/custom_pipelines/organizational_hierarchy/data/people.json</td>
+                    <td>3</td>
+                    <td class="mono snippet">    &quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_lancedb.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">    # Note: make sure to call test_vector_engine_search_with_nodeset_filtering()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/tests/test_pgvector.py</td>
+                    <td>333</td>
+                    <td class="mono snippet">    # Note: make sure to call test_vector_engine_search_with_nodeset_filtering()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_human_eval.json</td>
+                    <td>114</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;Based on the provided context, there is no mention of Robert Croft or a facility where he worked as a navy instructor. The informat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_human_eval.json</td>
+                    <td>334</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The provided context does not contain information about the town where Black Crescent Mountain is located or its population in 2010</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_human_eval.json</td>
+                    <td>444</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The context provided does not contain information about Jalen Jones or the arena where his NBA team plays. Therefore, I cannot prov</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_direct_llm.json</td>
+                    <td>114</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;Based on the provided context, there is no mention of Robert Croft or a facility where he worked as a navy instructor. The informat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_direct_llm.json</td>
+                    <td>334</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The provided context does not contain information about the town where Black Crescent Mountain is located or its population in 2010</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0_direct_llm.json</td>
+                    <td>444</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The context provided does not contain information about Jalen Jones or the arena where his NBA team plays. Therefore, I cannot prov</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0.json</td>
+                    <td>194</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;Based on the provided context, there is no mention of Robert Croft or a facility where he worked as a navy instructor. The informat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0.json</td>
+                    <td>574</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The provided context does not contain information about the town where Black Crescent Mountain is located or its population in 2010</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">evals/old/mem0_01042025/metrics_output_mem0.json</td>
+                    <td>764</td>
+                    <td class="mono snippet">        &quot;answer&quot;: &quot;The context provided does not contain information about Jalen Jones or the arena where his NBA team plays. Therefore, I cannot prov</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee-frontend/src/app/(app)/search/SearchPage.tsx</td>
+                    <td>328</td>
+                    <td class="mono snippet">          &lt;span style={{ fontSize: 13, color: &quot;#A1A1AA&quot; }}&gt;Try a different query, or make sure you&amp;apos;ve cognified your datasets.&lt;/span&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee-frontend/src/app/(graph)/GraphVisualization.tsx</td>
+                    <td>265</td>
+                    <td class="mono snippet">            links: [{ source: 1, target: 2, label: &quot;but don't forget to&quot; }, { source: 2, target: 3, label: &quot;and after that you can&quot; }],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/custom_pipelines/relational_database_to_knowledge_graph_migration_example.py</td>
+                    <td>26</td>
+                    <td class="mono snippet"># NOTE: If you don't have a DB you want to migrate you can try it out with our</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(18 hits · 25 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/cli_tests/cli_unit_tests/test_cli_commands.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">        # Should not raise exception, just return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/cli_tests/cli_unit_tests/test_cli_commands.py</td>
+                    <td>407</td>
+                    <td class="mono snippet">        # Should not raise exception, just return with error message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/tests/cli_tests/cli_unit_tests/test_cli_commands.py</td>
+                    <td>457</td>
+                    <td class="mono snippet">        # Should not raise exception, just return with error message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/api/v1/health/health.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Get comprehensive health status.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/vector/chromadb/ChromaDBAdapter.py</td>
+                    <td>396</td>
+                    <td class="mono snippet">            # If limit is still 0, no need to do the search, just return empty results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/databases/vector/pgvector/PGVectorAdapter.py</td>
+                    <td>363</td>
+                    <td class="mono snippet">        # If limit is still 0, no need to do the search, just return empty results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/storage/utils/__init__.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">            # if the obj is uuid, we simply return the value of uuid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/users/authentication/api_key/get_api_key_transport.py</td>
+                    <td>22</td>
+                    <td class="mono snippet">        # No login response for API key auth — just return unchanged</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/users/authentication/api_key/get_api_key_transport.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">        # No logout response for API key auth — just return unchanged</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/modules/sync/models/SyncOperation.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Get comprehensive progress information.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>57</td>
+                    <td class="mono snippet">        &quot;before_code&quot;: &quot;\n            # We should always patch indirect dependencies, even in full (non-incremental) builds,\n            # because th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>59</td>
+                    <td class="mono snippet">        &quot;diff_context&quot;: &quot;\n            # We should always patch indirect dependencies, even in full (non-incremental) builds,\n            # because t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/modules/notebooks/tutorials/python-development-with-cognee/data/guido_contributions.json</td>
+                    <td>824</td>
+                    <td class="mono snippet">    &quot;description&quot;: &quot;Make the new bug templates less markup-heavy (#9438)\n\n- Remove emoji\r\n- Instead of `## H2 headings` just use `**bold**`\r\n- A</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/custom_pipelines/organizational_hierarchy/organizational_hierarchy_pipeline_example.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">    # No manual dict-based deduplication needed — just create instances freely.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cognee-mcp/src/test_client.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">            f.write(&quot;# Test cursor rules\nUse Python best practices.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">notebooks/data/guido_contributions.json</td>
+                    <td>57</td>
+                    <td class="mono snippet">        &quot;before_code&quot;: &quot;\n            # We should always patch indirect dependencies, even in full (non-incremental) builds,\n            # because th</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">notebooks/data/guido_contributions.json</td>
+                    <td>59</td>
+                    <td class="mono snippet">        &quot;diff_context&quot;: &quot;\n            # We should always patch indirect dependencies, even in full (non-incremental) builds,\n            # because t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">notebooks/data/guido_contributions.json</td>
+                    <td>824</td>
+                    <td class="mono snippet">    &quot;description&quot;: &quot;Make the new bug templates less markup-heavy (#9438)\n\n- Remove emoji\r\n- Instead of `## H2 headings` just use `**bold**`\r\n- A</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">evals/src/qa/qa_benchmark_cognee.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">evals/src/qa/qa_benchmark_mem0.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">evals/src/qa/qa_benchmark_lightrag.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">    # Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">distributed/deploy/modal-deploy.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">distributed/deploy/fly-deploy.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/litellm_instructor/llm/rate_limiter.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">   def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cognee/infrastructure/llm/structured_output_framework/litellm_instructor/llm/rate_limiter.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">   def my_function():</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — weaviate/weaviate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>weaviate/weaviate</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">146</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">346</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,025,968</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">4225</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(12 hits · 120 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">        wvc.config.Reconfigure.VectorIndex.Quantizer.bq(enabled=True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">        wvc.config.Reconfigure.VectorIndex.Quantizer.rq(enabled=True),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">        wvc.config.Reconfigure.VectorIndex.Quantizer.sq(enabled=True, training_limit=50),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>208</td>
+                    <td class="mono snippet">        wvc.config.Reconfigure.VectorIndex.Quantizer.pq(enabled=True, training_limit=300),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>283</td>
+                    <td class="mono snippet">                encoding=wvc.config.Configure.VectorIndex.MultiVector.Encoding.muvera(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/acceptance_with_python/test_usage.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">                encoding=wvc.config.Configure.VectorIndex.MultiVector.Encoding.muvera(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/repos/db/inverted/searcher_ref_filter.go</td>
+                    <td>85</td>
+                    <td class="mono snippet">		ClassName: r.filter.On.Child.Class.String(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/repos/db/lsmkv/compactor_set.go</td>
+                    <td>158</td>
+                    <td class="mono snippet">	kis := make([]segmentindex.KeyRedux, 0, c.c1.cache.segment.index.KeyCount()+c.c2.cache.segment.index.KeyCount())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/handlers/rest/handlers_misc.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">			target, err := url.JoinPath(serverConfig.Config.Authentication.OIDC.Issuer.Get(), &quot;/.well-known/openid-configuration&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/handlers/rest/configure_api.go</td>
+                    <td>630</td>
+                    <td class="mono snippet">		TimeoutsMultiplier:              appState.ServerConfig.Config.Raft.TimeoutsMultiplier.Get(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/handlers/rest/configure_api.go</td>
+                    <td>655</td>
+                    <td class="mono snippet">		DrainSleep:                      appState.ServerConfig.Config.Raft.DrainSleep.Get(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">adapters/handlers/rest/configure_api.go</td>
+                    <td>1176</td>
+                    <td class="mono snippet">		time.Sleep(appState.ServerConfig.Config.Raft.DrainSleep.Get())</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(45 hits · 90 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance/objects/skip_vector_index_test.go</td>
+                    <td>52</td>
+                    <td class="mono snippet">				Properties: map[string]interface{}{&quot;name&quot;: &quot;Jane Doe&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance/objects/skip_vector_index_test.go</td>
+                    <td>63</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;Jane Doe&quot;, obj.Payload.Properties.(map[string]interface{})[&quot;name&quot;].(string))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance/mcp/query_hybrid_test.go</td>
+                    <td>31</td>
+                    <td class="mono snippet">	authorJohnDoe   = &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance/mcp/query_hybrid_test.go</td>
+                    <td>506</td>
+                    <td class="mono snippet">	// Search with OR filter: author=&quot;John Doe&quot; OR author=&quot;Jane Smith&quot; - expects 3 results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance/mcp/objects_upsert_test.go</td>
+                    <td>948</td>
+                    <td class="mono snippet">						&quot;author&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/object_property_tests/batch_test.go</td>
+                    <td>64</td>
+                    <td class="mono snippet">							&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/object_property_tests/graphql_test.go</td>
+                    <td>47</td>
+                    <td class="mono snippet">						&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/object_property_tests/graphql_test.go</td>
+                    <td>118</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;John Doe&quot;, p[&quot;name&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/mixed_vectors_name_forwarding.go</td>
+                    <td>53</td>
+                    <td class="mono snippet">					&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/mixed_vectors_name_forwarding.go</td>
+                    <td>53</td>
+                    <td class="mono snippet">					&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/mixed_vectors_name_forwarding.go</td>
+                    <td>81</td>
+                    <td class="mono snippet">						&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/mixed_vectors_name_forwarding.go</td>
+                    <td>81</td>
+                    <td class="mono snippet">						&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/legacy_vector_misc.go</td>
+                    <td>490</td>
+                    <td class="mono snippet">				&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/legacy_vector_misc.go</td>
+                    <td>490</td>
+                    <td class="mono snippet">				&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/named_vectors_objects_mixed.go</td>
+                    <td>221</td>
+                    <td class="mono snippet">						&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_go_client/named_vectors_tests/test_suits/named_vectors_objects_mixed.go</td>
+                    <td>221</td>
+                    <td class="mono snippet">						&quot;text&quot;: &quot;Lorem ipsum dolor sit amet&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/helper/backuptest/testdata.go</td>
+                    <td>239</td>
+                    <td class="mono snippet">		&quot;Lorem ipsum dolor sit amet consectetur adipiscing elit.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/helper/backuptest/testdata.go</td>
+                    <td>239</td>
+                    <td class="mono snippet">		&quot;Lorem ipsum dolor sit amet consectetur adipiscing elit.&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/shard_write_merge.go</td>
+                    <td>198</td>
+                    <td class="mono snippet">//     cleaning up. Example `name: &quot;John&quot;` is updated to `name: &quot;John Doe&quot;`,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/resolver_test.go</td>
+                    <td>318</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/resolver_test.go</td>
+                    <td>384</td>
+                    <td class="mono snippet">											&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/resolver_test.go</td>
+                    <td>483</td>
+                    <td class="mono snippet">					&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/resolver_test.go</td>
+                    <td>515</td>
+                    <td class="mono snippet">												&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>179</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>250</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>287</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>377</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>426</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>552</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>638</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>696</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>740</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>747</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>819</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>827</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>865</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>872</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>879</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>999</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>1007</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/refcache/cacher_test.go</td>
+                    <td>1015</td>
+                    <td class="mono snippet">				&quot;name&quot;: &quot;John Doe&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/lsmkv/store_integration_test.go</td>
+                    <td>56</td>
+                    <td class="mono snippet">		err = b1.Put([]byte(&quot;name&quot;), []byte(&quot;Jane Doe&quot;))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/lsmkv/store_integration_test.go</td>
+                    <td>93</td>
+                    <td class="mono snippet">		assert.Equal(t, []byte(&quot;Jane Doe&quot;), res)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">usecases/auth/authentication/oidc/middleware_test.go</td>
+                    <td>118</td>
+                    <td class="mono snippet">		token := tokenWithEmail(t, &quot;best-user&quot;, server.URL, &quot;best_client&quot;, &quot;foo@bar.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">usecases/auth/authentication/oidc/middleware_test.go</td>
+                    <td>125</td>
+                    <td class="mono snippet">		assert.Equal(t, &quot;foo@bar.com&quot;, principal.Username)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(16 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>73</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>75</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>85</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>87</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc_test.go</td>
+                    <td>44</td>
+                    <td class="mono snippet">// ── Fake gRPC replication server ─────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc_test.go</td>
+                    <td>231</td>
+                    <td class="mono snippet">// ── Setup helper ─────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc_test.go</td>
+                    <td>291</td>
+                    <td class="mono snippet">// ── Write operation tests ────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc_test.go</td>
+                    <td>607</td>
+                    <td class="mono snippet">// ── Read operation tests ─────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc_test.go</td>
+                    <td>856</td>
+                    <td class="mono snippet">// ── Retry behavior tests ────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc.go</td>
+                    <td>56</td>
+                    <td class="mono snippet">// ── Write operations (WClient) ───────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc.go</td>
+                    <td>278</td>
+                    <td class="mono snippet">// ── Read operations (RClient) ────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_grpc.go</td>
+                    <td>496</td>
+                    <td class="mono snippet">// ── Helpers ──────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_mixed.go</td>
+                    <td>54</td>
+                    <td class="mono snippet">// ── Write operations (WClient) ───────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/clients/replication_mixed.go</td>
+                    <td>124</td>
+                    <td class="mono snippet">// ── Read operations (RClient) ────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/clusterapi/grpc/replication_service.go</td>
+                    <td>50</td>
+                    <td class="mono snippet">// ── Write operations ─────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/clusterapi/grpc/replication_service.go</td>
+                    <td>153</td>
+                    <td class="mono snippet">// ── Read operations ──────────────────────────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(28 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cluster/store_apply_test.go</td>
+                    <td>445</td>
+                    <td class="mono snippet">		// Step 1: Add class &quot;FooBar&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cluster/store_apply_test.go</td>
+                    <td>466</td>
+                    <td class="mono snippet">		// Step 2: Delete class &quot;foobar&quot; (different case) during RAFT replay</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cluster/store_apply_test.go</td>
+                    <td>479</td>
+                    <td class="mono snippet">		// Step 3: Verify that FooBar was deleted from memory schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cluster/replication/shard_replication_apply.go</td>
+                    <td>77</td>
+                    <td class="mono snippet">			// If it's ongoing we need to check if it's a move, in which case we can't accept any new op</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1732</td>
+                    <td class="mono snippet">	// Step 1: Insert 20 objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1736</td>
+                    <td class="mono snippet">	// Step 2: First export — should capture 20 objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1742</td>
+                    <td class="mono snippet">	// Step 3: Insert 10 more objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1746</td>
+                    <td class="mono snippet">	// Step 4: Second export — should capture 30 objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1752</td>
+                    <td class="mono snippet">	// Step 5: Delete the original 20 objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1757</td>
+                    <td class="mono snippet">	// Step 6: Third export — should capture only the 10 remaining objects.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1763</td>
+                    <td class="mono snippet">	// Step 7: Verify all exports succeeded.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/modules/export-s3/export_test.go</td>
+                    <td>1770</td>
+                    <td class="mono snippet">	// Step 8: Verify row counts and object identity for each snapshot.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/resource_use_test.go</td>
+                    <td>298</td>
+                    <td class="mono snippet">	// Step 1: Expect SetStatusReadonly to be called</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/resource_use_test.go</td>
+                    <td>303</td>
+                    <td class="mono snippet">	// Step 1: Disk usage exceeds threshold</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/resource_use_test.go</td>
+                    <td>310</td>
+                    <td class="mono snippet">	// Step 2: Disk usage drops below threshold → recovery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/resource_use_test.go</td>
+                    <td>320</td>
+                    <td class="mono snippet">	// Step 3: Disk usage exceeds threshold again → readonly again</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/bucket.go</td>
+                    <td>734</td>
+                    <td class="mono snippet">				// we need to check if it exists in the primary key of the active memtable,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group.go</td>
+                    <td>352</td>
+                    <td class="mono snippet">		// before we can mount this file, we need to check if a WAL exists for it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group_prepend.go</td>
+                    <td>45</td>
+                    <td class="mono snippet">	// Step 1: Validate strategy — Replace is not supported.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group_prepend.go</td>
+                    <td>51</td>
+                    <td class="mono snippet">	// Step 2: Discover source segments (.db files).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group_prepend.go</td>
+                    <td>74</td>
+                    <td class="mono snippet">	// Step 3: Compute timestamp shift and copy files with crash-safe staging.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group_prepend.go</td>
+                    <td>88</td>
+                    <td class="mono snippet">	// Step 4: Initialize segments from the copied .db files.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/lsmkv/segment_group_prepend.go</td>
+                    <td>96</td>
+                    <td class="mono snippet">	// Step 5: Atomic prepend under maintenanceLock.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/vector/hnsw/delete_test.go</td>
+                    <td>1987</td>
+                    <td class="mono snippet">	// Step 1: Import initial vectors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/vector/hnsw/delete_test.go</td>
+                    <td>1995</td>
+                    <td class="mono snippet">	// Step 2: Delete some nodes to create tombstones</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/repos/db/vector/hnsw/delete_test.go</td>
+                    <td>2001</td>
+                    <td class="mono snippet">	// Step 3: Run concurrent cleanup and growth</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/handlers/graphql/local/aggregate/resolver.go</td>
+                    <td>253</td>
+                    <td class="mono snippet">			// a top occurrence, so we need to check if we have a limit argument</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">usecases/objects/validation/vector_validation.go</td>
+                    <td>25</td>
+                    <td class="mono snippet">	// In case the schema has a legacy vector index, we need to check if there is a default named vector which</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(10 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>70</td>
+                    <td class="mono snippet"># Create a collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # Create a small canary collection that we will use later to verify recovery.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>107</td>
+                    <td class="mono snippet">    # Create a filler collection and write enough data to push disk usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/objects/objects_create.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create an object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/namespaces/create_namespace.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create a new namespace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/schema/schema_objects_create.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create a new collection</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/schema/aliases_create.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create a new alias</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/schema/tenants_create.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create a new tenant</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/users/create_user.go</td>
+                    <td>53</td>
+                    <td class="mono snippet"># Create a new user</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/handlers/rest/operations/backups/backups_create.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Create a backup</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(3 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">adapters/repos/db/shard.go</td>
+                    <td>306</td>
+                    <td class="mono snippet">	// shutdownRequested marks shard as requested for shutdown</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.github/workflows/pull_requests.yaml</td>
+                    <td>17</td>
+                    <td class="mono snippet">  # Paths excluded from Orca SAST scans (auto-generated code + mocks).</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">usecases/backup/backupper.go</td>
+                    <td>177</td>
+                    <td class="mono snippet">// - All backups have the same compression type as requested</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docker-compose.yml</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Additionally, it should not be used directly with `docker compose up`; instead, please utilize the scripts provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CLAUDE.md</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Build debug binary (with delve support)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/roaringset/doc.go</td>
+                    <td>51</td>
+                    <td class="mono snippet">// Essentially this means the RoaringSet strategy behaves like a fully</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/clusterintegrationtest/cluster_integration_test.go</td>
+                    <td>52</td>
+                    <td class="mono snippet">// non-essential parts. Essentially we fix the shard/cluster state and schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/lsmkv/bucket.go</td>
+                    <td>984</td>
+                    <td class="mono snippet">// has dropped to zero. Essentially the switch just switches pointers, but we</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/vector/hnsw/config_update.go</td>
+                    <td>48</td>
+                    <td class="mono snippet">			// current timer and start a new one. Certainly possible, but let's see</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/vector/kmeans/kmeans.go</td>
+                    <td>449</td>
+                    <td class="mono snippet">	// We leverage existing methods to compute it.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(14 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker-compose-raft/raft_cluster.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Check if jinja2 is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker-compose-raft/raft_cluster.sh</td>
+                    <td>31</td>
+                    <td class="mono snippet">    # Check if running on Mac</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/linter_go_routines.sh</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Check if file is in excluded list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/linter_error_groups.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet">    # Check if the file is not one of the permitted usages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/run_telemetry_dashboard.sh</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Check if something is already listening on the port</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/benchmark_bm25/gather_stats.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Check if a name parameter is provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/benchmark_bm25/gather_stats.sh</td>
+                    <td>32</td>
+                    <td class="mono snippet"># Check if the FlameGraph directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/benchmark_bm25/convert_json_to_jsonl.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Check if the output file was created and is not empty</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">        # Check if shards are already READONLY before writing more.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/run.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Check if Python is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/run.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Check if a virtual environment (venv) exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/handlers/rest/operations/objects/objects_class_head.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Check if an object exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/handlers/rest/operations/objects/objects_head.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Check if an object exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">adapters/handlers/rest/operations/schema/tenant_exists.go</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Check if a tenant exists</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/test_readonly_recovery.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/test_tokenize.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/test_tokenize.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/test_tokenize.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/acceptance_with_python/get_debug_usage.py</td>
+                    <td>217</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker-compose-readonly-recovery-test.yml</td>
+                    <td>12</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/run_telemetry_dashboard.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/dev/bench/measure_start_time.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># How to use:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/actions/security-lint/linter_hidden_unicode.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">adapters/repos/db/shard_write_batch_references.go</td>
+                    <td>104</td>
+                    <td class="mono snippet">	// TODO: is there any benefit in having this parallelized? if so, don't forget to lock before assigning errors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">usecases/auth/authorization/types.go</td>
+                    <td>107</td>
+                    <td class="mono snippet">	// Note:  if a new action added, don't forget to add it to availableWeaviateActions</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

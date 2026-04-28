@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — apache/arrow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>apache/arrow</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">8.5</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">8.5</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1300</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">5633</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">664,726</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">3102</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(1032 hits · 5160 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/examples/parquet_encryption/sample_vault_kms_client.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">    assert table.equals(result_table)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/scripts/run_emscripten_tests.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">                        window.python_done_callback = undefined;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/scripts/run_emscripten_tests.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">                                    window.python_done_callback = undefined;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/scripts/run_emscripten_tests.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">                                evt.data.print.forEach((x)=&gt;{window.python_logs.push(x)});</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/_compute_docstrings.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">      null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/__init__.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">from pyarrow.lib import (null, bool_,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/feather.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">        if not self.schema.equals(table.schema):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/compute.py</td>
+                    <td>502</td>
+                    <td class="mono snippet">      null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_tensor.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">    assert result.equals(tensor)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_tensor.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">    assert result.equals(tensor)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_tensor.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">        assert result.equals(tensor)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_tensor.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">        assert a.equals(b)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_tensor.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        assert not a.equals(b)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">            assert reader.schema.equals(batches[0].schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">    assert result.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">    assert result1.equals(result2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">    assert result1.equals(result3)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">    assert t1.equals(t2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>297</td>
+                    <td class="mono snippet">    assert result1.equals(result2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">    assert result1.equals(result3)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>410</td>
+                    <td class="mono snippet">    assert reader.schema.equals(batches[0].schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>414</td>
+                    <td class="mono snippet">        assert next_batch.equals(batches[i])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">    assert reader.schema.equals(batches[0].schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>525</td>
+                    <td class="mono snippet">        assert next_batch.equals(batches[i])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>711</td>
+                    <td class="mono snippet">    assert result.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>770</td>
+                    <td class="mono snippet">    assert msg.equals(restored)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>771</td>
+                    <td class="mono snippet">    assert msg.equals(restored2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>772</td>
+                    <td class="mono snippet">    assert msg.equals(restored3)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>773</td>
+                    <td class="mono snippet">    assert msg.equals(restored4)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>807</td>
+                    <td class="mono snippet">        assert result.equals(message)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>813</td>
+                    <td class="mono snippet">    assert schema.equals(batches[1].schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>821</td>
+                    <td class="mono snippet">        assert read_batch.equals(batch)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>915</td>
+                    <td class="mono snippet">    assert reader_schema.equals(writer_batches[0].schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>928</td>
+                    <td class="mono snippet">    assert result.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>1022</td>
+                    <td class="mono snippet">    assert result.schema.equals(table.schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>1121</td>
+                    <td class="mono snippet">    assert recons_batch.equals(batch)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>1136</td>
+                    <td class="mono snippet">    assert recons_schema.equals(schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>1165</td>
+                    <td class="mono snippet">    assert table.schema.equals(schema)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>76</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>108</td>
+                    <td class="mono snippet">    assert arr1.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">    assert arr1.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    assert arr1.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">    assert arr1.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>204</td>
+                    <td class="mono snippet">    assert arr1.equals(arr2)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>452</td>
+                    <td class="mono snippet">    assert arr.equals(expected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">python/pyarrow/tests/test_convert_builtin.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">    assert arr.equals(expected)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 982 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(78 hits · 156 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmake-format.py</td>
+                    <td>22</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmake-format.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># -----------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmake-format.py</td>
+                    <td>62</td>
+                    <td class="mono snippet"># ------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cmake-format.py</td>
+                    <td>64</td>
+                    <td class="mono snippet"># ------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_venv.sh</td>
+                    <td>21</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_venv.sh</td>
+                    <td>40</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_venv.sh</td>
+                    <td>62</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_conda.sh</td>
+                    <td>21</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_conda.sh</td>
+                    <td>33</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_conda.sh</td>
+                    <td>62</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_conda.sh</td>
+                    <td>69</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/minimal_build/build_conda.sh</td>
+                    <td>90</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/__init__.py</td>
+                    <td>287</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/__init__.py</td>
+                    <td>298</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/pandas_compat.py</td>
+                    <td>714</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/pandas_compat.py</td>
+                    <td>1284</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/acero.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>837</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_ipc.py</td>
+                    <td>931</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>73</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>380</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1031</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1069</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1524</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1597</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1820</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_io.py</td>
+                    <td>1898</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>1725</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3373</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3384</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3474</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3747</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3796</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3833</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>3983</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>4004</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>4116</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>4335</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>4413</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>4697</td>
+                    <td class="mono snippet"># ----------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>5184</td>
+                    <td class="mono snippet">    # ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>5197</td>
+                    <td class="mono snippet">    # ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>5235</td>
+                    <td class="mono snippet">    # ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>5240</td>
+                    <td class="mono snippet">    # ------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>56</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>113</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>208</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>252</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>401</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_data_types.py</td>
+                    <td>434</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 28 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(69 hits · 138 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/dataset.py</td>
+                    <td>829</td>
+                    <td class="mono snippet">        # Create a partitioning factory with those field names.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/arrow_39313.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is called from a test in test_pandas.py.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/arrow_16597.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is called from a test in test_flight.py.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_gandiva.py</td>
+                    <td>333</td>
+                    <td class="mono snippet">    # Create a table with some sample data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/strategies.py</td>
+                    <td>452</td>
+                    <td class="mono snippet"># Define the same rules as above for pandas tests by excluding certain types</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/arrow_7980.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is called from a test in test_schema.py.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/util.py</td>
+                    <td>412</td>
+                    <td class="mono snippet">        # Create a limited user with a specific policy ...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/util.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">        # Create a protected bucket for testing no-delete-bucket policy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_jvm.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">    # Create a Java buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_fs.py</td>
+                    <td>554</td>
+                    <td class="mono snippet">    # Create a file in the protected bucket then try to delete it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/pandas_threaded_import.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is called from a test in test_pandas.py.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_dataset.py</td>
+                    <td>3877</td>
+                    <td class="mono snippet">    # Create a dataset where f1 is incrementing from 0 to 100 spread across</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>147</td>
+                    <td class="mono snippet">    # Creating a device buffer from another device buffer, view:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">    # Creating a device buffer from another device buffer, copy:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">    # Creating a device buffer from a slice of host buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">    # Creating a device buffer from a slice of an array</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">    # Creating a device buffer from a slice of bytes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>215</td>
+                    <td class="mono snippet">    # Creating a device buffer from size</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>366</td>
+                    <td class="mono snippet">    # Create a buffer in host containing range(size)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_cuda.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">    # Create a device buffer of the same size and copy from host</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_feather.py</td>
+                    <td>454</td>
+                    <td class="mono snippet">    # Create a nan that is not numpy.nan</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/read_record_batch.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is called from a test in test_ipc.py.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_basic.py</td>
+                    <td>228</td>
+                    <td class="mono snippet">    # Create a non-empty table to infer the types correctly, then slice to 0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/interchange/dataframe.py</td>
+                    <td>212</td>
+                    <td class="mono snippet">        # Create an iterator of RecordBatches</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/interchange/column.py</td>
+                    <td>497</td>
+                    <td class="mono snippet">        # Define the dtype of the returned buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/interchange/column.py</td>
+                    <td>523</td>
+                    <td class="mono snippet">            # Define the dtype of the returned buffer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/vendored/version.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This file is dual licensed under the terms of the Apache License, Version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/vendored/docscrape.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># This file is licensed under the BSD License. See the LICENSE.txt file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ci/scripts/rust_build.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet"># This file is used to build the rust binaries needed for the archery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ci/scripts/nanoarrow_build.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet"># This file is used to build the nanoarrow binaries needed for the archery</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/tools/nixlibs.R</td>
+                    <td>821</td>
+                    <td class="mono snippet">  # Create a new env_var_list, with the values of turn_off set.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/arrow-datum.R</td>
+                    <td>358</td>
+                    <td class="mono snippet">    # Create a new array that encodes missing values as 1 and non-missing values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-datetime-helpers.R</td>
+                    <td>506</td>
+                    <td class="mono snippet"># This function handles round/ceil/floor when unit is week. The fn argument</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-eval.R</td>
+                    <td>251</td>
+                    <td class="mono snippet"># Create a data mask for evaluating a dplyr expression</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-mutate.R</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # Create a mask with aggregation functions in it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-mutate.R</td>
+                    <td>163</td>
+                    <td class="mono snippet"># This function is a copy of dplyr:::check_transmute_args at</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/metadata.R</td>
+                    <td>91</td>
+                    <td class="mono snippet">  # This function is used both when saving and loading metadata.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/schema.R</td>
+                    <td>252</td>
+                    <td class="mono snippet">#' # Create a schema using a list of pairs of field names and data types</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dataset.R</td>
+                    <td>156</td>
+                    <td class="mono snippet">#' # Create a temporary directory and write example dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/extension.R</td>
+                    <td>301</td>
+                    <td class="mono snippet">#' # Create the R6 type whose methods control how Array objects are</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/extension.R</td>
+                    <td>338</td>
+                    <td class="mono snippet">#' # Create a helper type constructor that calls new_extension_type()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/extension.R</td>
+                    <td>348</td>
+                    <td class="mono snippet">#' # Create a helper array constructor that calls new_extension_array()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-funcs-type.R</td>
+                    <td>104</td>
+                    <td class="mono snippet">  # Create a data frame/tibble/struct column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/udf.R</td>
+                    <td>104</td>
+                    <td class="mono snippet">  # Create a small wrapper function that is easier to call from C++.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-select.R</td>
+                    <td>50</td>
+                    <td class="mono snippet">  # Create a mask for evaluating expressions in tidyselect helpers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-glimpse.R</td>
+                    <td>20</td>
+                    <td class="mono snippet">  # This function is inspired by pillar:::glimpse.tbl(), with some adaptations</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/data-raw/codegen.R</td>
+                    <td>18</td>
+                    <td class="mono snippet"># This file is used to generate code in the files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/source/conf.py</td>
+                    <td>20</td>
+                    <td class="mono snippet"># This file is execfile()d with the current directory set to its</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/build-support/asan_symbolize.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># This file is distributed under the University of Illinois Open Source</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/thirdparty/versions.txt</td>
+                    <td>20</td>
+                    <td class="mono snippet"># This file is used by `download_dependencies.sh` and cmake to figure out which</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 19 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(49 hits · 49 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>221</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>253</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>272</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>307</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>344</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>375</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>412</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>570</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>624</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>673</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>707</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>733</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>762</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>793</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>821</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>850</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>880</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>906</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>936</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>968</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1020</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1042</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1064</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1088</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1106</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1138</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1460</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1490</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1521</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1553</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1580</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1606</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1657</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1717</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1745</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1769</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1800</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1833</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1868</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1944</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>1985</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>2036</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">compose.yaml</td>
+                    <td>2065</td>
+                    <td class="mono snippet">    # Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/visit_array_inline.h</td>
+                    <td>41</td>
+                    <td class="mono snippet">/// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/visit_scalar_inline.h</td>
+                    <td>44</td>
+                    <td class="mono snippet">/// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/visit_type_inline.h</td>
+                    <td>41</td>
+                    <td class="mono snippet">/// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/util/rows_to_batches.h</td>
+                    <td>82</td>
+                    <td class="mono snippet">/// Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/util/bpacking_simd_codegen.py</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/util/bpacking_scalar_codegen.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(4 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">matlab/src/matlab/+arrow/+array/+internal/+list/TableValidator.m</td>
+                    <td>20</td>
+                    <td class="mono snippet">        VariableValidators arrow.array.internal.list.Validator = arrow.array.internal.list.Validator.empty(1, 0)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dev/archery/archery/integration/tester_java.py</td>
+                    <td>133</td>
+                    <td class="mono snippet">        self.java_arrow.vector.util.Validator.compareSchemas(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dev/archery/archery/integration/tester_java.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        self.java_arrow.vector.util.Validator.compareVectorSchemaRoot(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">dev/archery/archery/integration/tester_java.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">        self.java_arrow.vector.util.Validator.compareDictionaryProviders(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(33 hits · 34 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/examples/flight/client.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">        print(&quot;Error calling action:&quot;, e)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/feather.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/pandas_compat.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/conftest.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">                except Exception as err:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_orc.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_orc.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_feather.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_pandas.py</td>
+                    <td>2875</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_csv.py</td>
+                    <td>2047</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_basic.py</td>
+                    <td>785</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/conftest.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_parquet_writer.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_datetime.py</td>
+                    <td>442</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/parquet/core.py</td>
+                    <td>2051</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/gdb_arrow.py</td>
+                    <td>2405</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/gdb_arrow.py</td>
+                    <td>2416</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/gdb_arrow.py</td>
+                    <td>2430</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/build-support/asan_symbolize.py</td>
+                    <td>93</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/build-support/asan_symbolize.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/util/bpacking_simd_codegen.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/merge_arrow_pr.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/merge_arrow_pr.py</td>
+                    <td>642</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/bot.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/docker/core.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/docker/core.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">                        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/crossbow/core.py</td>
+                    <td>1352</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/integration/runner.py</td>
+                    <td>320</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/integration/runner.py</td>
+                    <td>450</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/integration/runner.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/integration/runner.py</td>
+                    <td>574</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/utils/lint.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/lang/python.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">            except Exception as orig_error:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/lang/python.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(17 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/NEWS.md</td>
+                    <td>1067</td>
+                    <td class="mono snippet">* `arrow` now depends on [`cpp11`](https://cpp11.r-lib.org/), which brings more robust UTF-8 handling and faster compilation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/tests/testthat/test-dplyr-funcs-string.R</td>
+                    <td>675</td>
+                    <td class="mono snippet">  # so here we can just call the functions directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/tests/testthat/test-dataset-dplyr.R</td>
+                    <td>325</td>
+                    <td class="mono snippet">  # This one is more nuanced</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/R/filesystem.R</td>
+                    <td>400</td>
+                    <td class="mono snippet">  # from_uri needs a non-empty path, so just use a placeholder of /_</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-datetime-helpers.R</td>
+                    <td>378</td>
+                    <td class="mono snippet">#' row-wise we can leverage this behaviour and introduce a condition. If `x` has</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/R/query-engine.R</td>
+                    <td>234</td>
+                    <td class="mono snippet">        # just use it to take the random slice</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/src/r_to_arrow.cpp</td>
+                    <td>1355</td>
+                    <td class="mono snippet">//       leverage concurrency. Maybe some refactoring needed.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/thirdparty/flatbuffers/include/flatbuffers/vector_downward.h</td>
+                    <td>41</td>
+                    <td class="mono snippet">// Essentially, this supports 2 std::vectors in a single buffer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/util/async_generator.h</td>
+                    <td>40</td>
+                    <td class="mono snippet">// The methods in this file create, modify, and utilize AsyncGenerator which is an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/io/interfaces.h</td>
+                    <td>327</td>
+                    <td class="mono snippet">  /// For robust prefetching, use ReadAt() or ReadAsync().</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/compute/expression.h</td>
+                    <td>194</td>
+                    <td class="mono snippet">/// These transform bound expressions. Some transforms utilize a guarantee, which is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/compute/exec.h</td>
+                    <td>89</td>
+                    <td class="mono snippet">  /// \brief If true, then utilize multiple threads where relevant for function</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/c/bridge.h</td>
+                    <td>479</td>
+                    <td class="mono snippet">/// \param[in] handler the handler whose callbacks to utilize as data is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/src/arrow/c/abi.h</td>
+                    <td>387</td>
+                    <td class="mono snippet">  // wants to utilize it after this function returns, it must copy or move the contents</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dev/archery/archery/benchmark/runner.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">    # default repetitions is 5 for Java microbenchmark harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/crossbow/core.py</td>
+                    <td>1074</td>
+                    <td class="mono snippet">            # shortcut to avoid pattern validation and just set all artifacts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ruby/red-arrow-format/lib/arrow-format/org/apache/arrow/flatbuf/feature.rb</td>
+                    <td>29</td>
+                    <td class="mono snippet">          # to facilitate exchanging and comparing bitmaps for supported</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/tests/testthat/test-dplyr-mutate.R</td>
+                    <td>275</td>
+                    <td class="mono snippet">  # As well as adding new variables, you can use mutate() to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/dplyr-funcs-agg.R</td>
+                    <td>29</td>
+                    <td class="mono snippet"># you can use list_compute_functions(&quot;^hash_&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/install-arrow.R</td>
+                    <td>159</td>
+                    <td class="mono snippet">#' make a source bundle with this function, make sure to set the first repo in</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">r/R/install-arrow.R</td>
+                    <td>271</td>
+                    <td class="mono snippet">  # make sure to suppress warnings and ignore the stderr so that this is silent where proc_translated doesn't exist</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">cpp/build-support/run-test.sh</td>
+                    <td>105</td>
+                    <td class="mono snippet">  # So we make sure to detect this and exit 1.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">format/substrait/extension_types.yaml</td>
+                    <td>82</td>
+                    <td class="mono snippet"># later to support these types, the consumer will need to make sure to continue supporting</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(8 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/test_array.py</td>
+                    <td>1274</td>
+                    <td class="mono snippet">    # Check if offset in offsets &gt; 0</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_basic.py</td>
+                    <td>610</td>
+                    <td class="mono snippet">    # Check if both LZ4 compressors are working</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_basic.py</td>
+                    <td>989</td>
+                    <td class="mono snippet">    # Read file and verify that the data is correct</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python/pyarrow/tests/parquet/test_basic.py</td>
+                    <td>1051</td>
+                    <td class="mono snippet">    # Read file and verify that the data is correct</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/tools/nixlibs.R</td>
+                    <td>1011</td>
+                    <td class="mono snippet"># Check if we're authorized to download</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/R/array.R</td>
+                    <td>92</td>
+                    <td class="mono snippet">#' # Check if value is null; zero-indexed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/flight/sql/odbc/install/unix/install_odbc.sh</td>
+                    <td>69</td>
+                    <td class="mono snippet"># Check if [ODBC Drivers] section exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/archery/archery/crossbow/cli.py</td>
+                    <td>599</td>
+                    <td class="mono snippet">            # Check if reference is a remote reference to point</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(2 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_schema.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla accumsan vel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">python/pyarrow/tests/test_schema.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla accumsan vel</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">r/R/arrow-tabular.R</td>
+                    <td>213</td>
+                    <td class="mono snippet">  # We need to check if `i` is in names in case it is an active binding (e.g.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cpp/src/arrow/flight/sql/odbc/odbc_impl/flight_sql_ssl_config.h</td>
+                    <td>46</td>
+                    <td class="mono snippet">  /// \brief  Tells if we need to check if the certificate is in the system trust store.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — saltstack/salt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>saltstack/salt</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">3.7</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">3.7</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2086</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">3579</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">972,703</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">3194</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(448 hits · 896 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/release.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/gh.py</td>
+                    <td>21</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/docs.py</td>
+                    <td>21</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/changelog.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/testsuite/ci_failure.py</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/testsuite/download.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/testsuite/__init__.py</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/testsuite/pytest.py</td>
+                    <td>19</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/precommit/__init__.py</td>
+                    <td>9</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/precommit/changelog.py</td>
+                    <td>33</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/precommit/workflows.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pkg/build.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tools/pkg/__init__.py</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Define the command group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/saltsh.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">    # Create the Salt __opts__ variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>71</td>
+                    <td class="mono snippet"># Define the pytest plugins we rely on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/eventlisten.sh</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # Create the event tags to listen for.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/transport/test_ipc.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        # Create a watchdog to be safe from hanging in sync loops (what old code did)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/transport/test_ipc.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        # Create a watchdog to be safe from hanging in sync loops (what old code did)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/utils/test_process.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">        # Create a pool with no workers and 1 queue size</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/utils/test_process.py</td>
+                    <td>359</td>
+                    <td class="mono snippet">        # Create a process to test signal handler</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/utils/test_process.py</td>
+                    <td>368</td>
+                    <td class="mono snippet">        # Create a second process that should not respond to SIGINT or SIGTERM</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/modules/test_win_system.py</td>
+                    <td>637</td>
+                    <td class="mono snippet">        # Create a mock processor class that does not have the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/cloud/test_cloud.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">        # Create the VM using salt.cloud.CloudClient.create() instead of calling salt-cloud</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/cloud/helpers/cloud_test_base.py</td>
+                    <td>158</td>
+                    <td class="mono snippet">            # Create the cloud instance name to be used throughout the tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/cloud/helpers/virtualbox.py</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Create the cloud instance name to be used throughout the tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_ssh_auth.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">        # Create the keyfile that we expect to get back on the state call</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_ssh_auth.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">        # Create a bogus key file on base environment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_git.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">        # Create a URL to clone</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_cmd.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">        # Create the testfile and release the handle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_cmd.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">        # Create the testfile and release the handle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/modules/test_config.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        # This function is generally only used with cross calls, the yaml</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/client/test_standard.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">        # Create a minion key, but do not start the &quot;fake&quot; minion. This mimics</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/mixins.py</td>
+                    <td>369</td>
+                    <td class="mono snippet">        # Create the class instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/win_installer.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">    # Create a class so we can define how to handle the starttag</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">                # This class is not defined in the module being tested? Carry on...</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">                # This class is not a subclass of TestCase, carry on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/pytest/transport_ssl.py</td>
+                    <td>206</td>
+                    <td class="mono snippet">    # Create a persistent temp directory that won't be cleaned up mid-session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/test_minion.py</td>
+                    <td>543</td>
+                    <td class="mono snippet">    # Create a simple test that just verifies the queue processing method exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/test_minion.py</td>
+                    <td>561</td>
+                    <td class="mono snippet">    # Create a simple test that just verifies the method exists and can be called</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/test_minion.py</td>
+                    <td>1318</td>
+                    <td class="mono snippet">    # Create a MinionManager instance with a mock minion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/test_minion.py</td>
+                    <td>1392</td>
+                    <td class="mono snippet">    # Create a Tornado IOLoop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/fileclient/test_fileclient_cache.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # Create the CACHE_ROOT</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_files.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">    # Create the file structures in both src and dest dirs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_nxos.py</td>
+                    <td>20</td>
+                    <td class="mono snippet">        # Create a mock response object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_nxos.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Create a mock response object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/jinja/test_salt_cache_loader.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Create a mock file client and attach it to the loader</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/loader/test_grains_cleanup.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">    # Create a loader to get some module references</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/loader/test_grains_cleanup.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    # Create a loader</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 398 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(420 hits · 840 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/output/test_nested.py</td>
+                    <td>38</td>
+                    <td class="mono snippet">    #    ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/output/test_nested.py</td>
+                    <td>44</td>
+                    <td class="mono snippet">    #        ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/output/test_nested.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    #            ----------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>383</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>385</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>425</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>427</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>467</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>469</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>478</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_reactor2.py</td>
+                    <td>480</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/channel/test_server.py</td>
+                    <td>126</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/channel/test_server.py</td>
+                    <td>128</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_user.py</td>
+                    <td>95</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_user.py</td>
+                    <td>97</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_user.py</td>
+                    <td>695</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_user.py</td>
+                    <td>697</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_group.py</td>
+                    <td>80</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_group.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_group.py</td>
+                    <td>397</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/states/postgresql/test_group.py</td>
+                    <td>399</td>
+                    <td class="mono snippet"># ==========</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/version.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/version.py</td>
+                    <td>188</td>
+                    <td class="mono snippet">    # -------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/version.py</td>
+                    <td>580</td>
+                    <td class="mono snippet"># --------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/renderers/stateconf.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    # ----------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>181</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>183</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>198</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>200</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>216</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>218</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>371</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cache/redis_cache.py</td>
+                    <td>373</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>10</td>
+                    <td class="mono snippet">#======================================================================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>12</td>
+                    <td class="mono snippet">#======================================================================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet">#======================================================================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>35</td>
+                    <td class="mono snippet">#======================================================================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>37</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>52</td>
+                    <td class="mono snippet">#======================================================================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>65</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>89</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>97</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>105</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>113</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>123</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>131</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>153</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>168</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>223</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>244</td>
+                    <td class="mono snippet">#----------------------------------------------------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 370 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(806 hits · 806 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>402</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>475</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>590</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/ci.py</td>
+                    <td>792</td>
+                    <td class="mono snippet">        except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/precommit/docs.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">        except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pkg/build.py</td>
+                    <td>892</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/pkg/__init__.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">    except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>395</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/utils/test_win_system.py</td>
+                    <td>10</td>
+                    <td class="mono snippet">except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/utils/test_vt.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/utils/test_vt.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/utils/test_win_service.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/output/test_output.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">        except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/utils/test_win_runas.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">        except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/utils/test_win_runas.py</td>
+                    <td>249</td>
+                    <td class="mono snippet">    except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/utils/test_win_runas.py</td>
+                    <td>253</td>
+                    <td class="mono snippet">    except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/pillar/test_git_pillar.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/pillar/test_git_pillar.py</td>
+                    <td>101</td>
+                    <td class="mono snippet">except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/netapi/rest_tornado/test_app.py</td>
+                    <td>258</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/cloud/helpers/virtualbox.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">        except Exception as e:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_mysql.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_ssh.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/mixins.py</td>
+                    <td>613</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>225</td>
+                    <td class="mono snippet">                except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/case.py</td>
+                    <td>872</td>
+                    <td class="mono snippet">        except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>232</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>350</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>741</td>
+                    <td class="mono snippet">                except Exception as exc:  # pylint: disable=W0703</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>835</td>
+                    <td class="mono snippet">                except Exception as exc:  # pylint: disable=W0703</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>959</td>
+                    <td class="mono snippet">                except Exception as exc:  # pylint: disable=W0703</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/helpers.py</td>
+                    <td>1259</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/transport.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">        except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/loader.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">            except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/helpers.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/helpers.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/helpers.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">            except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/pytest/helpers.py</td>
+                    <td>399</td>
+                    <td class="mono snippet">                except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/test_log.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/test_log.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">        except Exception as err:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/transport/test_zeromq.py</td>
+                    <td>1639</td>
+                    <td class="mono snippet">    except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/utils/test_msgpack.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">    except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/utils/test_msgpack.py</td>
+                    <td>488</td>
+                    <td class="mono snippet">    except Exception as exc:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/cli/test_daemons.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/cli/test_daemons.py</td>
+                    <td>144</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/cli/test_daemons.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">    except Exception:  # pylint: disable=broad-except</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 756 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(118 hits · 590 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">            &quot;mkdir -p /root/.local/relenv &amp;&amp; ln -sf /root/.cache/relenv/toolchains /root/.local/relenv/toolchain&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">                f&quot;test -f /root/.local/relenv/toolchain/{arch}-linux-gnu/bin/{arch}-linux-gnu-gcc &amp;&amp; echo 'OK' || echo 'FAILED'&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/utils/test_json.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">        '{&quot;None&quot;: null, &quot;True&quot;: false, &quot;dict&quot;: {&quot;subdict&quot;: {&quot;спам&quot;: &quot;яйца&quot;}}, &quot;float&quot;:'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/unit/utils/test_json.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">            &quot;None&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/renderers/test_yamlex.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    placeholder: {foo: !aggregate {bar: null}}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/fileclient/test_fileclient.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">        # Authenticate must return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/utils/test_yamldumper.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">    exp_yaml = &quot;{foo: null}\n&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/serializers/test_serializers.py</td>
+                    <td>220</td>
+                    <td class="mono snippet">        placeholder: !aggregate {bar: null}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/serializers/test_serializers.py</td>
+                    <td>232</td>
+                    <td class="mono snippet">        placeholder: {foo: !aggregate {bar: null}}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/serializers/test_serializers.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">        placeholder: {!aggregate foo: {bar: null}}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/serializers/test_serializers.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">        placeholder: {!aggregate foo: {bar: null}}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">                      &quot;auto_updates&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">                      &quot;bundle_short_version&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">                      &quot;bundle_version&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">                      &quot;caveats&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">                      &quot;conflicts_with&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">                      &quot;container&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">                      &quot;deprecation_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">                      &quot;deprecation_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">                      &quot;disable_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">                      &quot;disable_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">                      &quot;caveats&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>142</td>
+                    <td class="mono snippet">                      &quot;conflicts_with&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">                      &quot;container&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">                      &quot;deprecation_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>153</td>
+                    <td class="mono snippet">                      &quot;deprecation_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">                      &quot;disable_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">                      &quot;disable_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>230</td>
+                    <td class="mono snippet">                      &quot;caveats&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>237</td>
+                    <td class="mono snippet">                      &quot;deprecation_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">                      &quot;deprecation_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">                      &quot;disable_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>241</td>
+                    <td class="mono snippet">                      &quot;disable_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">                      &quot;keg_only_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>292</td>
+                    <td class="mono snippet">                      &quot;pour_bottle_only_if&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">                      &quot;service&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">                          &quot;revision&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>313</td>
+                    <td class="mono snippet">                          &quot;tag&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">                      &quot;caveats&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>393</td>
+                    <td class="mono snippet">                      &quot;deprecation_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>394</td>
+                    <td class="mono snippet">                      &quot;deprecation_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>396</td>
+                    <td class="mono snippet">                      &quot;disable_date&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>397</td>
+                    <td class="mono snippet">                      &quot;disable_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>478</td>
+                    <td class="mono snippet">                      &quot;keg_only_reason&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>489</td>
+                    <td class="mono snippet">                      &quot;pour_bottle_only_if&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>497</td>
+                    <td class="mono snippet">                      &quot;service&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">                          &quot;revision&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>510</td>
+                    <td class="mono snippet">                          &quot;tag&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>848</td>
+                    <td class="mono snippet">                          &quot;full_token&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mac_brew_pkg.py</td>
+                    <td>1417</td>
+                    <td class="mono snippet">                      &quot;tap&quot;: null,</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 68 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(143 hits · 143 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # Check if docker daemon is running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">    # Check if container exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/modules/test_x509.py</td>
+                    <td>211</td>
+                    <td class="mono snippet">        # Check if property is the one we've added to the certificate. The</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/modules/test_x509.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">        # Check if property is the one we've added to the certificate. The</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/modules/test_x509.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">        # Check if property values are the ones we've added to the certificate.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_git.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">                # Check if key is missing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_git.py</td>
+                    <td>909</td>
+                    <td class="mono snippet">        # Check if this new path is a worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_git.py</td>
+                    <td>911</td>
+                    <td class="mono snippet">        # Check if the main repo is a worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration/modules/test_git.py</td>
+                    <td>913</td>
+                    <td class="mono snippet">        # Check if a non-repo directory is a worktree</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>48</td>
+                    <td class="mono snippet"># Set SHOW_PROC to True to show</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/states/test_pip.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">                    use_wheel=False,  # Set False to simplify testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mine.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">    # Check if the mine entries have been stored properly in the FakeCache.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/scenarios/performance/test_performance.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # Check if image exists first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/scenarios/performance/test_performance.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">    # Check if image exists first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/functional/channel/test_auth_downgrade.py</td>
+                    <td>310</td>
+                    <td class="mono snippet">        # Check if attack was blocked</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/crypt.py</td>
+                    <td>1863</td>
+                    <td class="mono snippet">        # Check if we can skip AES encryption</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/crypt.py</td>
+                    <td>1901</td>
+                    <td class="mono snippet">        # Check if data has TLS marker (was sent without AES)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/fileclient.py</td>
+                    <td>1187</td>
+                    <td class="mono snippet">        # Check if file exists on server, before creating files and</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/master.py</td>
+                    <td>445</td>
+                    <td class="mono snippet">            # Check if scheduler requires lower loop interval than</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/master.py</td>
+                    <td>2586</td>
+                    <td class="mono snippet">                # Check if 'minions' is included in returner's save_load arg_spec.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>506</td>
+                    <td class="mono snippet">            # Check if scheduler requires lower loop interval than</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>1444</td>
+                    <td class="mono snippet">                        # Check if file is older than 5 minutes (300 seconds)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>1958</td>
+                    <td class="mono snippet">        # Check if we should bypass the process_count_max check</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>2081</td>
+                    <td class="mono snippet">                # Check if we are running in threading mode (multiprocessing=False)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>3922</td>
+                    <td class="mono snippet">                    # Check if this candidate is blocked by any active jobs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/template.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">    # Check if it starts with a shebang and not a path</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/state.py</td>
+                    <td>2646</td>
+                    <td class="mono snippet">                # Check if this low chunk is paused</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/tcp.py</td>
+                    <td>1189</td>
+                    <td class="mono snippet">                # Check if stream is still open</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/tls_util.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">    # Check if optimization is enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/tls_util.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # Check if SSL is configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/tls_util.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Check if cert_reqs is CERT_REQUIRED</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/tls_util.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">    # Check if peer certificate is present</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/config/__init__.py</td>
+                    <td>833</td>
+                    <td class="mono snippet">        # Set this to -1 for unlimited attempts. This allows for a master to have</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/config/__init__.py</td>
+                    <td>3611</td>
+                    <td class="mono snippet">    # Check if required fields are supplied in the provider config. If they</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/config/__init__.py</td>
+                    <td>3910</td>
+                    <td class="mono snippet">            # Set environment to saltenv in case someone's custom module is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/config/__init__.py</td>
+                    <td>4170</td>
+                    <td class="mono snippet">            # Set environment to saltenv in case someone's custom runner is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/mmap_cache.py</td>
+                    <td>246</td>
+                    <td class="mono snippet">                        # Check if it's the same key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/mmap_cache.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">                    # Check if there is data after the null</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/gzip_util.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">                    # Open the file and re-attempt the read</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/powershell.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">    # Check if defaults exist, add them if they do</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/minions.py</td>
+                    <td>994</td>
+                    <td class="mono snippet">                        # Check if minions are allowed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/thin.py</td>
+                    <td>551</td>
+                    <td class="mono snippet">    # Check if auto_detect is enabled and update dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/gitfs.py</td>
+                    <td>2707</td>
+                    <td class="mono snippet">            # Check if it's a valid repo</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/gitfs.py</td>
+                    <td>2855</td>
+                    <td class="mono snippet">        # Check if file exists and get its metadata</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/requisite.py</td>
+                    <td>629</td>
+                    <td class="mono snippet">                # Check if the node can be reached from any node in the group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/versions.py</td>
+                    <td>394</td>
+                    <td class="mono snippet">    # Check if integer/long</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/schedule.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">        # Check if we're able to run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/verify.py</td>
+                    <td>651</td>
+                    <td class="mono snippet">    # Set permissions to the registry key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/verify.py</td>
+                    <td>702</td>
+                    <td class="mono snippet">    # Set permissions to the root path directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/optsdict.py</td>
+                    <td>548</td>
+                    <td class="mono snippet">                # Check if this key was deleted (masked by sentinel)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 93 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(9 hits · 90 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/pytests/unit/utils/test_thin.py</td>
+                    <td>787</td>
+                    <td class="mono snippet">    thin.salt.utils.hashutils.get_hash.assert_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/pytests/unit/utils/test_thin.py</td>
+                    <td>804</td>
+                    <td class="mono snippet">    thin.salt.utils.hashutils.get_hash.assert_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/pytests/unit/cli/test_ssh.py</td>
+                    <td>7</td>
+                    <td class="mono snippet">    Test that `salt.client.ssh.SSH.fsclient.destroy()` is called.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">salt/modules/yumpkg.py</td>
+                    <td>727</td>
+                    <td class="mono snippet">        salt.utils.pkg.rpm.QUERYFORMAT.replace(&quot;%{REPOID}&quot;, &quot;(none)&quot;) + &quot;\n&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">salt/modules/rpm_lowpkg.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    queryformat = salt.utils.pkg.rpm.QUERYFORMAT.replace(&quot;%{REPOID}&quot;, &quot;none&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">salt/modules/chroot.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">    salt.client.ssh.wrapper.state._cleanup_slsmod_low_data(chunks)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">salt/modules/chroot.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">        salt.client.ssh.wrapper.state._merge_extra_filerefs(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">salt/modules/chroot.py</td>
+                    <td>402</td>
+                    <td class="mono snippet">            salt.client.ssh.wrapper.state._merge_extra_filerefs(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">doc/_themes/saltstack2/static/js/core.min.js</td>
+                    <td>4</td>
+                    <td class="mono snippet">},a,b,arguments.length&gt;1)},show:function(){return Wb(this,!0)},hide:function(){return Wb(this)},toggle:function(a){return&quot;boolean&quot;==typeof a?a?this.sh</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(53 hits · 67 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">setup.py</td>
+                    <td>684</td>
+                    <td class="mono snippet">            # If run_frame is None, just call the parent class logic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">SECURITY.md</td>
+                    <td>165</td>
+                    <td class="mono snippet">## Guidance on Salt and security best practices</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/committer_parser.py</td>
+                    <td>6</td>
+                    <td class="mono snippet"># May leverage GitHub API in the future</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/unit/modules/test_network.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">                # The path exists, just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/modules/test_mine.py</td>
+                    <td>165</td>
+                    <td class="mono snippet">        # less flaky. If we still see it fail we need to look for a more robust</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/modules/test_git.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">            # TODO: More robust unset testing, try to trigger all the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/fileserver/gitfs/test_gitfs.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # can just use the Version instances imported along with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/fileserver/gitfs/test_gitfs_config.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">    # can just use the Version instances imported along with</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/modules/test_pip.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">    # As single string (just use the first element from pkgs and editables)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/modules/test_pip.py</td>
+                    <td>318</td>
+                    <td class="mono snippet">        # As single string (just use the first element from mirrors)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/modules/test_pip.py</td>
+                    <td>389</td>
+                    <td class="mono snippet">    # As single string (just use the first element from find_links)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/modules/test_network.py</td>
+                    <td>218</td>
+                    <td class="mono snippet">            # The path exists, just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/functional/cache/helpers.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">        # TODO: this should actually not raise. Not sure if there's a test that we can do here... or just call the code which will fail if there's act</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/crypt.py</td>
+                    <td>436</td>
+                    <td class="mono snippet">            # facilitate migrating to pem named off the master id instead of master.pem</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/crypt.py</td>
+                    <td>833</td>
+                    <td class="mono snippet">        # if an auth is in flight-- and not done-- just pass that back as the future to wait on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/crypt.py</td>
+                    <td>1507</td>
+                    <td class="mono snippet"># TODO: remove, we should just return a sync wrapper of AsyncAuth</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/minion.py</td>
+                    <td>2794</td>
+                    <td class="mono snippet">                # Since we are already in the child process/thread, we just return.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/renderers/pyobjects.py</td>
+                    <td>462</td>
+                    <td class="mono snippet">    # if salt_data is not True then we just return the global scope we've</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/ipc.py</td>
+                    <td>693</td>
+                    <td class="mono snippet">                # In the timeout case, just return None.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/output/highstate.py</td>
+                    <td>304</td>
+                    <td class="mono snippet">    # output() is recursive, if we aren't passed a dict just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/output/txt.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">            # For non-dictionary, non-string data, just use print</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/output/table_out.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">    # to facilitate re-use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/url.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">    # No match, just return the original string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/nxos.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">        # Don't just return body['ins_api']['outputs']['output'] directly.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/args.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">    # Therefore, skip YAML loading for these cases and just return the string</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/gitfs.py</td>
+                    <td>1164</td>
+                    <td class="mono snippet">        # Make sure that we have a positive integer timeout, otherwise just set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/gitfs.py</td>
+                    <td>3505</td>
+                    <td class="mono snippet">                        # We can't just use the return value from repo.fetch()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/schedule.py</td>
+                    <td>1637</td>
+                    <td class="mono snippet">                    # The &quot;splay&quot; configuration has been already processed, just use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/xmlutil.py</td>
+                    <td>31</td>
+                    <td class="mono snippet">    # for it, so just return a single dict representing it.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/optsdict.py</td>
+                    <td>991</td>
+                    <td class="mono snippet">        # For regular dict, just use keys()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/optsdict.py</td>
+                    <td>1071</td>
+                    <td class="mono snippet">            # If setting to None, just use regular assignment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/utils/win_runas.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">    # Get a linked user token to elevate if needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/cloud/deploy/bootstrap-salt.sh</td>
+                    <td>6401</td>
+                    <td class="mono snippet">    # leverage the windows directories since release Windows and Linux</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/states/saltmod.py</td>
+                    <td>926</td>
+                    <td class="mono snippet">    # the 'highstate' outputter, we can leverage this fact when merging the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/states/pkgrepo.py</td>
+                    <td>468</td>
+                    <td class="mono snippet">    # to use. Most package providers will simply return the data provided</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/git.py</td>
+                    <td>711</td>
+                    <td class="mono snippet">    # in the output in case there are thousands), so just return True. If there</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/rpm_lowpkg.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">    # available, then we can just use SIZE for older versions. See Issue #31366.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/win_event.py</td>
+                    <td>220</td>
+                    <td class="mono snippet">            # rather than wait just return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/pacmanpkg.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">    # Use a compatible structure with yum, so we can leverage the existing state.group_installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/file.py</td>
+                    <td>6336</td>
+                    <td class="mono snippet">            # Local file paths will just return the same path back when passed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/win_lgpo.py</td>
+                    <td>2967</td>
+                    <td class="mono snippet">                    # These policies can NOT be set in conjunction with Advanced</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/win_pkg.py</td>
+                    <td>397</td>
+                    <td class="mono snippet">    # If no args passed, just return everything</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/pip.py</td>
+                    <td>962</td>
+                    <td class="mono snippet">        # just return the output without running pip.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/mac_service.py</td>
+                    <td>195</td>
+                    <td class="mono snippet">    # check if KeepAlive is True and not just set.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/win_timezone.py</td>
+                    <td>289</td>
+                    <td class="mono snippet">    # if it's one of the key's just use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/win_timezone.py</td>
+                    <td>332</td>
+                    <td class="mono snippet">    # if it's one of the key's just use it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/bcache.py</td>
+                    <td>808</td>
+                    <td class="mono snippet">            # I'll utilize 'inter_ro' as 'misc' as well</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/grains.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">    # Return the grains we just set to confirm everything was OK</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/chocolatey.py</td>
+                    <td>537</td>
+                    <td class="mono snippet">    # moves more functions to this new paradigm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/chocolatey.py</td>
+                    <td>1375</td>
+                    <td class="mono snippet">    # moves more functions to this new paradigm</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 3 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(28 hits · 56 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration/states/test_git.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">            fp_.write(&quot;Lorem ipsum dolor blah blah blah....\n&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eget urna a arcu lacinia sagittis.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/support/unit.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eget urna a arcu lacinia sagittis.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_x509.py</td>
+                    <td>555</td>
+                    <td class="mono snippet">                    cx509.RFC822Name(&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_stringutils.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eget urna a arcu lacinia sagittis.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_stringutils.py</td>
+                    <td>296</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eget urna a arcu lacinia sagittis.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_block_replace.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rhoncus</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_block_replace.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rhoncus</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_block_replace.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_block_replace.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    result = filemod.grep(multiline_file, &quot;Lorem ipsum&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">    result = filemod.grep(multiline_file, &quot;Lorem ipsum&quot;, &quot;-i&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">    result = filemod.grep(_file, &quot;Lorem ipsum&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">    assert result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>131</td>
+                    <td class="mono snippet">    result = filemod.grep(_file, &quot;Lorem ipsum&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">    assert not result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_grep.py</td>
+                    <td>135</td>
+                    <td class="mono snippet">    assert not result[&quot;stdout&quot;] == &quot;Lorem ipsum dolor sit amet, consectetur&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/functional/modules/file/test_replace.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rhoncus</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/functional/modules/file/test_replace.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rhoncus</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/functional/modules/file/test_replace.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/functional/modules/file/test_replace.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(14 hits · 28 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/unit/utils/test_gitfs.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        # Clear the instance map so that we make sure to create a new instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/utils/test_gitfs_locks.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        # Clear the instance map so that we make sure to create a new instance</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mysql.py</td>
+                    <td>843</td>
+                    <td class="mono snippet">        -- Please don't forget to set up the tablenames in config.inc.php</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/test_mysql.py</td>
+                    <td>899</td>
+                    <td class="mono snippet">                   -- Please don't forget to set up the tablenames in config.inc.php</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pytests/unit/modules/file/test_file_line.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # We need to make sure to remove the tree we just created to avoid clashes with other tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/auth/ldap.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">        # so make sure to render it first before using it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/utils/process.py</td>
+                    <td>626</td>
+                    <td class="mono snippet">        # make sure to kill the subprocesses if the parent is killed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/states/x509.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">Here is a simple example scenario. In this example ``ca`` is the ca server,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/states/ssh_pki.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">Here is a simple example scenario. In this example, ``ca`` is the CA server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/states/x509_v2.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">Here is a simple example scenario. In this example ``ca`` is the ca server,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/grains/core.py</td>
+                    <td>2442</td>
+                    <td class="mono snippet">    # It's worth noting that Ubuntu has patched their Python distribution</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/modules/win_task.py</td>
+                    <td>1911</td>
+                    <td class="mono snippet">    # TODO: save it. Then you can add a new function. Maybe for editing an</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">salt/client/mixins.py</td>
+                    <td>444</td>
+                    <td class="mono snippet">            # if we fired an event, make sure to delete the event object.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pkg/macos/build.sh</td>
+                    <td>95</td>
+                    <td class="mono snippet">#         Don't forget to pass the `-E` option when running with Sudo so that</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(4 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">salt/modules/cron.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">    # If Salt is running from same user as requested in cron module we don't need any user switch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">salt/modules/cron.py</td>
+                    <td>250</td>
+                    <td class="mono snippet">    # If Salt is running from same user as requested in cron module we don't need any user switch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">salt/modules/cron.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">    # If Salt is running from same user as requested in cron module we don't need any user switch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">salt/modules/cron.py</td>
+                    <td>335</td>
+                    <td class="mono snippet">    # If Salt is running from same user as requested in cron module we don't need any user switch</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(19 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">    # Step 1: Decompress dependencies</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">    # Step 2: Create relenv toolchain symlink (Python 3.11+)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tools/testsuite/container_test.py</td>
+                    <td>194</td>
+                    <td class="mono snippet">    # Step 3: Verify setup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_state_queue.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">    # Step 1: Run a state job with queue=True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_state_queue.py</td>
+                    <td>68</td>
+                    <td class="mono snippet">    # Step 2: Verify no files were left in state_queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">    # Step 1: Occupy the only slot using subprocess to avoid fixture argument issues</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>134</td>
+                    <td class="mono snippet">    # Step 2: Queue Job 1 - should be queued due to process_count_max=1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    # Step 3: Verify Job 1 is in job_queue on disk</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">    # Step 4: Queue Job 2 - should also be queued since slot is still occupied</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">    # Step 5: Verify Job 2 is also in job_queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/modules/state/test_queue_race.py</td>
+                    <td>186</td>
+                    <td class="mono snippet">    # Step 6: Verify queuing actually happened under load</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">### Step 1: Download CI Artifacts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>80</td>
+                    <td class="mono snippet">### Step 2: Create Container</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>102</td>
+                    <td class="mono snippet">### Step 3: Setup Container</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>112</td>
+                    <td class="mono snippet">### Step 4: Run Tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>130</td>
+                    <td class="mono snippet">### Step 5: Debug in Container</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/git-and-ci.md</td>
+                    <td>143</td>
+                    <td class="mono snippet">### Step 6: Cleanup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/windows/msi/README-how-to-build.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">### Step 1: build the Nullsoft (NSIS) exe installer or use the mockup</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/windows/msi/README-how-to-build.md</td>
+                    <td>26</td>
+                    <td class="mono snippet">### Step 2: build the msi installer</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(19 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/unit/states/saltmod/test_function.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/integration/ssh/state/test_retcode_state_run_remote_exception.py</td>
+                    <td>32</td>
+                    <td class="mono snippet">def do_stuff(name):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/functional/transport/tcp/test_tcp_ssl.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    async def handle_request(payload, header=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pytests/functional/transport/ws/test_ws_ssl.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">    async def handle_request(payload, header=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/CURSOR.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">def my_function(name, param=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/CURSOR.md</td>
+                    <td>183</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/GEMINI.md</td>
+                    <td>76</td>
+                    <td class="mono snippet">def my_function(name, param=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/CLAUDE.md</td>
+                    <td>86</td>
+                    <td class="mono snippet">def my_function(name, param=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/COPILOT.md</td>
+                    <td>140</td>
+                    <td class="mono snippet">def my_function(name, value=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/COPILOT.md</td>
+                    <td>230</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">def my_function(name, param=None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>366</td>
+                    <td class="mono snippet">def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>385</td>
+                    <td class="mono snippet">def my_function(*args, **kwargs):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>401</td>
+                    <td class="mono snippet">def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>419</td>
+                    <td class="mono snippet">def my_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">agents/docs/module-templates.md</td>
+                    <td>462</td>
+                    <td class="mono snippet">def my_function(path, required_param):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/transport/ws.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">    async def handle_request(self, request):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/utils/files.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        def helper(*args, **kwargs):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">salt/modules/celery.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">def run_task(</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/macos/sign_binaries.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/macos/build.sh</td>
+                    <td>28</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/macos/package.sh</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/macos/prep_salt.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">pkg/macos/notarize.sh</td>
+                    <td>29</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

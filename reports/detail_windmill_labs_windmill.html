@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — windmill-labs/windmill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>windmill-labs/windmill</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.7</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.7</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">477</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">725</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">989,577</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">7300</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-27</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(125 hits · 250 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>64</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>157</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>159</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>279</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>281</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>500</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>502</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>621</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>623</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>666</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>668</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>862</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>864</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>1198</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>1200</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>17</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>19</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>35</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>37</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>68</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>80</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>194</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>196</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>234</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>236</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>342</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/utils.py</td>
+                    <td>344</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sandbox-image/entrypoint.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># ── Nix profile ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sandbox-image/entrypoint.sh</td>
+                    <td>8</td>
+                    <td class="mono snippet"># ── Browser env (from Nix sandbox profile) ───────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sandbox-image/entrypoint.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># ── Start PostgreSQL as current user (no root/su needed) ─────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sandbox-image/entrypoint.sh</td>
+                    <td>26</td>
+                    <td class="mono snippet"># ── Run migrations if present ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">sandbox-image/entrypoint.sh</td>
+                    <td>32</td>
+                    <td class="mono snippet"># ── Install frontend deps if present ─────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>172</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>421</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>423</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>451</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>622</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>624</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>687</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>689</td>
+                    <td class="mono snippet">    # ──────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">windmill-yaml-validator/src/validation/__tests__/resource-validator.test.ts</td>
+                    <td>14</td>
+                    <td class="mono snippet">  // ── Schedules ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">windmill-yaml-validator/src/validation/__tests__/resource-validator.test.ts</td>
+                    <td>139</td>
+                    <td class="mono snippet">  // ── Triggers — valid minimal + valid with missing required ─────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">windmill-yaml-validator/src/validation/__tests__/resource-validator.test.ts</td>
+                    <td>271</td>
+                    <td class="mono snippet">  // ── Triggers — realistic full documents with all optional fields ───────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 75 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(148 hits · 148 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/noteEditor.svelte.ts</td>
+                    <td>244</td>
+                    <td class="mono snippet">		// Step 1: Clean invalid nodes from existing group notes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/noteEditor.svelte.ts</td>
+                    <td>255</td>
+                    <td class="mono snippet">		// Step 2: Complete paths for each group using the DAG algorithm</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/compoundLayout.ts</td>
+                    <td>313</td>
+                    <td class="mono snippet">	// Step 1: detect compound groups at this level</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/compoundLayout.ts</td>
+                    <td>436</td>
+                    <td class="mono snippet">	// Step 4: Build flattened node list for sugiyama</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/compoundLayout.ts</td>
+                    <td>461</td>
+                    <td class="mono snippet">	// Step 5: Run sugiyama on flattened nodes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/compoundLayout.ts</td>
+                    <td>479</td>
+                    <td class="mono snippet">	// Step 6: Resolve absolute positions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/GroupModuleIcons.svelte</td>
+                    <td>45</td>
+                    <td class="mono snippet">		// Step 1: try all badges with full ids</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/GroupModuleIcons.svelte</td>
+                    <td>50</td>
+                    <td class="mono snippet">		// Step 2: try all badges with ids capped at 8rem</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/graph/GroupModuleIcons.svelte</td>
+                    <td>55</td>
+                    <td class="mono snippet">		// Step 3: remove last modules until capped badges fit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>506</td>
+                    <td class="mono snippet">					// Step 1: Move to and click plug button</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>526</td>
+                    <td class="mono snippet">					// Step 2: Move to and click flow_input.celsius</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>541</td>
+                    <td class="mono snippet">					// Step 3: Move to and click Test this step tab</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>552</td>
+                    <td class="mono snippet">					// Step 4: Move to and click Run button</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>619</td>
+                    <td class="mono snippet">					// Step 1: Click on script 'b'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/tutorials/FlowBuilderLiveTutorial.svelte</td>
+                    <td>647</td>
+                    <td class="mono snippet">					// Step 2: Move to and click on script 'c'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/workspaceSettings/ForkDatatableSection.svelte</td>
+                    <td>110</td>
+                    <td class="mono snippet">		// Step 1: Create the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/workspaceSettings/ForkDatatableSection.svelte</td>
+                    <td>129</td>
+                    <td class="mono snippet">		// Step 2: Import data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/flows/multiSelectUtils.ts</td>
+                    <td>55</td>
+                    <td class="mono snippet">	// Step 1: Filter out virtual IDs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>719</td>
+                    <td class="mono snippet">        # Step 1: Create git branches for the fork</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>725</td>
+                    <td class="mono snippet">        # Step 2: Create the fork workspace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>177</td>
+                    <td class="mono snippet">### Step 1: Database Migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>194</td>
+                    <td class="mono snippet">### Step 2: Update windmill-common Enums</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>204</td>
+                    <td class="mono snippet">### Step 3: Backend Service Module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>464</td>
+                    <td class="mono snippet">### Step 4: Update lib.rs Registry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>486</td>
+                    <td class="mono snippet">### Step 5: Update handler.rs Routes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>505</td>
+                    <td class="mono snippet">### Step 6: Update sync.rs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>528</td>
+                    <td class="mono snippet">### Step 7: Frontend Service Registry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>534</td>
+                    <td class="mono snippet">### Step 8: Frontend Trigger Form Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>538</td>
+                    <td class="mono snippet">### Step 9: Frontend Icon Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>542</td>
+                    <td class="mono snippet">### Step 10: Update NativeTriggerEditor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>546</td>
+                    <td class="mono snippet">### Step 11: Workspace Integration UI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>569</td>
+                    <td class="mono snippet">### Step 12: Update `frontend/src/lib/components/triggers/utils.ts`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>581</td>
+                    <td class="mono snippet">### Step 13: Update TriggersBadge Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>589</td>
+                    <td class="mono snippet">### Step 14: Update TriggersWrapper.svelte</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>595</td>
+                    <td class="mono snippet">### Step 15: Update AddTriggersButton.svelte</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>604</td>
+                    <td class="mono snippet">### Step 16: Update TriggersEditor.svelte Delete Handling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.agents/skills/native-trigger/SKILL.md</td>
+                    <td>610</td>
+                    <td class="mono snippet">### Step 17: Update OpenAPI Spec and Regenerate Types</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>177</td>
+                    <td class="mono snippet">### Step 1: Database Migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>194</td>
+                    <td class="mono snippet">### Step 2: Update windmill-common Enums</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>204</td>
+                    <td class="mono snippet">### Step 3: Backend Service Module</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>464</td>
+                    <td class="mono snippet">### Step 4: Update lib.rs Registry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>486</td>
+                    <td class="mono snippet">### Step 5: Update handler.rs Routes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>505</td>
+                    <td class="mono snippet">### Step 6: Update sync.rs</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>528</td>
+                    <td class="mono snippet">### Step 7: Frontend Service Registry</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>534</td>
+                    <td class="mono snippet">### Step 8: Frontend Trigger Form Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>538</td>
+                    <td class="mono snippet">### Step 9: Frontend Icon Component</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>542</td>
+                    <td class="mono snippet">### Step 10: Update NativeTriggerEditor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>546</td>
+                    <td class="mono snippet">### Step 11: Workspace Integration UI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>569</td>
+                    <td class="mono snippet">### Step 12: Update `frontend/src/lib/components/triggers/utils.ts`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/native-trigger/SKILL.md</td>
+                    <td>581</td>
+                    <td class="mono snippet">### Step 13: Update TriggersBadge Component</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 98 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(69 hits · 138 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README_WORKMUX_DEV.md</td>
+                    <td>112</td>
+                    <td class="mono snippet"># Create a new worktree (auto-assigns slot, prints ports)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README_WORKMUX_DEV.md</td>
+                    <td>118</td>
+                    <td class="mono snippet"># Create a worktree and immediately send a prompt to the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1787</td>
+                    <td class="mono snippet"># Create a new authentication token.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1796</td>
+                    <td class="mono snippet"># Create a script job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1801</td>
+                    <td class="mono snippet"># Create a script job by path and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1804</td>
+                    <td class="mono snippet"># Create a script job by hash and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1807</td>
+                    <td class="mono snippet"># Create a flow job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>2191</td>
+                    <td class="mono snippet"># This method is particularly useful for apps that require the email address of the viewer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>2355</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>2366</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill flow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>952</td>
+                    <td class="mono snippet"># Create a new authentication token.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>961</td>
+                    <td class="mono snippet"># Create a script job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>966</td>
+                    <td class="mono snippet"># Create a script job by path and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>969</td>
+                    <td class="mono snippet"># Create a script job by hash and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>972</td>
+                    <td class="mono snippet"># Create a flow job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>1356</td>
+                    <td class="mono snippet"># This method is particularly useful for apps that require the email address of the viewer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>1520</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>1531</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill flow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.d.ts</td>
+                    <td>4</td>
+                    <td class="mono snippet">export declare const SDK_PYTHON = &quot;# Python SDK (wmill)\n\nImport: import wmill\n\ndef get_mocked_api() -&gt; Optional[dict]\n\n# Get the HTTP client ins</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.d.ts</td>
+                    <td>4</td>
+                    <td class="mono snippet">export declare const SDK_PYTHON = &quot;# Python SDK (wmill)\n\nImport: import wmill\n\ndef get_mocked_api() -&gt; Optional[dict]\n\n# Get the HTTP client ins</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>37</td>
+                    <td class="mono snippet"># Create a new authentication token.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>46</td>
+                    <td class="mono snippet"># Create a script job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>51</td>
+                    <td class="mono snippet"># Create a script job by path and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>54</td>
+                    <td class="mono snippet"># Create a script job by hash and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>57</td>
+                    <td class="mono snippet"># Create a flow job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>441</td>
+                    <td class="mono snippet"># This method is particularly useful for apps that require the email address of the viewer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>605</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/sdks/python.md</td>
+                    <td>616</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill flow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>172</td>
+                    <td class="mono snippet"># Create a new authentication token.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>181</td>
+                    <td class="mono snippet"># Create a script job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>186</td>
+                    <td class="mono snippet"># Create a script job by path and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>189</td>
+                    <td class="mono snippet"># Create a script job by hash and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>192</td>
+                    <td class="mono snippet"># Create a flow job and return its job id.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>576</td>
+                    <td class="mono snippet"># This method is particularly useful for apps that require the email address of the viewer.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>740</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill script.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>751</td>
+                    <td class="mono snippet"># Create a task that dispatches to a separate Windmill flow.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/raw-app/SKILL.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Creating a Raw App</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/auto-generated/skills/raw-app/SKILL.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">### Creating a Backend Runnable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/base/raw-app.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating a Raw App</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">system_prompts/base/raw-app.md</td>
+                    <td>37</td>
+                    <td class="mono snippet">### Creating a Backend Runnable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/script_helpers.ts</td>
+                    <td>1149</td>
+                    <td class="mono snippet"># Define the arguments of the windmill script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/components/instanceSettings/SecretBackendConfig.svelte</td>
+                    <td>336</td>
+                    <td class="mono snippet"># Create a policy for Windmill secrets</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/components/instanceSettings/SecretBackendConfig.svelte</td>
+                    <td>346</td>
+                    <td class="mono snippet"># Create the JWT role</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">        # Create a simple bash script tagged to run on the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>245</td>
+                    <td class="mono snippet">        # Create the script with the agent_test tag so it runs on our agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lsp/pyls_launcher.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">        # Create an instance of the language server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lsp/pyls_launcher.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">        # Create a writer that formats json messages with the correct LSP headers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">lsp/pyls_launcher.py</td>
+                    <td>102</td>
+                    <td class="mono snippet">        # Create a reader for consuming stdout of the language server. We need to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/test_debounce_e2e.sh</td>
+                    <td>374</td>
+                    <td class="mono snippet"># Create a sync script at a folder path where the 2nd segment is a number &gt;= 28103.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/parsers/windmill-parser-yaml/src/lib.rs</td>
+                    <td>927</td>
+                    <td class="mono snippet"># Define the arguments of the windmill script</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 19 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(53 hits · 64 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">                    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>480</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/git_sync_test.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>328</td>
+                    <td class="mono snippet">                print(f&quot;Error retrieving global custom tags: Status {response.status_code}, Response: {response.content.decode()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>330</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>365</td>
+                    <td class="mono snippet">                print(f&quot;Error adding tag to global custom tags: Status {response.status_code}, Response: {response.content.decode()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>402</td>
+                    <td class="mono snippet">                print(f&quot;Error removing tag from global custom tags: Status {response.status_code}, Response: {response.content.decode()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>404</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>434</td>
+                    <td class="mono snippet">                print(f&quot;Error retrieving workers list: Status {response.status_code}, Response: {response.content.decode()}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>436</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">                print(f&quot;Error initializing Docker client for cleanup: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">                print(f&quot;Error cleaning up container using object: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>159</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">            print(f&quot;Error cleaning up container by name: {e}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/tests/test_workflow.py</td>
+                    <td>839</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/tests/test_workflow.py</td>
+                    <td>866</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/tests/test_workflow.py</td>
+                    <td>905</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>656</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>996</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>1031</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>2603</td>
+                    <td class="mono snippet">            except Exception as _e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/wmill/wmill/client.py</td>
+                    <td>2953</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lsp/pyls_launcher.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">except Exception:  # pylint: disable=broad-except</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">lsp/pyls_launcher.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">typescript-client/tests/e2e_wac_v1.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/summarize_schema.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">        print(f&quot;Error: The file '{input_file}' was not found.&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/summarize_schema.py</td>
+                    <td>191</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/parsers/windmill-parser-wac/tests/python_tests.rs</td>
+                    <td>165</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-worker/loader.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">                        print(f&quot;Error fetching script {script_path}: HTTP {e.code} - {e.reason} - {duration}s&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/windmill-worker/loader.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-worker/loader.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">                    print(f&quot;Error fetching script {script_path}: {e} - {duration}s&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/generate_mcp_endpoints_tools/generate_mcp_tools.py</td>
+                    <td>28</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/generate_mcp_endpoints_tools/generate_mcp_tools.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">        print(f&quot;Error loading OpenAPI spec: {e}&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/generate_mcp_endpoints_tools/generate_mcp_tools.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>297</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>300</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>406</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>512</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/dap_websocket_server.py</td>
+                    <td>383</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/dap_websocket_server.py</td>
+                    <td>665</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 3 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(36 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>199</td>
+                    <td class="mono snippet">            # Check if has default</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/generate.py</td>
+                    <td>365</td>
+                    <td class="mono snippet">        # Check if second arg is a string (description) or a variable (imported command)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/auto-generated/script.md</td>
+                    <td>1024</td>
+                    <td class="mono snippet"># Write file to S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.ts</td>
+                    <td>3378</td>
+                    <td class="mono snippet"># Write file to S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/auto-generated/prompts.d.ts</td>
+                    <td>25</td>
+                    <td class="mono snippet">export declare const LANG_PYTHON3 = &quot;# Python\n\n## Structure\n\nThe script must contain at least one function called `main`:\n\n```python\ndef main(p</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/auto-generated/skills/write-script-python3/SKILL.md</td>
+                    <td>125</td>
+                    <td class="mono snippet"># Write file to S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">system_prompts/languages/python3.md</td>
+                    <td>110</td>
+                    <td class="mono snippet"># Write file to S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docker/entrypoint-extra.sh</td>
+                    <td>94</td>
+                    <td class="mono snippet"># Check if any services were started</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/ai_agent_tests/conftest.py</td>
+                    <td>181</td>
+                    <td class="mono snippet">        # Check if script already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/wmill_integration_test_utils.py</td>
+                    <td>707</td>
+                    <td class="mono snippet">            # Check if file exists (to get SHA for update)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">integration_tests/test/agent_workers.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">            # Check if any worker is in the &quot;agent&quot; worker_group</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/hooks/format-backend.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Check if the file is in the backend directory and is a Rust file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/hooks/format-frontend.sh</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Check if the file is in the frontend directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/hooks/format-frontend.sh</td>
+                    <td>15</td>
+                    <td class="mono snippet">    # Check if it's a formattable file type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/hooks/notify-user.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Check if we're in an SSH session</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/update_sqlx.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Check if running on macOS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/test_debounce_e2e.sh</td>
+                    <td>436</td>
+                    <td class="mono snippet">  # Check if items were aggregated in the executed (non-skipped) job(s)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/run_until_fail.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet">    # Check if the command failed (non-zero exit code)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/windmill-worker/loader.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">                    # Check if this is errno 104 (Connection reset by peer) and we have retries left</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/windmill-worker/src/pwsh_executor.rs</td>
+                    <td>110</td>
+                    <td class="mono snippet">        # Check if module is already installed with the required version (case-insensitive)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/generate_mcp_endpoints_tools/generate_mcp_tools.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">    # Check if this is an external file reference</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/build.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Set script to exit on any error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/windmill-utils-internal/gen_wm_client.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Set script to exit on any error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/windmill-utils-internal/remove-ts-ext.sh</td>
+                    <td>3</td>
+                    <td class="mono snippet"># Set script to exit on any error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/src/guidance/skills.ts</td>
+                    <td>3429</td>
+                    <td class="mono snippet"># Write file to S3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Check if running as root</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>36</td>
+                    <td class="mono snippet"># Check if sandbox user exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>43</td>
+                    <td class="mono snippet"># Check if repository directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Check if bun is installed for the service user</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>57</td>
+                    <td class="mono snippet"># Check if bubblewrap is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>66</td>
+                    <td class="mono snippet"># Check if cloudflared is installed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">ephemeral-backends/install.sh</td>
+                    <td>89</td>
+                    <td class="mono snippet"># Check if docker is installed and service user has access</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/shareable-discord-notification.yml</td>
+                    <td>66</td>
+                    <td class="mono snippet">          # Check if thread already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/helmchart_on_release.yml</td>
+                    <td>33</td>
+                    <td class="mono snippet">          # Check if branch already exists remotely</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/test_dap_server.py</td>
+                    <td>375</td>
+                    <td class="mono snippet">                    # Check if our args are present</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/dap_websocket_server.py</td>
+                    <td>123</td>
+                    <td class="mono snippet">        # Check if we should stop here</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(16 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/components/instanceSettings/SmtpSettings.svelte</td>
+                    <td>97</td>
+                    <td class="mono snippet">						placeholder: 'user@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/components/triggers/http/OpenAPISpecGenerator.svelte</td>
+                    <td>267</td>
+                    <td class="mono snippet">							&lt;input type=&quot;text&quot; placeholder=&quot;Jane Doe&quot; bind:value={contactName} /&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/routes/kitchen_sink/+page.svelte</td>
+                    <td>12</td>
+                    <td class="mono snippet">			label: 'Lorem ipsum',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-api-integration-tests/tests/settings.rs</td>
+                    <td>90</td>
+                    <td class="mono snippet">            .json(&amp;json!({&quot;to&quot;: &quot;test@test.com&quot;, &quot;subject&quot;: &quot;test&quot;, &quot;content&quot;: &quot;test&quot;})),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-store/src/resources.rs</td>
+                    <td>2293</td>
+                    <td class="mono snippet">                email: &quot;test@test.com&quot;.to_string(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-worker/src/common.rs</td>
+                    <td>1737</td>
+                    <td class="mono snippet">            permissioned_as_email: &quot;test@test.com&quot;.to_string(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-git-sync/src/lib.rs</td>
+                    <td>180</td>
+                    <td class="mono snippet">        let obj = DeployedObject::User { email: &quot;user@example.com&quot;.to_string() };</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-git-sync/src/lib.rs</td>
+                    <td>214</td>
+                    <td class="mono snippet">        let obj = DeployedObject::User { email: &quot;user@example.com&quot;.to_string() };</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/tests/flow_engine_parity.rs</td>
+                    <td>852</td>
+                    <td class="mono snippet">    assert_eq!(result[&quot;full_name&quot;], &quot;John Doe&quot;);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/tests/notify_events.rs</td>
+                    <td>371</td>
+                    <td class="mono snippet">         VALUES ($1, $2, 'session', 'test@test.com', 'test-workspace', 'test-user', now() + interval '1 hour')&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/src/oauth2.rs</td>
+                    <td>84</td>
+                    <td class="mono snippet">            &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/src/webhook.rs</td>
+                    <td>369</td>
+                    <td class="mono snippet">                owner: &quot;user@example.com&quot;.into(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/src/webhook.rs</td>
+                    <td>377</td>
+                    <td class="mono snippet">                owner: &quot;user@example.com&quot;.into(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/src/instance_config.rs</td>
+                    <td>1549</td>
+                    <td class="mono snippet">                    {&quot;email&quot;: &quot;admin@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-common/src/instance_config.rs</td>
+                    <td>1689</td>
+                    <td class="mono snippet">            {&quot;email&quot;: &quot;admin@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">ai_evals/fixtures/frontend/flow/expected/test4.json</td>
+                    <td>10</td>
+                    <td class="mono snippet">                    &quot;content&quot;: &quot;export async function main(customer_id: string) {\n  // Mock customer profile and order history\n  return {\n    custo</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/package-lock.json</td>
+                    <td>5411</td>
+                    <td class="mono snippet">			&quot;resolved&quot;: &quot;https://registry.npmjs.org/esm-env-robust/-/esm-env-robust-0.0.3.tgz&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/utils.ts</td>
+                    <td>1730</td>
+                    <td class="mono snippet">			rootMargin: '0px 1000px', // Essentially making horizontal checks irrelevant</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/utils/workspaceHierarchy.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">			return true // Definitely a root</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">backend/windmill-duckdb-ffi-internal/src/lib.rs</td>
+                    <td>374</td>
+                    <td class="mono snippet">// TODO : Better error return to leverage different error kinds on the worker side</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/system-prompt-testing-plan.md</td>
+                    <td>897</td>
+                    <td class="mono snippet">### Phase 5: Finish the frontend black-box harness on top of the shared model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/deploy/private-package-registry-tls/verdaccio_conf/config.default.yaml</td>
+                    <td>3</td>
+                    <td class="mono snippet"># please read carefully the documentation and best practices to</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/deploy/private-package-registry-tls/verdaccio_conf/config.default.yaml</td>
+                    <td>13</td>
+                    <td class="mono snippet"># Read about the best practices</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(1 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">frontend/src/lib/components/graph/renderers/nodes/AIToolNode.svelte</td>
+                    <td>100</td>
+                    <td class="mono snippet">			}[] = node.data.module.value.tools.map((t, idx) =&gt; {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(10 hits · 10 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_websocket.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_postgres_replication.sh</td>
+                    <td>7</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_mqtt.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_nats.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_gcp_pubsub.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_sqs.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_kafka.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/start_all_triggers.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/src/utils/local_encryption.ts</td>
+                    <td>90</td>
+                    <td class="mono snippet">//   // Example usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/deploy/instance-config-iac/docker-compose.yml</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(7 hits · 7 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">frontend/src/lib/components/apps/editor/settingsPanel/inputEditor/IconSelectInput.svelte</td>
+                    <td>23</td>
+                    <td class="mono snippet">	async function getData() {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">python-client/DOCS.md</td>
+                    <td>89</td>
+                    <td class="mono snippet">   def my_function(param1: str, param2: int = 0) -&gt; dict:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">backend/tests/fixtures/dedicated_flows.sql</td>
+                    <td>472</td>
+                    <td class="mono snippet">E'def helper(x: int):\n    return x * 10',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/test/relative_imports_wasm.test.ts</td>
+                    <td>163</td>
+                    <td class="mono snippet">def helper():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/test/relative_imports_wasm.test.ts</td>
+                    <td>569</td>
+                    <td class="mono snippet">        `import pandas\n\ndef helper():\n    return pandas.__version__\n`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">cli/test/script_modules_unit.test.ts</td>
+                    <td>257</td>
+                    <td class="mono snippet">        content: &quot;def helper(): pass\n&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">debugger/dap_websocket_server.py</td>
+                    <td>863</td>
+                    <td class="mono snippet">    async def handle_request(self, request: dict) -&gt; None:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">frontend/src/lib/script_helpers.ts</td>
+                    <td>50</td>
+                    <td class="mono snippet"># you can use typed resources by doing a type alias to dict</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/deploy/aws-ecs-terraform/README.md</td>
+                    <td>71</td>
+                    <td class="mono snippet">REMINDER: don't forget to edit [terraform.tfvars](./terraform.tfvars) before deploying the stack.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/deploy/private-package-registry-tls/docker-compose.yml</td>
+                    <td>55</td>
+                    <td class="mono snippet">      # - DENO_TLS_CA_STORE=system # alternatively, you can use this but you'll need to manually trust the RootCA at the host level, see README.md</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">frontend/src/lib/utils.ts</td>
+                    <td>1920</td>
+                    <td class="mono snippet">// AI generated</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(1 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">integration_tests/ai_agent_tests/test_completion_params.py</td>
+                    <td>5</td>
+                    <td class="mono snippet">- Default parameters (undefined)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-27 17:29 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
