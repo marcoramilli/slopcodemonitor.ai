@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — hummingbot/hummingbot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>hummingbot/hummingbot</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.3</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.3</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">1463</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">2665</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">364,266</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1616</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-29</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(874 hits · 874 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/__init__.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/__init__.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/connector_manager.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>197</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>221</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>273</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>437</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>493</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>553</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>600</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>616</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>807</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>817</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>844</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/network_base.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/ssl_cert.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_retry.py</td>
+                    <td>51</td>
+                    <td class="mono snippet">                except Exception as exc:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_call_scheduler.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_call_scheduler.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_call_scheduler.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_call_scheduler.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_utils.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/async_utils.py</td>
+                    <td>23</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/trading_pair_fetcher.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/trading_pair_fetcher.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/utils/kill_switch.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/rate_oracle.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/rate_oracle.py</td>
+                    <td>185</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/rate_oracle.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/gate_io_rate_source.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/hyperliquid_rate_source.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/pacifica_perpetual_rate_source.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/evedex_perpetual_rate_source.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/decibel_perpetual_rate_source.py</td>
+                    <td>41</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/dexalot_rate_source.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/ascend_ex_rate_source.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/architect_perpetual_rate_source.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/kucoin_rate_source.py</td>
+                    <td>34</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/coin_gecko_rate_source.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/coin_gecko_rate_source.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/hyperliquid_perpetual_rate_source.py</td>
+                    <td>42</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/rate_oracle/sources/aevo_rate_source.py</td>
+                    <td>47</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker_data_source.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker_data_source.py</td>
+                    <td>112</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker_data_source.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker_data_source.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker_data_source.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/user_stream_tracker_data_source.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/in_flight_order.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>384</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 824 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(71 hits · 710 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>593</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_markets_responses.put_nowait(all_markets_mock_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>595</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._tokens_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>599</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_markets_responses.put_nowait(all_markets_mock_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>617</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_markets_responses.put_nowait({})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>619</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_markets_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>621</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._tokens_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>633</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>648</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>693</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_trades_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>695</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_trades_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>708</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_trades_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1008</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1108</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1188</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1223</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1264</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1313</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1354</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1401</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1451</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1483</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>1545</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2240</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_markets_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2243</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_markets_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2252</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._ping_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2281</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_trades_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2422</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._funding_payments_responses.put_nowait(funding_payments)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2460</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._funding_payments_responses.put_nowait(funding_payments)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2497</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_market_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2554</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._funding_rates_responses.put_nowait(funding_rate)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2559</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._oracle_prices_responses.put_nowait(oracle_price)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2590</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._derivative_trades_responses.put_nowait(trades)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2624</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_market_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2681</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._funding_rates_responses.put_nowait(funding_rate)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2686</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._oracle_prices_responses.put_nowait(oracle_price)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2717</td>
+                    <td class="mono snippet">        self.exchange._data_source.query_executor._derivative_trades_responses.put_nowait(trades)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2766</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_positions_responses.put_nowait(positions)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>2791</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._oracle_prices_responses.put_nowait(oracle_price)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>3063</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._get_tx_responses.put_nowait(transaction_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>3307</td>
+                    <td class="mono snippet">    #     self.exchange._data_source._query_executor._get_tx_responses.put_nowait(transaction_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>3380</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._get_tx_responses.put_nowait(transaction_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/derivative/injective_v2_perpetual/test_injective_v2_perpetual_derivative_for_delegated_account.py</td>
+                    <td>3423</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._account_portfolio_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>491</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_markets_responses.put_nowait(all_markets_mock_response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>493</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._tokens_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>496</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_markets_responses.put_nowait({})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>515</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._spot_markets_responses.put_nowait(response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>517</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._tokens_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>520</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._derivative_markets_responses.put_nowait({})</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>526</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">test/hummingbot/connector/exchange/injective_v2/test_injective_v2_exchange_for_delegated_account.py</td>
+                    <td>537</td>
+                    <td class="mono snippet">        self.exchange._data_source._query_executor._simulate_transaction_responses.put_nowait(</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 21 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(210 hits · 420 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>490</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>492</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>539</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>541</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>556</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>558</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>626</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>628</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>666</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>668</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>755</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>757</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>990</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>992</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1517</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1519</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1592</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1594</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1673</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1675</td>
+                    <td class="mono snippet">    # ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>71</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>176</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_result.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">    # ------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/dydx_v4_perpetual/data_sources/keypairs.py</td>
+                    <td>2</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/dydx_v4_perpetual/data_sources/keypairs.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># ------------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>11</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>13</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>56</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>58</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>91</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>95</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>137</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>139</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>145</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/okx_perpetual/okx_perpetual_constants.py</td>
+                    <td>148</td>
+                    <td class="mono snippet"># -------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>471</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>473</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>499</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>501</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>522</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>524</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_worker_pool.py</td>
+                    <td>55</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_worker_pool.py</td>
+                    <td>57</td>
+                    <td class="mono snippet"># ============================================</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 160 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(55 hits · 275 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">         '	config_file_path TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>54</td>
+                    <td class="mono snippet">         '	strategy TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">         '	market TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">         '	symbol TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">         '	base_asset TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">         '	quote_asset TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">         '	creation_timestamp BIGINT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">         '	order_type TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>61</td>
+                    <td class="mono snippet">         '	amount BIGINT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>62</td>
+                    <td class="mono snippet">         '	leverage INTEGER not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">         '	price FLOAT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">         '	last_status TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>65</td>
+                    <td class="mono snippet">         '	last_update_timestamp BIGINT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">         '(	config_file_path TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">         '	strategy TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">         '	market TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">         '	symbol TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>89</td>
+                    <td class="mono snippet">         '	base_asset TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">         '	quote_asset TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">         '	timestamp BIGINT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">         '	trade_type TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">         '	order_type TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">         '	price BIGINT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">         '	amount FLOAT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>98</td>
+                    <td class="mono snippet">         '	leverage INTEGER not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">         '	trade_fee JSON not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/model/db_migration/transformations.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">         '	exchange_trade_id TEXT not null,'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_api_order_book_data_source.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_api_order_book_data_source.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">        {&quot;success&quot;:false,&quot;data&quot;:null,&quot;error&quot;:&quot;Order history not found for order ID: 28416222569&quot;,&quot;code&quot;:404}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">        {&quot;success&quot;:false,&quot;data&quot;:null,&quot;error&quot;:&quot;Failed to cancel order&quot;,&quot;code&quot;:5}</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>341</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>460</td>
+                    <td class="mono snippet">          &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>516</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>517</td>
+                    <td class="mono snippet">            &quot;code&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>541</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>751</td>
+                    <td class="mono snippet">                &quot;stop_price&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>752</td>
+                    <td class="mono snippet">                &quot;stop_parent_order_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>769</td>
+                    <td class="mono snippet">                &quot;stop_price&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>770</td>
+                    <td class="mono snippet">                &quot;stop_parent_order_id&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>775</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>819</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>862</td>
+                    <td class="mono snippet">          &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1086</td>
+                    <td class="mono snippet">                &quot;I&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1098</td>
+                    <td class="mono snippet">                &quot;sp&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1099</td>
+                    <td class="mono snippet">                &quot;si&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1146</td>
+                    <td class="mono snippet">                &quot;l&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1253</td>
+                    <td class="mono snippet">                &quot;I&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/pacifica_perpetual/pacifica_perpetual_derivative.py</td>
+                    <td>1406</td>
+                    <td class="mono snippet">            &quot;error&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">hummingbot/connector/derivative/derive_perpetual/derive_perpetual_derivative.py</td>
+                    <td>773</td>
+                    <td class="mono snippet">                    &quot;option_details&quot;: null,</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 5 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(110 hits · 220 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/core/web_assistant/connections/connections_factory.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;This class is a thin wrapper around the underlying REST and WebSocket third-party library.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_data_provider.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">        # Create a new feed or restart the existing one with updated max_records</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/executor_orchestrator.py</td>
+                    <td>337</td>
+                    <td class="mono snippet">                # Create a Position record (id will only be used for new positions)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/executor_orchestrator.py</td>
+                    <td>596</td>
+                    <td class="mono snippet">        # Create a new report starting from cached base values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/dca_executor/dca_executor.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">        # Initialize super class</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/arbitrage_executor/arbitrage_executor.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        # Define the conversion trading pair (e.g., SOL/USDT or USDT/SOL)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/decibel_perpetual/decibel_perpetual_transaction_builder.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">            # Create a new config with gas_station_api_key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/cube/cube_auth.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">        # Create the HMAC-SHA256 signature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/cube/cube_api_user_stream_data_source.py</td>
+                    <td>67</td>
+                    <td class="mono snippet">        # Create a separate task for handle_heartbeat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/kraken/kraken_exchange.py</td>
+                    <td>659</td>
+                    <td class="mono snippet">        # Create a mapping from exchange symbols to trading pairs to avoid repeated async calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>877</td>
+                    <td class="mono snippet">            # Create the transaction using the appropriate strategy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/test_support/network_mocking_assistant.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">        # Create a stable key</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/gateway/gateway_base.py</td>
+                    <td>458</td>
+                    <td class="mono snippet">                # Create a TokenAmount object for the network fee using the provided fee asset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/data_feed/market_data_provider.py</td>
+                    <td>210</td>
+                    <td class="mono snippet">            # Create a new feed with updated max_records</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/client/command/gateway_command.py</td>
+                    <td>602</td>
+                    <td class="mono snippet">            # Create a new dictionary with the fields we want to display</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/client/command/gateway_command.py</td>
+                    <td>660</td>
+                    <td class="mono snippet">                # Create a dict of token symbol to token info</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/client/command/gateway_approve_command.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">            # Create a temporary GatewayBase instance for gas estimation and approval</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/test_trading_core.py</td>
+                    <td>482</td>
+                    <td class="mono snippet">        # Create a function to test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/test_trading_core.py</td>
+                    <td>489</td>
+                    <td class="mono snippet">        # Create a task that sets ready after delay</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/test_trading_core.py</td>
+                    <td>505</td>
+                    <td class="mono snippet">        # Create a synchronous function to test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/data_type/test_order_book_tracker.py</td>
+                    <td>363</td>
+                    <td class="mono snippet">        # Create a diff message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/data_type/test_order_book_tracker.py</td>
+                    <td>403</td>
+                    <td class="mono snippet">        # Create a diff message with update_id &lt; snapshot_uid (will be rejected)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/data_type/test_order_book_tracker.py</td>
+                    <td>731</td>
+                    <td class="mono snippet">        # Create a mock tracking task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/test_executor_orchestrator.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">        # Create a mock for MarketsRecorder and its get_executors_by_controller method</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/test_executor_orchestrator.py</td>
+                    <td>317</td>
+                    <td class="mono snippet">        # Create a NaN decimal for mid_price</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/test_executor_orchestrator.py</td>
+                    <td>417</td>
+                    <td class="mono snippet">        # Create a position from database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/test_executor_orchestrator.py</td>
+                    <td>463</td>
+                    <td class="mono snippet">        # Create a database position that should be ignored due to override</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/test_executor_orchestrator.py</td>
+                    <td>552</td>
+                    <td class="mono snippet">        # Create an executor that meets criteria for position hold processing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">        # Create the order that will be returned by get_in_flight_order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>393</td>
+                    <td class="mono snippet">        # Create an open order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>430</td>
+                    <td class="mono snippet">        # Create a filled order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>465</td>
+                    <td class="mono snippet">        # Create a partially filled order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>672</td>
+                    <td class="mono snippet">        # Create an open order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>733</td>
+                    <td class="mono snippet">        # Create a partially filled order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>785</td>
+                    <td class="mono snippet">        # Create a filled order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/executors/order_executor/test_order_executor.py</td>
+                    <td>857</td>
+                    <td class="mono snippet">        # Create a filled order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy_v2/controllers/test_market_making_controller_base.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">        # Create a mock active rebalance executor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/test_markets_recorder.py</td>
+                    <td>711</td>
+                    <td class="mono snippet">        # Create a new mock market</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/test_markets_recorder.py</td>
+                    <td>803</td>
+                    <td class="mono snippet">        # Create a new mock market</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/test_markets_recorder.py</td>
+                    <td>828</td>
+                    <td class="mono snippet">        # Create a second mock market</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/test_markets_recorder.py</td>
+                    <td>887</td>
+                    <td class="mono snippet">        # Create a new mock market with proper listener methods</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/test_markets_recorder.py</td>
+                    <td>942</td>
+                    <td class="mono snippet">        # Create a new mock market</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/bitmart_perpetual/test_bitmart_perpetual_auth.py</td>
+                    <td>60</td>
+                    <td class="mono snippet">        # Create a RESTRequest object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/bitmart_perpetual/test_bitmart_perpetual_auth.py</td>
+                    <td>75</td>
+                    <td class="mono snippet">        # Create a RESTRequest object</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/hyperliquid_perpetual/test_hyperliquid_perpetual_derivative.py</td>
+                    <td>2009</td>
+                    <td class="mono snippet">        # Create a market buy order - this will trigger lines 306-307</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/hyperliquid_perpetual/test_hyperliquid_perpetual_derivative.py</td>
+                    <td>2043</td>
+                    <td class="mono snippet">        # Create a market sell order - this will trigger lines 343-344</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/hyperliquid_perpetual/test_hyperliquid_perpetual_derivative.py</td>
+                    <td>2078</td>
+                    <td class="mono snippet">        # Create a LIMIT_MAKER order - this will trigger line 424</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/backpack_perpetual/test_backpack_perpetual_api_user_stream_data_source.py</td>
+                    <td>43</td>
+                    <td class="mono snippet">        # Create a valid Ed25519 keypair for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/derive_perpetual/test_derive_perpetual_api_order_book_data_source.py</td>
+                    <td>512</td>
+                    <td class="mono snippet">        # Create an invalid message that will cause parsing error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/architect_perpetual/test_architect_perpetual_api_order_book_data_source.py</td>
+                    <td>606</td>
+                    <td class="mono snippet">        # Create a mock WebSocket assistant</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 60 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(96 hits · 96 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/connector_manager.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">            # Check if connector already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/trading_core.py</td>
+                    <td>671</td>
+                    <td class="mono snippet">            # Check if this is a gateway connector (chain-network format like &quot;solana-mainnet-beta&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>418</td>
+                    <td class="mono snippet">        # Check if already tracking this pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">        # Check if we're tracking this pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/gateway/gateway_http_client.py</td>
+                    <td>1691</td>
+                    <td class="mono snippet">        # Check if wallet address is a placeholder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/gateway_utils.py</td>
+                    <td>83</td>
+                    <td class="mono snippet">    # Check if connector exists in GATEWAY_DEXS</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/gateway_utils.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">    # Check if it's a network-style connector (chain-network format)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/gateway_utils.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">    # Check if connector exists at all with any type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/lp_executor/lp_executor.py</td>
+                    <td>174</td>
+                    <td class="mono snippet">                    # Check if price exceeded upper limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/lp_executor/lp_executor.py</td>
+                    <td>178</td>
+                    <td class="mono snippet">                    # Check if price exceeded lower limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/executors/lp_executor/lp_executor.py</td>
+                    <td>576</td>
+                    <td class="mono snippet">        # Check if we already have an active swap order</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/controllers/market_making_controller_base.py</td>
+                    <td>238</td>
+                    <td class="mono snippet">        # Check if we need to rebalance position first</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/controllers/market_making_controller_base.py</td>
+                    <td>362</td>
+                    <td class="mono snippet">        # Check if difference exceeds threshold</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/markets_recorder.py</td>
+                    <td>239</td>
+                    <td class="mono snippet">            # Check if a position already exists for this controller, connector, trading pair, and side</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/hyperliquid_perpetual/hyperliquid_perpetual_api_order_book_data_source.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Check if this is a HIP-3 market (contains &quot;:&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/hyperliquid_perpetual/hyperliquid_perpetual_derivative.py</td>
+                    <td>1215</td>
+                    <td class="mono snippet">        # Check if this is a HIP-3 market (doesn't support leverage API)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/hyperliquid_perpetual/hyperliquid_perpetual_derivative.py</td>
+                    <td>1221</td>
+                    <td class="mono snippet">        # Check if coin exists in mapping</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/backpack_perpetual/backpack_perpetual_derivative.py</td>
+                    <td>710</td>
+                    <td class="mono snippet">            # Check if status is 2xx (success)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/derive_perpetual/derive_perpetual_api_order_book_data_source.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Check if we already have a cached snapshot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/derivative/derive_perpetual/derive_perpetual_api_order_book_data_source.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">                # Check if this snapshot is for our trading pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/derive/derive_api_order_book_data_source.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">        # Check if we already have a cached snapshot</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/derive/derive_api_order_book_data_source.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">                # Check if this snapshot is for our trading pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/coinbase_advanced_trade/coinbase_advanced_trade_api_order_book_data_source.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">            # Check if there's an exact match</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/foxbit/foxbit_exchange.py</td>
+                    <td>510</td>
+                    <td class="mono snippet">                # Check if this monitor has to tracking this event message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/vertex/vertex_utils.py</td>
+                    <td>56</td>
+                    <td class="mono snippet">    # Check if data type is str or float</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/vertex/vertex_utils.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">    # Check if data type is str or float</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>964</td>
+                    <td class="mono snippet">                # Check if connection is still open</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>972</td>
+                    <td class="mono snippet">                # Check if connection is healthy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>976</td>
+                    <td class="mono snippet">                # Check if connection is currently reconnecting - skip to avoid race conditions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>1174</td>
+                    <td class="mono snippet">            # Check if connection is closed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>1179</td>
+                    <td class="mono snippet">            # Check if connection is too old</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_auth.py</td>
+                    <td>16</td>
+                    <td class="mono snippet">                # Check if it's a raw private key (hex format)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_api_user_stream_data_source.py</td>
+                    <td>319</td>
+                    <td class="mono snippet">        # Check if transaction was successful</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>716</td>
+                    <td class="mono snippet">                    # Check if order is in a final state to avoid duplicate updates</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>737</td>
+                    <td class="mono snippet">                        # Check if the transaction ALSO crossed existing offers before</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>1351</td>
+                    <td class="mono snippet">                        # Check if order was actually filled during cancellation attempt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>1478</td>
+                    <td class="mono snippet">                # Check if this is market order, if it is, check if it has been filled or failed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>2309</td>
+                    <td class="mono snippet">                # Check if there is any balance changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>2327</td>
+                    <td class="mono snippet">                # Check if there were TOKEN balance changes (not XRP) indicating a partial fill alongside offer creation.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>2737</td>
+                    <td class="mono snippet">        # Check if we have valid amounts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>3096</td>
+                    <td class="mono snippet">                    # Check if we've exceeded the last ledger sequence by too much</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>3440</td>
+                    <td class="mono snippet">                # Check if the change is for the LP token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_exchange.py</td>
+                    <td>3544</td>
+                    <td class="mono snippet">                # Check if the change is for the LP token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/gateway/gateway_base.py</td>
+                    <td>652</td>
+                    <td class="mono snippet">                # Check if result is a dict with status field (transaction response)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/gateway/gateway_base.py</td>
+                    <td>873</td>
+                    <td class="mono snippet">            # Check if transaction is still pending</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/gateway/gateway.py</td>
+                    <td>282</td>
+                    <td class="mono snippet">        # Check if order is already being tracked</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/data_feed/market_data_provider.py</td>
+                    <td>565</td>
+                    <td class="mono snippet">        # Check if we have cached data and what range it covers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/data_feed/market_data_provider.py</td>
+                    <td>572</td>
+                    <td class="mono snippet">            # Check if requested range is completely covered by cache</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/data_feed/liquidations_feed/liquidations_base.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">        # Check if a specific trading pair is requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/data_feed/candles_feed/decibel_perpetual_candles/decibel_perpetual_candles.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">        # Check if this is a candlestick message</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 46 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(25 hits · 47 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/perpetual_trading.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">        # Clean up leverage settings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/hyperliquid_perpetual/hyperliquid_perpetual_derivative.py</td>
+                    <td>1215</td>
+                    <td class="mono snippet">        # Check if this is a HIP-3 market (doesn't support leverage API)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/backpack_perpetual/backpack_perpetual_derivative.py</td>
+                    <td>609</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Fetch and initialize leverage from exchange if not already set.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/derive_perpetual/derive_perpetual_derivative.py</td>
+                    <td>985</td>
+                    <td class="mono snippet">        # NOTE: There is no setting to set leverage in derive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/derive_perpetual/derive_perpetual_derivative.py</td>
+                    <td>991</td>
+                    <td class="mono snippet">        # NOTE: There is no setting to set leverage in derive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/derivative/evedex_perpetual/evedex_perpetual_derivative.py</td>
+                    <td>524</td>
+                    <td class="mono snippet">        # Get leverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/bitrue/bitrue_exchange.py</td>
+                    <td>401</td>
+                    <td class="mono snippet">        # We have overridden `_update_orders_fills` to utilize batch trade updates to reduce API limit consumption.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/vertex/vertex_exchange.py</td>
+                    <td>247</td>
+                    <td class="mono snippet">            # NOTE: There are two differen't limits depending on the use of leverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/connector/exchange/vertex/vertex_constants.py</td>
+                    <td>255</td>
+                    <td class="mono snippet">    # NOTE: For spot with no leverage, there are different limits.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/exchange/xrpl/xrpl_utils.py</td>
+                    <td>1307</td>
+                    <td class="mono snippet">    # If not found, just use the first Offer node</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/templates/conf_perpetual_market_making_strategy_TEMPLATE.yml</td>
+                    <td>14</td>
+                    <td class="mono snippet"># What leverage to used</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/data_feed/candles_feed/btc_markets_spot_candles/btc_markets_spot_candles.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        # Find last candle with volume &gt; 0, or just return last candle</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">hummingbot/client/performance.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">        # It is assumed that the amount and leverage for both open and close orders are the same.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/core/data_type/test_order_book_tracker.py</td>
+                    <td>295</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test that to_dict returns comprehensive data.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/hyperliquid_perpetual/test_hyperliquid_perpetual_derivative.py</td>
+                    <td>2608</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test setting leverage for HIP-3 market uses isolated margin.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/hyperliquid_perpetual/test_hyperliquid_perpetual_derivative.py</td>
+                    <td>2638</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test setting leverage fails when coin not in coin_to_asset mapping.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/backpack_perpetual/test_backpack_perpetual_derivative.py</td>
+                    <td>1192</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test leverage initialization when API call fails&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/backpack_perpetual/test_backpack_perpetual_derivative.py</td>
+                    <td>1208</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test position update when leverage initialization fails&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/evedex_perpetual/test_evedex_perpetual_web_utils.py</td>
+                    <td>203</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Test set leverage URL formatting with instrument parameter.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/architect_perpetual/test_architect_perpetual_derivative.py</td>
+                    <td>900</td>
+                    <td class="mono snippet">        # leverage = 2</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/architect_perpetual/test_architect_perpetual_derivative.py</td>
+                    <td>901</td>
+                    <td class="mono snippet">        # self.exchange._perpetual_trading.set_leverage(self.trading_pair, leverage)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/connector/derivative/okx_perpetual/test_okx_perpetual_derivative.py</td>
+                    <td>1284</td>
+                    <td class="mono snippet">        # position_value = unrealized_pnl + order.amount * order.price * order.leverage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/hummingbot/connector/exchange/xrpl/test_xrpl_api_user_stream_data_source.py</td>
+                    <td>633</td>
+                    <td class="mono snippet">        # Should not raise, just return empty events</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy/perpetual_market_making/test_perpetual_market_making.py</td>
+                    <td>193</td>
+                    <td class="mono snippet">        self.assertEqual(2, len(new_buys))  # cumulative 11 for leverage of 20</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">test/hummingbot/strategy/perpetual_market_making/test_perpetual_market_making.py</td>
+                    <td>196</td>
+                    <td class="mono snippet">        self.assertEqual(1, len(new_sells))  # cumulative 18 for leverage of 20</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(19 hits · 19 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>429</td>
+                    <td class="mono snippet">            # Step 1: Subscribe to WebSocket channels for this pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>436</td>
+                    <td class="mono snippet">            # Step 2: Add to internal trading pairs list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">            # Step 3: Fetch initial snapshot and create order book</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>444</td>
+                    <td class="mono snippet">            # Step 4: Create message queue and start tracking task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>485</td>
+                    <td class="mono snippet">            # Step 1: Cancel the tracking task</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>494</td>
+                    <td class="mono snippet">            # Step 2: Unsubscribe from WebSocket channels</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>500</td>
+                    <td class="mono snippet">            # Step 3: Clean up data structures</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>506</td>
+                    <td class="mono snippet">            # Step 4: Clean up metrics for this pair</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/data_type/order_book_tracker.py</td>
+                    <td>509</td>
+                    <td class="mono snippet">            # Step 5: Remove from trading pairs list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_engine_base.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">        # Step 1: Convert previous tick's stopped POSITION_HOLD executors → position holds</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/strategy_v2/backtesting/backtesting_engine_base.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">        # Step 2: Check for naturally terminated executors</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/perpetual_derivative_py_base.py</td>
+                    <td>382</td>
+                    <td class="mono snippet">            # Step 1: Fetch and initialize funding info (perpetual-specific)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/perpetual_derivative_py_base.py</td>
+                    <td>387</td>
+                    <td class="mono snippet">            # Step 2: Add to perpetual trading's trading pairs list</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/perpetual_derivative_py_base.py</td>
+                    <td>390</td>
+                    <td class="mono snippet">            # Step 3: Call parent to handle order book (WebSocket subscription + snapshot)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/perpetual_derivative_py_base.py</td>
+                    <td>417</td>
+                    <td class="mono snippet">            # Step 1: Call parent to handle order book removal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/connector/perpetual_derivative_py_base.py</td>
+                    <td>423</td>
+                    <td class="mono snippet">            # Step 2: Clean up perpetual-specific data (funding info, trading pairs list)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/hummingbot/connector/gateway/test_gateway_base.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        # Step 1: Start tracking order (emits OrderCreated)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/hummingbot/connector/gateway/test_gateway_base.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">        # Step 2: Process order update to FILLED (emits OrderCompleted)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test/hummingbot/connector/gateway/test_gateway_base.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">        # Step 3: Process trade update (emits OrderFilled)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(1 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">README.md</td>
+                    <td>86</td>
+                    <td class="mono snippet">If you encounter issues or have questions, here's how you can get assistance:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(2 hits · 2 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/api_throttler/async_throttler_base.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">    def execute_task(self, limit_id: str) -&gt; AsyncRequestContextBase:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">hummingbot/core/api_throttler/async_throttler.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">    def execute_task(self, limit_id: str) -&gt; AsyncRequestContext:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-29 18:58 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

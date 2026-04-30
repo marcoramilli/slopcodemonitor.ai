@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — NVIDIA/open-gpu-kernel-modules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>NVIDIA/open-gpu-kernel-modules</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">0.1</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">0.1</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">76</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">119</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,842,107</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">3744</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-29</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(18 hits · 36 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_ce_test.c</td>
+                    <td>1104</td>
+                    <td class="mono snippet">    // CPU decryption(s), but it is more robust against test changes to force</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_gpu.h</td>
+                    <td>1116</td>
+                    <td class="mono snippet">    // Bug 4577236 outlines the issue. Essentially normal eviction of coherent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_sec2_test.c</td>
+                    <td>463</td>
+                    <td class="mono snippet">    // CPU decryption(s), but it is more robust against test changes to force</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_gpu_semaphore.c</td>
+                    <td>806</td>
+                    <td class="mono snippet">    // recent addition to the kernel, just leverage smp_mb__after_atomic() that</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/common/nvswitch/kernel/lr10/clock_lr10.c</td>
+                    <td>138</td>
+                    <td class="mono snippet">    // Unfortunately, we don't have a full robust infrastructure for detecting the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/libraries/containers/eheap/eheap_old.c</td>
+                    <td>195</td>
+                    <td class="mono snippet">            // Form the list of free mem structures. Just need to utilize the next field of EMEMBLOCK.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/mem_mgr/gpu_vaspace.c</td>
+                    <td>707</td>
+                    <td class="mono snippet">        //    RM would need internal CE support (e.g. leverage ECC scrubber)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/sem_surf.c</td>
+                    <td>1093</td>
+                    <td class="mono snippet">    // it to ensure using it in the future (E.g., for robust channel error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/sem_surf.c</td>
+                    <td>1255</td>
+                    <td class="mono snippet">    // it to ensure using it in the future (E.g., for robust channel error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/arch/maxwell/mem_mgr_gm107.c</td>
+                    <td>2074</td>
+                    <td class="mono snippet">        // I.e. refactor and leverage the code performing these tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/spdm/arch/hopper/spdm_gh100.c</td>
+                    <td>832</td>
+                    <td class="mono snippet">        // If we haven't established the session yet, we need to utilize polling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mmu/gmmu_walk.c</td>
+                    <td>894</td>
+                    <td class="mono snippet">                // debug print - to remove when the code is robust enough</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mig_mgr/kernel_mig_manager.c</td>
+                    <td>6619</td>
+                    <td class="mono snippet">                //TODO: Remove below code once a more robust SRT is available to test for this condition</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/ce/arch/hopper/kernel_ce_gh100.c</td>
+                    <td>940</td>
+                    <td class="mono snippet">    // In the self hosted case, utilize table entries</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog_callback.c</td>
+                    <td>186</td>
+                    <td class="mono snippet">    // Do nothing if robust channels are not enabled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog_callback.c</td>
+                    <td>242</td>
+                    <td class="mono snippet">        // Handle robust channel testing, if necessary.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc.c</td>
+                    <td>88</td>
+                    <td class="mono snippet">    // Force uncached pushbuffers for robust channel.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc.c</td>
+                    <td>93</td>
+                    <td class="mono snippet">    // with the robust channel, and ended up requesting sizeof(RC + pushbuffer)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(32 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_gpu.c</td>
+                    <td>773</td>
+                    <td class="mono snippet">    // procfs_files are created before gpu_init_isr, we need to check if the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_va_block.c</td>
+                    <td>6406</td>
+                    <td class="mono snippet">    // Step 1: Make the 2M entry invalid. We can't directly transition from a</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/nvidia-uvm/uvm_va_block.c</td>
+                    <td>6432</td>
+                    <td class="mono snippet">    // Step 2: Switch the 2M entry from invalid to a PDE. This activates the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvlink/kernel/nvlink/core/nvlink_initialize.c</td>
+                    <td>65</td>
+                    <td class="mono snippet">    // Step 1: Perform INITPHASE1 on all endpoints</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvlink/kernel/nvlink/core/nvlink_initialize.c</td>
+                    <td>319</td>
+                    <td class="mono snippet">    // Step 1: Perform INITPHASE1 on all endpoints</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvlink/kernel/nvlink/core/nvlink_initialize.c</td>
+                    <td>379</td>
+                    <td class="mono snippet">    // Step 3: Enable Common mode on all Tx's</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvlink/kernel/nvlink/core/nvlink_initialize.c</td>
+                    <td>405</td>
+                    <td class="mono snippet">    // Step 4: call INITPHASE5</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvlink/kernel/nvlink/core/nvlink_initialize.c</td>
+                    <td>431</td>
+                    <td class="mono snippet">    // Step 5: Put the links in SAFE mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/displayport/src/dp_connectorimpl.cpp</td>
+                    <td>1799</td>
+                    <td class="mono snippet">            // we need to check if we have enough BW for the stream on FRL link.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/displayport/src/dp_connectorimpl.cpp</td>
+                    <td>4300</td>
+                    <td class="mono snippet">    // Step 1: Setup PCON for later operation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/displayport/src/dp_connectorimpl.cpp</td>
+                    <td>4332</td>
+                    <td class="mono snippet">    // Step 2: Assess FRL Link capability.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/displayport/src/dp_connectorimpl.cpp</td>
+                    <td>4414</td>
+                    <td class="mono snippet">    // Step 3: Assess DP Link capability.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/displayport/src/dp_configcaps.cpp</td>
+                    <td>2398</td>
+                    <td class="mono snippet">    // Step 1: Configure FRL Link (FRL BW, BW mask / Concurrent)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvswitch/kernel/lr10/lr10.c</td>
+                    <td>6193</td>
+                    <td class="mono snippet">        // Step 0 :</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvswitch/kernel/lr10/lr10.c</td>
+                    <td>6242</td>
+                    <td class="mono snippet">        // Step 1 : Perform surgical reset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvswitch/kernel/lr10/lr10.c</td>
+                    <td>6313</td>
+                    <td class="mono snippet">        // Step 2 : Assert NPORT Reset after Control &amp; Drain routine.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvswitch/kernel/lr10/lr10.c</td>
+                    <td>6377</td>
+                    <td class="mono snippet">        // Step 3 : Restore link state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/common/nvswitch/kernel/cci/cables/cci_common.c</td>
+                    <td>1451</td>
+                    <td class="mono snippet"> *        The purpose of this function is to provide a trace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/arch/nvalloc/unix/src/unix_intr.c</td>
+                    <td>254</td>
+                    <td class="mono snippet">    // Step 1: Check if we can service nonstall interrupts outside the GPUs lock. This is true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/arch/nvalloc/unix/src/unix_intr.c</td>
+                    <td>289</td>
+                    <td class="mono snippet">                // Step 2: Service nonstall interrupts and check if there are any stall interrupts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/arch/hopper/virt_mem_allocator_gh100.c</td>
+                    <td>74</td>
+                    <td class="mono snippet">    // Step 1:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/arch/hopper/virt_mem_allocator_gh100.c</td>
+                    <td>84</td>
+                    <td class="mono snippet">    // Step 2:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mem_mgr/arch/hopper/virt_mem_allocator_gh100.c</td>
+                    <td>103</td>
+                    <td class="mono snippet">    // Step 3:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mmu/arch/volta/kern_gmmu_gv100.c</td>
+                    <td>348</td>
+                    <td class="mono snippet">            // Step 1:  Unregister(vas)  --&gt;  UnsetPageDirectory(vas)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mmu/arch/volta/kern_gmmu_gv100.c</td>
+                    <td>349</td>
+                    <td class="mono snippet">            // Step 2:  FreeSubcontext(vas)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/ce/arch/ampere/kernel_ce_ga100.c</td>
+                    <td>524</td>
+                    <td class="mono snippet">        // So, we need to check if the FBHUB PCEs have already been assigned.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog.c</td>
+                    <td>256</td>
+                    <td class="mono snippet">    // Step 1: check for conflicting requests, and bail out without changing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog.c</td>
+                    <td>288</td>
+                    <td class="mono snippet">    // Step 2: if client state has changed, adjust the per-GPU/RC refcount:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog.c</td>
+                    <td>316</td>
+                    <td class="mono snippet">    // Step 3: record client state:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/rc/kernel_rc_watchdog.c</td>
+                    <td>322</td>
+                    <td class="mono snippet">    // Step 4: if per-GPU/RC refcount has changed from 0 to 1, then change the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/rmapi/alloc_free.c</td>
+                    <td>1008</td>
+                    <td class="mono snippet">            // so we need to check if Device has the same OBJGPU.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/src/kernel/rmapi/nv_gpu_ops.c</td>
+                    <td>3495</td>
+                    <td class="mono snippet">    // is that it is indeed supported, we need to check if the link has</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(4 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/nvlink/kernel_nvlink.c</td>
+                    <td>3084</td>
+                    <td class="mono snippet">    // For the transfer direction pLocalGpu-&gt;pRemoteGpu, update the new key for Tx or Rx as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/nvlink/kernel_nvlink.c</td>
+                    <td>3089</td>
+                    <td class="mono snippet">    // For the transfer direction pRemoteGpu-&gt;pLocalGpu, update the new key for Tx or Rx as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/nvidia/src/kernel/gpu/mig_mgr/kernel_mig_manager.c</td>
+                    <td>5949</td>
+                    <td class="mono snippet">    // set GPCs as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">src/nvidia-modeset/src/nvkms-evo.c</td>
+                    <td>9117</td>
+                    <td class="mono snippet">    // as requested.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(12 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>180</td>
+                    <td class="mono snippet">    # Check if gcc supports asm goto and set CC_HAVE_ASM_GOTO if it does.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>351</td>
+                    <td class="mono snippet">        # Check if any of the linuxkpi or drm kernel module files contain</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>416</td>
+                    <td class="mono snippet">    # Print the value of given configuration option, if defined</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>709</td>
+                    <td class="mono snippet">            # Check if vfio_info_add_capability() has cap_type_id parameter.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>3347</td>
+                    <td class="mono snippet">            # Check if add_memory_driver_managed() has mhp_flags arg.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>3365</td>
+                    <td class="mono snippet">            # Check if remove_memory() has nid parameter.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>4111</td>
+                    <td class="mono snippet">            # Check if iommu_sva_bind_device() has drvdata parameter.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>4189</td>
+                    <td class="mono snippet">            # Check if memory_failure_queue() has trapno parameter.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>4207</td>
+                    <td class="mono snippet">            # Check if memory_failure() flag MF_SW_SIMULATED is defined.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>5160</td>
+                    <td class="mono snippet">        # Check if the selected compiler can create object files</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>5306</td>
+                    <td class="mono snippet">        # Check if the target kernel is a Xen kernel. If so, exit, since</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">kernel-open/conftest.sh</td>
+                    <td>5338</td>
+                    <td class="mono snippet">        # Check if the target kernel has the PREEMPT_RT patch set applied. If</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>402</td>
+                    <td class="mono snippet"># Create a 32-bit generic ELF header with no program header, and 'shnum'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>418</td>
+                    <td class="mono snippet"># Create a 32-bit ELF section header, where 'sh_name' is the offset of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>440</td>
+                    <td class="mono snippet"># Create a 64-bit .shstrtab ELF section header.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>535</td>
+                    <td class="mono snippet">        # Create the ELF header</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>644</td>
+                    <td class="mono snippet"># Create a symlink, deleting the existing file/link if necessary</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">nouveau/extract-firmware-nouveau.py</td>
+                    <td>705</td>
+                    <td class="mono snippet"># Create a text file that can be inserted as-is to the WHENCE file of the</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(3 hits · 6 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/pahole.sh</td>
+                    <td>42</td>
+                    <td class="mono snippet"># make sure to exclude c++ when generating encoding BTF.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">kernel-open/common/inc/rs_access.h</td>
+                    <td>54</td>
+                    <td class="mono snippet">// When adding a new access right, don't forget to update</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">src/common/sdk/nvidia/inc/rs_access.h</td>
+                    <td>51</td>
+                    <td class="mono snippet">// When adding a new access right, don't forget to update</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(1 hits · 1 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">src/nvidia/inc/kernel/core/bin_data.h</td>
+                    <td>151</td>
+                    <td class="mono snippet">// Example usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-29 18:58 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

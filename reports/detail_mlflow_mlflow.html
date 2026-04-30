@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — mlflow/mlflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>mlflow/mlflow</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">7.4</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">7.4</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2768</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">10983</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,477,381</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">5434</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-04-29</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(775 hits · 7750 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/sentence_transformers/test_sentence_transformers_model_export.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/onnx/test_onnx_model_export.py</td>
+                    <td>475</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/xgboost/test_xgboost_model_export.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/paddle/test_paddle_model_export.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/server/jobs/helpers.py</td>
+                    <td>78</td>
+                    <td class="mono snippet">        mlflow.server.jobs.utils._huey_instance_map.clear()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/pmdarima/test_pmdarima_model_export.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/sklearn/test_sklearn_model_export.py</td>
+                    <td>377</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/transformers/test_transformers_model_export.py</td>
+                    <td>634</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/prophet/test_prophet_model_export.py</td>
+                    <td>280</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/tensorflow/test_keras_model_export.py</td>
+                    <td>385</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/tracking/_tracking_service/test_utils.py</td>
+                    <td>374</td>
+                    <td class="mono snippet">            mlflow.tracking._tracking_service.utils._tracking_store_registry._registry.keys()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/lightgbm/test_lightgbm_model_export.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/johnsnowlabs/test_johnsnowlabs_model_export.py</td>
+                    <td>312</td>
+                    <td class="mono snippet">#         mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/pytorch/test_pytorch_model_export.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/statsmodels/test_statsmodels_model_export.py</td>
+                    <td>219</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/spark/test_spark_model_export.py</td>
+                    <td>525</td>
+                    <td class="mono snippet">        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/store/artifact/test_unity_catalog_models_artifact_repo.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">        mlflow.store._unity_catalog.registry.rest_store.get_feature_dependencies(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/store/artifact/test_unity_catalog_models_artifact_repo.py</td>
+                    <td>349</td>
+                    <td class="mono snippet">        result = mlflow.store._unity_catalog.registry.rest_store.get_feature_dependencies(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/store/artifact/test_unity_catalog_models_artifact_repo.py</td>
+                    <td>368</td>
+                    <td class="mono snippet">        result = mlflow.store._unity_catalog.registry.rest_store.get_model_version_dependencies(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">tests/store/artifact/test_azure_blob_artifact_repo.py</td>
+                    <td>8</td>
+                    <td class="mono snippet">from azure.core.exceptions import ResourceNotFoundError</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>588</td>
+                    <td class="mono snippet">      // Construct using org.mlflow.scalapb_interface.Scalapb.ScalaPbOptions.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>623</td>
+                    <td class="mono snippet">        return org.mlflow.scalapb_interface.Scalapb.ScalaPbOptions.getDefaultInstance();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>701</td>
+                    <td class="mono snippet">        if (other == org.mlflow.scalapb_interface.Scalapb.ScalaPbOptions.getDefaultInstance()) return this;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>1038</td>
+                    <td class="mono snippet">        com.google.protobuf.AbstractMessageLite.Builder.addAll(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>1499</td>
+                    <td class="mono snippet">      // Construct using org.mlflow.scalapb_interface.Scalapb.MessageOptions.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>1530</td>
+                    <td class="mono snippet">        return org.mlflow.scalapb_interface.Scalapb.MessageOptions.getDefaultInstance();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>1598</td>
+                    <td class="mono snippet">        if (other == org.mlflow.scalapb_interface.Scalapb.MessageOptions.getDefaultInstance()) return this;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>1745</td>
+                    <td class="mono snippet">        com.google.protobuf.AbstractMessageLite.Builder.addAll(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2170</td>
+                    <td class="mono snippet">      // Construct using org.mlflow.scalapb_interface.Scalapb.FieldOptions.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2201</td>
+                    <td class="mono snippet">        return org.mlflow.scalapb_interface.Scalapb.FieldOptions.getDefaultInstance();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2270</td>
+                    <td class="mono snippet">        if (other == org.mlflow.scalapb_interface.Scalapb.FieldOptions.getDefaultInstance()) return this;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2457</td>
+                    <td class="mono snippet">        org.mlflow.scalapb_interface.Scalapb.ScalaPbOptions.getDefaultInstance());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2473</td>
+                    <td class="mono snippet">        org.mlflow.scalapb_interface.Scalapb.MessageOptions.getDefaultInstance());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/scalapb_interface/Scalapb.java</td>
+                    <td>2489</td>
+                    <td class="mono snippet">        org.mlflow.scalapb_interface.Scalapb.FieldOptions.getDefaultInstance());</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/internal/proto/Internal.java</td>
+                    <td>104</td>
+                    <td class="mono snippet">      return org.mlflow.internal.proto.Internal.getDescriptor().getEnumTypes().get(0);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/internal/proto/Internal.java</td>
+                    <td>205</td>
+                    <td class="mono snippet">      return org.mlflow.internal.proto.Internal.getDescriptor().getEnumTypes().get(1);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>171</td>
+                    <td class="mono snippet">      return org.mlflow.api.proto.Jobs.getDescriptor().getEnumTypes().get(0);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>364</td>
+                    <td class="mono snippet">              org.mlflow.api.proto.Jobs.JobStatus value = org.mlflow.api.proto.Jobs.JobStatus.valueOf(rawValue);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>460</td>
+                    <td class="mono snippet">      org.mlflow.api.proto.Jobs.JobStatus result = org.mlflow.api.proto.Jobs.JobStatus.valueOf(status_);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>871</td>
+                    <td class="mono snippet">      // Construct using org.mlflow.api.proto.Jobs.JobState.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>905</td>
+                    <td class="mono snippet">        return org.mlflow.api.proto.Jobs.JobState.getDefaultInstance();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>919</td>
+                    <td class="mono snippet">        org.mlflow.api.proto.Jobs.JobState result = new org.mlflow.api.proto.Jobs.JobState(this);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>980</td>
+                    <td class="mono snippet">        if (other == org.mlflow.api.proto.Jobs.JobState.getDefaultInstance()) return this;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>1044</td>
+                    <td class="mono snippet">        org.mlflow.api.proto.Jobs.JobStatus result = org.mlflow.api.proto.Jobs.JobStatus.valueOf(status_);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/Jobs.java</td>
+                    <td>1378</td>
+                    <td class="mono snippet">      DEFAULT_INSTANCE = new org.mlflow.api.proto.Jobs.JobState();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/MlflowArtifacts.java</td>
+                    <td>343</td>
+                    <td class="mono snippet">        // Construct using org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response.newBuilder()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/MlflowArtifacts.java</td>
+                    <td>372</td>
+                    <td class="mono snippet">          return org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response.getDefaultInstance();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/MlflowArtifacts.java</td>
+                    <td>386</td>
+                    <td class="mono snippet">          org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response result = new org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response(t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/MlflowArtifacts.java</td>
+                    <td>434</td>
+                    <td class="mono snippet">          if (other == org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response.getDefaultInstance()) return this;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">mlflow/java/client/src/main/java/org/mlflow/api/proto/MlflowArtifacts.java</td>
+                    <td>482</td>
+                    <td class="mono snippet">        DEFAULT_INSTANCE = new org.mlflow.api.proto.MlflowArtifacts.DownloadArtifact.Response();</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 725 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(864 hits · 868 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/helper_functions.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/helper_functions.py</td>
+                    <td>683</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/helper_functions.py</td>
+                    <td>705</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/helper_functions.py</td>
+                    <td>776</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/langchain/test_langchain_databricks_dependency_extraction.py</td>
+                    <td>272</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/langchain/test_langchain_databricks_dependency_extraction.py</td>
+                    <td>372</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pyspark/optuna/test_study.py</td>
+                    <td>25</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/mlflow_test_plugin/dummy_dataset_source.py</td>
+                    <td>36</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/resources/data/dataset_source.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/strands/conftest.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/system_metrics/test_collect_metrics.py</td>
+                    <td>26</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracking/fluent/test_fluent_autolog.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracking/fluent/test_fluent_autolog.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/johnsnowlabs/test_johnsnowlabs_model_export.py</td>
+                    <td>74</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/utils/test_prompt_cache.py</td>
+                    <td>151</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/utils/test_prompt_cache.py</td>
+                    <td>175</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/utils/test_prompt_cache.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/scorers/test_builtin_scorers.py</td>
+                    <td>860</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/scorers/test_scorer_telemetry.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/evaluate/test_utils.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/data/test_huggingface_dataset_and_source.py</td>
+                    <td>40</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/spark/test_spark_model_export.py</td>
+                    <td>86</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/tools.py</td>
+                    <td>282</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/model_registry/test_abstract_store.py</td>
+                    <td>307</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pyfunc/test_virtualenv.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.claude/skills/src/skills/github/utils.py</td>
+                    <td>14</td>
+                    <td class="mono snippet">        print(&quot;Error: GH_TOKEN not found (set env var or install gh CLI)&quot;, file=sys.stderr)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/environment_variables.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">            except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/runs.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/runs.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/base.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/issues.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/issues.py</td>
+                    <td>229</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/evaluation.py</td>
+                    <td>235</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/evaluation.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/evaluation.py</td>
+                    <td>259</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/evaluation.py</td>
+                    <td>315</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/evaluation.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/prompts.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/prompts.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">                        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/prompts.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/prompts.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/prompts.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/judges.py</td>
+                    <td>90</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/judges.py</td>
+                    <td>110</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/judges.py</td>
+                    <td>130</td>
+                    <td class="mono snippet">                    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/judges.py</td>
+                    <td>132</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/judges.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/traces.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/traces.py</td>
+                    <td>263</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/generators/traces.py</td>
+                    <td>265</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 814 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(379 hits · 758 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyproject.release.toml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file defines the package metadata of `mlflow`. `mlflow-skinny` and `mlflow-tracing`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyproject.toml</td>
+                    <td>2</td>
+                    <td class="mono snippet"># This file defines the package metadata of `mlflow` **during development**. To install `mlflow`</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_cli.py</td>
+                    <td>959</td>
+                    <td class="mono snippet">    # Create a test .env file pointing to this tracking URI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/dspy/test_dspy_autolog.py</td>
+                    <td>336</td>
+                    <td class="mono snippet">        # Create a custom span inside the module using fluent API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>2490</td>
+                    <td class="mono snippet">    # Create a trace without a session ID - should result in no sessions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_tracing_client.py</td>
+                    <td>99</td>
+                    <td class="mono snippet">    # Create a trace with spans in the tracking store</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_tracing_client.py</td>
+                    <td>103</td>
+                    <td class="mono snippet">    # Create a trace without spans (artifact-repo case)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_tracing_client.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">        # Create a trace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_loading.py</td>
+                    <td>95</td>
+                    <td class="mono snippet">    # Create a span with various attributes to test conversion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_loading.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">    # Create a fake trace ID in OTel format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_loading.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">    # Create a span that represents a question-answer scenario</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_loading.py</td>
+                    <td>323</td>
+                    <td class="mono snippet">    # Create a span representing a model prediction</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_loading.py</td>
+                    <td>376</td>
+                    <td class="mono snippet">    # Create a complex trace with nested spans</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_logging.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">    # Create a valid OTLP request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_logging.py</td>
+                    <td>405</td>
+                    <td class="mono snippet">        # Create a span with unique trace_id</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_logging.py</td>
+                    <td>453</td>
+                    <td class="mono snippet">    # Create a request with 15 different traces (exceeds the 10 thread pool limit)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/test_otel_logging.py</td>
+                    <td>947</td>
+                    <td class="mono snippet">    # Create a valid OTLP request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_utils.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">    # Create a mock span with attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_utils.py</td>
+                    <td>507</td>
+                    <td class="mono snippet">    # Create a mock span with empty attributes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_utils.py</td>
+                    <td>516</td>
+                    <td class="mono snippet">    # Create a mock span where attributes.get() returns None</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_utils.py</td>
+                    <td>526</td>
+                    <td class="mono snippet">    # Create a mock span with invalid JSON</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_timeout.py</td>
+                    <td>139</td>
+                    <td class="mono snippet">    # Create a first trace. At this moment, there is no timeout set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/utils/test_timeout.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">    # Create a second trace. This should use the new timeout</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">    # Create a mock function that simulates delay</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>401</td>
+                    <td class="mono snippet">        # Create a mock OTEL span and trace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>491</td>
+                    <td class="mono snippet">        # Create a mock OTEL span and trace (no prompts added)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>551</td>
+                    <td class="mono snippet">        # Create a mock OTEL span and trace with a prompt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>561</td>
+                    <td class="mono snippet">        # Create a test prompt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_mlflow_v3_exporter.py</td>
+                    <td>600</td>
+                    <td class="mono snippet">    # Create a mock OTEL span and trace</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/export/test_async_export_queue.py</td>
+                    <td>100</td>
+                    <td class="mono snippet">    # Create a slow handler to keep tasks in the queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/shap/test_log.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">    # Create a numba-compatible identify link function due to breaking changes in shap</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/langchain/conftest.py</td>
+                    <td>43</td>
+                    <td class="mono snippet"># Define a special embedding for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/langchain/test_langchain_model_export.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">    # Create the vector db, persist the db to a local fs folder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/langchain/test_langchain_model_export.py</td>
+                    <td>284</td>
+                    <td class="mono snippet">    # Define the loader_fn</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/langchain/test_langchain_model_export.py</td>
+                    <td>640</td>
+                    <td class="mono snippet">    # Create the vector db, persist the db to a local fs folder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/langchain/test_langchain_autolog.py</td>
+                    <td>91</td>
+                    <td class="mono snippet">    # Create the vector db, persist the db to a local fs folder</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/projects/test_utils.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">        # Create a run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>18</td>
+                    <td class="mono snippet"># Define a Tracking Store plugin for tracking URIs with scheme 'file-plugin'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Define a ArtifactRepository plugin for artifact URIs with scheme 'file-plugin'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>26</td>
+                    <td class="mono snippet"># Define a RunContextProvider plugin. The entry point name for run context providers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>31</td>
+                    <td class="mono snippet"># Define a DefaultExperimentProvider plugin. The entry point name for</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>36</td>
+                    <td class="mono snippet"># Define a RequestHeaderProvider plugin. The entry point name for request header providers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>41</td>
+                    <td class="mono snippet"># Define a RequestAuthProvider plugin. The entry point name for request auth providers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>46</td>
+                    <td class="mono snippet"># Define a Model Registry Store plugin for tracking URIs with scheme 'file-plugin'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>50</td>
+                    <td class="mono snippet"># Define a MLflow Project Backend plugin called 'dummy-backend'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>54</td>
+                    <td class="mono snippet"># Define a MLflow model deployment plugin for target 'faketarget'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>58</td>
+                    <td class="mono snippet"># Define a MLflow model evaluator with name &quot;dummy_evaluator&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>62</td>
+                    <td class="mono snippet"># Define a custom MLflow application with name custom_app</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>66</td>
+                    <td class="mono snippet"># Define an MLflow dataset source called &quot;dummy_source&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/resources/mlflow-test-plugin/pyproject.toml</td>
+                    <td>70</td>
+                    <td class="mono snippet"># Define an MLflow dataset constructor called &quot;from_dummy&quot;</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 329 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(308 hits · 616 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">pyproject.toml</td>
+                    <td>169</td>
+                    <td class="mono snippet"># -----------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracing/processor/test_mlflow_v3_processor.py</td>
+                    <td>182</td>
+                    <td class="mono snippet"># ── Batch span processor tests ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>33</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>64</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>118</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>120</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>138</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>140</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>161</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>163</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>398</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>400</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>565</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/claude_code/test_tracing.py</td>
+                    <td>567</td>
+                    <td class="mono snippet"># ============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>919</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>921</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1624</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1626</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1763</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1765</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2170</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2172</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2494</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2496</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>3027</td>
+                    <td class="mono snippet"># ─── Guardrail end-to-end scenarios ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_auth_workspace.py</td>
+                    <td>1614</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_auth_workspace.py</td>
+                    <td>1616</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_auth_workspace.py</td>
+                    <td>1915</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/auth/test_auth_workspace.py</td>
+                    <td>1917</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/bedrock/test_genai_semconv_converter.py</td>
+                    <td>30</td>
+                    <td class="mono snippet"># ── End-to-end autolog integration tests ─────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/bedrock/test_genai_semconv_converter.py</td>
+                    <td>232</td>
+                    <td class="mono snippet"># ── Multimodal content conversion tests ──────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>64</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>66</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>167</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>169</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>233</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>235</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>341</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>343</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>391</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/db/test_workspace_move.py</td>
+                    <td>393</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracking/test_rest_tracking.py</td>
+                    <td>4202</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/tracking/test_rest_tracking.py</td>
+                    <td>4204</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/judges/utils/test_invocation_utils.py</td>
+                    <td>29</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/judges/utils/test_invocation_utils.py</td>
+                    <td>31</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/judges/utils/test_invocation_utils.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/judges/utils/test_invocation_utils.py</td>
+                    <td>49</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/judges/utils/test_invocation_utils.py</td>
+                    <td>120</td>
+                    <td class="mono snippet"># ---------------------------------------------------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 258 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(113 hits · 565 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/assistant/providers/test_claude_code_provider.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        b'{&quot;type&quot;: &quot;result&quot;, &quot;result&quot;: null, &quot;session_id&quot;: &quot;sess-123&quot;}\n',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1523</td>
+                    <td class="mono snippet">        b'data: {&quot;id&quot;:&quot;chatcmpl-123&quot;,&quot;object&quot;:&quot;chat.completion.chunk&quot;,&quot;created&quot;:1234567890,&quot;model&quot;:&quot;gpt-4o&quot;,&quot;choices&quot;:[{&quot;index&quot;:0,&quot;delta&quot;:{&quot;role&quot;:&quot;ass</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1524</td>
+                    <td class="mono snippet">        b'data: {&quot;id&quot;:&quot;chatcmpl-123&quot;,&quot;object&quot;:&quot;chat.completion.chunk&quot;,&quot;created&quot;:1234567890,&quot;model&quot;:&quot;gpt-4o&quot;,&quot;choices&quot;:[{&quot;index&quot;:0,&quot;delta&quot;:{&quot;content&quot;:&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1587</td>
+                    <td class="mono snippet">        b'data: {&quot;type&quot;:&quot;response.created&quot;,&quot;response&quot;:{&quot;id&quot;:&quot;resp_1&quot;,&quot;object&quot;:&quot;response&quot;,&quot;created_at&quot;:1741290958,&quot;status&quot;:&quot;in_progress&quot;,&quot;error&quot;:null,&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1594</td>
+                    <td class="mono snippet">        b'data: {&quot;type&quot;:&quot;response.completed&quot;,&quot;response&quot;:{&quot;id&quot;:&quot;resp_1&quot;,&quot;object&quot;:&quot;response&quot;,&quot;created_at&quot;:1741290958,&quot;status&quot;:&quot;completed&quot;,&quot;error&quot;:null,&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1725</td>
+                    <td class="mono snippet">        b'event: message_start\ndata: {&quot;type&quot;:&quot;message_start&quot;,&quot;message&quot;:{&quot;id&quot;:&quot;msg_01XFDUDYJgAACzvnptvVoYEL&quot;,&quot;type&quot;:&quot;message&quot;,&quot;role&quot;:&quot;assistant&quot;,&quot;cont</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>1730</td>
+                    <td class="mono snippet">        b'event: message_delta\ndata: {&quot;type&quot;:&quot;message_delta&quot;,&quot;delta&quot;:{&quot;stop_reason&quot;:&quot;end_turn&quot;,&quot;stop_sequence&quot;:null},&quot;usage&quot;:{&quot;output_tokens&quot;:20}}\n\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2339</td>
+                    <td class="mono snippet">        b'data: {&quot;id&quot;:&quot;chatcmpl-123&quot;,&quot;object&quot;:&quot;chat.completion.chunk&quot;,&quot;created&quot;:1234567890,&quot;model&quot;:&quot;gpt-4&quot;,&quot;choices&quot;:[{&quot;index&quot;:0,&quot;delta&quot;:{&quot;role&quot;:&quot;assi</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/test_gateway_api.py</td>
+                    <td>2340</td>
+                    <td class="mono snippet">        b'data: {&quot;id&quot;:&quot;chatcmpl-123&quot;,&quot;object&quot;:&quot;chat.completion.chunk&quot;,&quot;created&quot;:1234567890,&quot;model&quot;:&quot;gpt-4&quot;,&quot;choices&quot;:[{&quot;index&quot;:0,&quot;delta&quot;:{&quot;content&quot;:&quot;!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/server/jobs/test_jobs.py</td>
+                    <td>137</td>
+                    <td class="mono snippet">        assert job.params == '{&quot;data&quot;: null}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/utils/test_databricks_utils.py</td>
+                    <td>344</td>
+                    <td class="mono snippet">        # both file mount and env var exist, both values should return true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/utils/test_databricks_utils.py</td>
+                    <td>347</td>
+                    <td class="mono snippet">        # file mount without env var should return false</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/models/test_container.py</td>
+                    <td>118</td>
+                    <td class="mono snippet">        dependencies=[&quot;numpy &amp;&amp; echo INJECTED &gt; /tmp/test_injection_ampersand.txt&quot;],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/models/test_container.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">    assert not os.path.exists(evidence_file), &quot;Command injection via &amp;&amp; succeeded!&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/models/test_python_api.py</td>
+                    <td>69</td>
+                    <td class="mono snippet">                assert model_input.equals(expected_data)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/models/test_signature.py</td>
+                    <td>274</td>
+                    <td class="mono snippet">        &quot;params&quot;: '[{&quot;name&quot;: &quot;param1&quot;, &quot;default&quot;: &quot;test&quot;, &quot;shape&quot;: null, &quot;type&quot;: &quot;string&quot;}]',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2539</td>
+                    <td class="mono snippet">    assert output1.equals(data_df[&quot;target&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2540</td>
+                    <td class="mono snippet">    assert other1.equals(data_df.drop(columns=[&quot;target&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2542</td>
+                    <td class="mono snippet">    assert output2.equals(data_df[&quot;target&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2543</td>
+                    <td class="mono snippet">    assert other2.equals(data_df.drop(columns=[&quot;target&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2545</td>
+                    <td class="mono snippet">    assert output3.equals(data_df[&quot;target&quot;])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2546</td>
+                    <td class="mono snippet">    assert other3.equals(data_df.drop(columns=[&quot;target&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2551</td>
+                    <td class="mono snippet">    assert output5.equals(pd.Series(data_list))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2554</td>
+                    <td class="mono snippet">    assert output6.equals(pd.Series(data_dict_text[&quot;text&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2557</td>
+                    <td class="mono snippet">    assert output7.equals(pd.Series(data_dict_text[&quot;text&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>2618</td>
+                    <td class="mono snippet">    assert eval_df_value.equals(test_eval_df_value)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/genai/datasets/test_evaluation_dataset.py</td>
+                    <td>201</td>
+                    <td class="mono snippet">    assert legacy_dataset._features_data.equals(dataset.to_df())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/genai/judges/adapters/test_databricks_managed_adapter.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">                content='{&quot;name&quot;: &quot;root_span&quot;, &quot;inputs&quot;: null}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_huggingface_dataset_and_source.py</td>
+                    <td>271</td>
+                    <td class="mono snippet">    assert evaluation_dataset.features_data.equals(dataset.ds.to_pandas().drop(&quot;label&quot;, axis=1))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">    assert dataset.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>145</td>
+                    <td class="mono snippet">    assert input_outputs.inputs.equals(pd.DataFrame([[1, 2], [1, 2]], columns=[&quot;a&quot;, &quot;b&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>146</td>
+                    <td class="mono snippet">    assert input_outputs.outputs.equals(pd.Series([3, 3], name=&quot;c&quot;))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">    assert input_outputs.inputs.equals(pd.DataFrame([[1, 2], [1, 2]], columns=[&quot;a&quot;, &quot;b&quot;]))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>157</td>
+                    <td class="mono snippet">    assert input_outputs.outputs.equals(pd.Series([3, 3], name=&quot;c&quot;))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">    assert mlflow_df.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    assert mlflow_df.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>207</td>
+                    <td class="mono snippet">    assert mlflow_df.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">    assert evaluation_dataset.features_data.equals(df.drop(&quot;c&quot;, axis=1))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_pandas_dataset.py</td>
+                    <td>281</td>
+                    <td class="mono snippet">    assert evaluation_dataset.features_data.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_polars_dataset.py</td>
+                    <td>153</td>
+                    <td class="mono snippet">    assert dataset.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_polars_dataset.py</td>
+                    <td>229</td>
+                    <td class="mono snippet">    assert mlflow_df.df.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_polars_dataset.py</td>
+                    <td>256</td>
+                    <td class="mono snippet">    assert evaluation_dataset.features_data.equals(df.drop(&quot;c&quot;).to_pandas())</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_spark_dataset.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">    assert not df_v0.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_spark_dataset.py</td>
+                    <td>400</td>
+                    <td class="mono snippet">    assert not df2.equals(df)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/data/test_spark_dataset.py</td>
+                    <td>430</td>
+                    <td class="mono snippet">    assert evaluation_dataset.features_data.equals(df_spark.toPandas()[[&quot;a&quot;]])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/gateway/test_tracing_utils.py</td>
+                    <td>879</td>
+                    <td class="mono snippet">    b'&quot;created_at&quot;:1741290958,&quot;status&quot;:&quot;in_progress&quot;,&quot;output&quot;:[],&quot;usage&quot;:null}}\n'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>275</td>
+                    <td class="mono snippet">        b'&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: [], &quot;model&quot;: &quot;claude-2.1&quot;, &quot;stop_reason&quot;: null, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>276</td>
+                    <td class="mono snippet">        b'&quot;stop_sequence&quot;: null, &quot;usage&quot;: {&quot;input_tokens&quot;: 25, &quot;output_tokens&quot;: 1}}}\n',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>298</td>
+                    <td class="mono snippet">        b'&quot;stop_sequence&quot;:null}, &quot;usage&quot;:{&quot;output_tokens&quot;: 15}}\n',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>701</td>
+                    <td class="mono snippet">        b'&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: [], &quot;model&quot;: &quot;claude-2.1&quot;, &quot;stop_reason&quot;: null, '</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 63 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(156 hits · 156 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">bin/install.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">    # Check if tool already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>431</td>
+                    <td class="mono snippet">    # Check if we should enable flaky rerun logic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>440</td>
+                    <td class="mono snippet">    # Check if we should profile this test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>1982</td>
+                    <td class="mono snippet">    # Check if span information is correctly copied</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>2115</td>
+                    <td class="mono snippet">    # Check if span information is correctly copied</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/utils/test_otlp.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">        # Check if spans are in the logs - the debug exporter outputs span details</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/utils/test_otlp.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">        # Check if spans are in the logs - the debug exporter outputs span details</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/utils/test_utils.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">    # Check if the span order is preserved</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/types/test_type_hints.py</td>
+                    <td>502</td>
+                    <td class="mono snippet">    # Check if dict is in the union (it could be dict or dict[str, Any])</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/langchain/test_langchain_model_export.py</td>
+                    <td>1132</td>
+                    <td class="mono snippet">    # Check if the deserialized model has the same endpoint and temperature</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/server/auth/test_auth.py</td>
+                    <td>81</td>
+                    <td class="mono snippet">    # Set _MLFLOW_SGI_NAME to &quot;uvicorn&quot; so auth module returns FastAPI app</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/models/test_wheeled_model.py</td>
+                    <td>105</td>
+                    <td class="mono snippet">    # Check if conda.yaml files of the original model and wheeled model are the same</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/models/test_wheeled_model.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">    # Check if conda.yaml and requirements.txt are consistent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/models/test_wheeled_model.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">    # Check if requirements.txt and wheels directory are consistent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/sklearn/test_sklearn_autolog.py</td>
+                    <td>874</td>
+                    <td class="mono snippet">        # Verify if the params match the best estimator, then metrics are logged in the model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/evaluate/test_default_evaluator.py</td>
+                    <td>4469</td>
+                    <td class="mono snippet">    # Check if binary metrics are present based on classification type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/ag2/test_ag2_autolog.py</td>
+                    <td>82</td>
+                    <td class="mono snippet">    # Check if the initiate_chat method is patched</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/ag2/test_ag2_autolog.py</td>
+                    <td>328</td>
+                    <td class="mono snippet">    # Check if the initiate_chat method is patched</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/ag2/test_ag2_autolog.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">    # Check if the start time is in reasonable range</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/transformers/test_transformers_signature.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">    monkeypatch.setenv(&quot;MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT&quot;, &quot;1&quot;)  # Set timeout to 1 second</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/optuna/test_storage.py</td>
+                    <td>543</td>
+                    <td class="mono snippet">    # Set params to another trial.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracking/test_client.py</td>
+                    <td>2861</td>
+                    <td class="mono snippet">    # Assign alias to version 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/evaluate/test_evaluation.py</td>
+                    <td>360</td>
+                    <td class="mono snippet">    # Check if the model_id is set in the traces</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/prompts/test_prompts.py</td>
+                    <td>1405</td>
+                    <td class="mono snippet">    # Set alias to version 1</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/providers/test_togetherai.py</td>
+                    <td>269</td>
+                    <td class="mono snippet">        # Check if the raised exception has correct status code and detail</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/providers/test_togetherai.py</td>
+                    <td>304</td>
+                    <td class="mono snippet">        # Check if the raised exception has correct status code and detail</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/providers/test_fallback.py</td>
+                    <td>121</td>
+                    <td class="mono snippet">    # Set max_attempts to 2, even though we have 3 providers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/test_file_store.py</td>
+                    <td>1496</td>
+                    <td class="mono snippet">    # Set start_time to ensure the search result is deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/test_file_store.py</td>
+                    <td>1557</td>
+                    <td class="mono snippet">    # Set start_time to ensure the search result is deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>2781</td>
+                    <td class="mono snippet">    # Set start_time to ensure the search result is deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>2841</td>
+                    <td class="mono snippet">    # Set start_time to ensure the search result is deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>2895</td>
+                    <td class="mono snippet">    # Set start_time to ensure the search result is deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/artifact/test_models_artifact_repo.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        # Check if the files are downloaded correctly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/artifact/test_models_artifact_repo.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">        # Check if the metadata file is created</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/demo/base.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">                # Check if demo data exists (version handled by base class)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">        # Check if already configured</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/providers/claude_code.py</td>
+                    <td>445</td>
+                    <td class="mono snippet">            # Check if killed by interrupt (SIGKILL = -9)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/enablement.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">    # Check if the experiment exists. In Databricks notebook, this `get_experiment` call triggers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>236</td>
+                    <td class="mono snippet">        # Check if the function is a classmethod or staticmethod</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>1025</td>
+                    <td class="mono snippet">        # Check if pandas is installed early to avoid unnecessary computation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/utils/truncation.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">    # Check if the object contains messages with OpenAI ChatCompletion format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/utils/truncation.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">    # Check if the object contains a message in OpenAI ChatCompletion response format (choices)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/utils/truncation.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">    # Check if the object contains a message in OpenAI Responses API request format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/utils/truncation.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">    # Check if the object contains a message in OpenAI Responses API response format</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/gemini/genai_semconv_converter.py</td>
+                    <td>18</td>
+                    <td class="mono snippet">            # Check if this is a list of Content dicts (have &quot;role&quot; key)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/onnx/__init__.py</td>
+                    <td>265</td>
+                    <td class="mono snippet">        # Check if the MLModel config has the providers meta data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/langchain/utils/chat.py</td>
+                    <td>450</td>
+                    <td class="mono snippet">    # Check if this is streaming (contains ChatGenerationChunk)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/pyspark/optuna/study.py</td>
+                    <td>189</td>
+                    <td class="mono snippet">        # Check if study exists and auto-resume if it does</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/llama_index/tracer.py</td>
+                    <td>597</td>
+                    <td class="mono snippet">        # Check if generator/async generator is already closed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/claude_code/hooks.py</td>
+                    <td>53</td>
+                    <td class="mono snippet">    # Check if MLflow hook already exists and update it</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 106 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(35 hits · 70 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/types/test_schema.py</td>
+                    <td>1405</td>
+                    <td class="mono snippet">            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;I like machine learning&quot;, &quot;name&quot;: &quot;John Doe&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_handlers.py</td>
+                    <td>4821</td>
+                    <td class="mono snippet">    request_message.created_by = &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_handlers.py</td>
+                    <td>4835</td>
+                    <td class="mono snippet">        created_by=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/server/test_handlers.py</td>
+                    <td>4856</td>
+                    <td class="mono snippet">        assert call_kwargs[&quot;created_by&quot;] == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utils/test_jsonpath_utils.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">                    &quot;source&quot;: {&quot;source_type&quot;: &quot;HUMAN&quot;, &quot;source_id&quot;: &quot;user@example.com&quot;},</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/utils/test_databricks_tracing_utils.py</td>
+                    <td>396</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/entities/test_issue.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">        created_by=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/entities/test_issue.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">    assert issue.created_by == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/entities/test_issue.py</td>
+                    <td>232</td>
+                    <td class="mono snippet">        &quot;created_by&quot;: &quot;admin@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/entities/test_issue.py</td>
+                    <td>248</td>
+                    <td class="mono snippet">    assert issue.created_by == &quot;admin@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>1090</td>
+                    <td class="mono snippet">        &quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: '{&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}'}],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/gateway/providers/test_anthropic.py</td>
+                    <td>1113</td>
+                    <td class="mono snippet">            == '{&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/gateway/providers/test_mistral.py</td>
+                    <td>329</td>
+                    <td class="mono snippet">                    &quot;content&quot;: '{&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/gateway/providers/test_mistral.py</td>
+                    <td>346</td>
+                    <td class="mono snippet">            == '{&quot;name&quot;: &quot;John Doe&quot;, &quot;email&quot;: &quot;john@example.com&quot;}'</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/test_databricks_rest_store.py</td>
+                    <td>1827</td>
+                    <td class="mono snippet">                &quot;created_by&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/test_databricks_rest_store.py</td>
+                    <td>1828</td>
+                    <td class="mono snippet">                &quot;last_updated_by&quot;: &quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/test_databricks_rest_store.py</td>
+                    <td>1862</td>
+                    <td class="mono snippet">        assert result[0].created_by == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/test_databricks_rest_store.py</td>
+                    <td>1863</td>
+                    <td class="mono snippet">        assert result[0].last_updated_by == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store_issues.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">        created_by=&quot;user@example.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store_issues.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">    assert issue.created_by == &quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>6411</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>6419</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>6429</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>6481</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>6491</td>
+                    <td class="mono snippet">        source=AssessmentSource(source_type=&quot;HUMAN&quot;, source_id=&quot;user@example.com&quot;),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_workspace_store.py</td>
+                    <td>1100</td>
+                    <td class="mono snippet">                source_type=AssessmentSourceType.HUMAN, source_id=&quot;user@example.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/utils/LoggedModels.test-utils.ts</td>
+                    <td>16</td>
+                    <td class="mono snippet">      creator_id: 'test@test.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/components/artifact-view-components/ShowArtifactLoggedTableView.test.tsx</td>
+                    <td>16</td>
+                    <td class="mono snippet">    ['row-2', 'ERROR', 'Lorem ipsum'],</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/hooks/logged-models/useCombinedRunInputsOutputsModels.test.tsx</td>
+                    <td>18</td>
+                    <td class="mono snippet">      creator_id: 'test@test.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/prompts/PromptsPage.test.tsx</td>
+                    <td>118</td>
+                    <td class="mono snippet">    await userEvent.type(screen.getByLabelText('Prompt:'), 'lorem ipsum');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/prompts/PromptsPage.test.tsx</td>
+                    <td>134</td>
+                    <td class="mono snippet">              value: 'lorem ipsum',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/experiment-logged-models/ExperimentLoggedModelDetailsPage.test.tsx</td>
+                    <td>92</td>
+                    <td class="mono snippet">            creator_id: 'test@test.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/typescript/core/tests/core/api.test.ts</td>
+                    <td>302</td>
+                    <td class="mono snippet">              const userData = { id: userId, name: 'John Doe', email: 'john@example.com' };</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/typescript/core/tests/core/api.test.ts</td>
+                    <td>319</td>
+                    <td class="mono snippet">        expect(result).toEqual({ id: 'user-123', name: 'John Doe', email: 'john@example.com' });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">libs/typescript/core/tests/core/api.test.ts</td>
+                    <td>330</td>
+                    <td class="mono snippet">          name: 'John Doe',</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(39 hits · 66 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>1195</td>
+                    <td class="mono snippet"># Test a field that doesn't exist for extraction - we shouldn't throw, just return empty column</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/utils/test_environment.py</td>
+                    <td>375</td>
+                    <td class="mono snippet">            # Should just pass with warning</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/ag2/test_ag2_autolog.py</td>
+                    <td>317</td>
+                    <td class="mono snippet">    # Test if the duration calculation for LLM completion is robust to timezone changes.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/examples/README.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">## Examples that utilize `mlflow run` construct</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracking/test_tracking.py</td>
+                    <td>811</td>
+                    <td class="mono snippet">    # Create a run and verify that the current active experiment is the one we just set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracking/test_tracking.py</td>
+                    <td>897</td>
+                    <td class="mono snippet">    # Create a run and verify that the current active experiment is the one we just set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/evaluate/test_utils.py</td>
+                    <td>505</td>
+                    <td class="mono snippet">    # Using set because eval harness runs predict_fn in parallel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/evaluate/test_evaluation.py</td>
+                    <td>656</td>
+                    <td class="mono snippet">        # Eval harness runs prediction in parallel, so the order is not deterministic</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/genai/evaluate/test_evaluation.py</td>
+                    <td>716</td>
+                    <td class="mono snippet">            # ThreadPoolExecutor is called twice in OSS (harness + scorers)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/demo/__init__.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # demo generation (e.g. by the evaluation harness's ThreadPoolExecutor) can resolve</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>82</td>
+                    <td class="mono snippet"># This is necessary for evaluation harness to access generated traces during</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/tracing/processor/base_mlflow.py</td>
+                    <td>244</td>
+                    <td class="mono snippet">        # synchronously for the evaluation harness.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/display/display_handler.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # we can't just call trace.to_json() because this</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/tracing/export/mlflow_v3.py</td>
+                    <td>163</td>
+                    <td class="mono snippet">            # harness can access to the trace using mlflow.get_trace(eval_request_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/tracing/export/mlflow_v3.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">        # During evaluate, the eval harness relies on the generated trace objects,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/R/mlflow/R/databricks-utils.R</td>
+                    <td>146</td>
+                    <td class="mono snippet">#' mode. This function extracts relevant data that MLflow needs in order to properly utilize the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/auth/__init__.py</td>
+                    <td>1604</td>
+                    <td class="mono snippet">        # No secret being changed, just return True</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/config-eslint/presets/createConfigFactory.js</td>
+                    <td>734</td>
+                    <td class="mono snippet">          // TypeScript's `noFallthroughCasesInSwitch` option is more robust (#6906)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/server/js/eslint-plugin/rules/no-new-object-or-array-in-zustand-selector.js</td>
+                    <td>138</td>
+                    <td class="mono snippet">          // More robust check might involve looking at definition types or scope level</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/utils/proto_json_utils.py</td>
+                    <td>451</td>
+                    <td class="mono snippet">    else:  # by default just return whatever this is and hope for the best</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/utils/requirements_utils.py</td>
+                    <td>670</td>
+                    <td class="mono snippet">    # NB: When a final name has been decided for GA for the aforementioned</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/tracking/artifact_utils.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">        else:  # if we're dealing with nt-based systems, we need to utilize pathname2url to encode.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/judges/adapters/litellm_adapter.py</td>
+                    <td>46</td>
+                    <td class="mono snippet"># ContextVar that upstream modules (e.g. the evaluate harness) can set to disable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/judges/adapters/litellm_adapter.py</td>
+                    <td>521</td>
+                    <td class="mono snippet">    # When an upstream module (e.g. the evaluate harness) has set the flag,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/judges/instructions_judge/__init__.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">        # NB: We create a dummy PromptVersion here to leverage its existing template variable</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/scorers/job.py</td>
+                    <td>316</td>
+                    <td class="mono snippet">            # Use _compute_eval_scores from harness - supports scorer tracing,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/scorers/base.py</td>
+                    <td>589</td>
+                    <td class="mono snippet">            # TODO: Replace 'Assessment' with 'Feedback' once we migrate from the agent eval harness</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/evaluation/base.py</td>
+                    <td>363</td>
+                    <td class="mono snippet">            # harness will use those traces directly rather than calling predict_fn again.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/genai/evaluation/base.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">        # NB: The &quot;RAG_EVAL_MAX_WORKERS&quot; env var is used in the DBX agent harness, but is</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/entities/span.py</td>
+                    <td>835</td>
+                    <td class="mono snippet">        #     propagation mechanism, so here we just use the native object that meets our</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/spark/autologging.py</td>
+                    <td>226</td>
+                    <td class="mono snippet">        # If there are active runs, simply set the tag on the latest active run</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/store/tracking/sqlalchemy_store.py</td>
+                    <td>1019</td>
+                    <td class="mono snippet">        # simply call _log_metrics and let it handle the rest</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/store/tracking/sqlalchemy_store.py</td>
+                    <td>1290</td>
+                    <td class="mono snippet">            # just create a new SqlLatestMetric instance since both</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/store/tracking/sqlalchemy_store.py</td>
+                    <td>4213</td>
+                    <td class="mono snippet">                # Assessment doesn't exist - this is idempotent, so just return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/store/db_migrations/versions/1b5f0d9ad7c1_add_workspace_columns_and_catalog.py</td>
+                    <td>442</td>
+                    <td class="mono snippet">    # We could potentially leverage Alembic's batch_alter_table with recreate=&quot;auto&quot; to avoid the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mlflow/store/analytics/trace_correlation.py</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Using Jeffreys prior (alpha=0.5) to minimize bias while providing robust estimates</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">changelogs/v2.x.md</td>
+                    <td>640</td>
+                    <td class="mono snippet">- **Databricks SDK Integration**🔐 - MLflow's interaction with Databricks endpoints has been fully migrated to use the [Databricks SDK](https://docs.da</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">changelogs/v2.x.md</td>
+                    <td>642</td>
+                    <td class="mono snippet">- **Spark VectorUDT Support**💥 - MLflow's [Model Signature](https://mlflow.org/docs/latest/model/signatures.html) framework now supports Spark Vector </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/gemini/tracing.py</td>
+                    <td>25</td>
+                    <td class="mono snippet"># Also leverage the chat feature to conduct multi-turn interactions</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(62 hits · 62 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/test_tracing_utils.py</td>
+                    <td>422</td>
+                    <td class="mono snippet">    # Step 1: Agent creates span and generates traceparent headers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/gateway/test_tracing_utils.py</td>
+                    <td>428</td>
+                    <td class="mono snippet">    # Step 2: Gateway processes request (no active agent span, simulating separate server)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>10060</td>
+                    <td class="mono snippet">    # Step 1: log_spans() creates the trace row as spans are exported incrementally.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>10084</td>
+                    <td class="mono snippet">    # Step 2: _log_trace() calls start_trace() with the full TraceInfo (including</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11487</td>
+                    <td class="mono snippet">    # Step 2: Test list_scorers - should return latest version for each scorer name</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11531</td>
+                    <td class="mono snippet">    # Step 3: Test get_scorer with specific versions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11547</td>
+                    <td class="mono snippet">    # Step 4: Test get_scorer without version (should return latest)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11560</td>
+                    <td class="mono snippet">    # Step 5: Test error cases for get_scorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11571</td>
+                    <td class="mono snippet">    # Step 6: Test delete_scorer - delete specific version of accuracy_scorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11595</td>
+                    <td class="mono snippet">    # Step 7: Test delete_scorer - delete all versions of accuracy_scorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11611</td>
+                    <td class="mono snippet">    # Step 8: Test list_scorers after deletion</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11622</td>
+                    <td class="mono snippet">    # Step 9: Test delete_scorer for non-existent scorer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11626</td>
+                    <td class="mono snippet">    # Step 10: Test delete_scorer for non-existent version</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11632</td>
+                    <td class="mono snippet">    # Step 11: Test delete_scorer for remaining scorers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/store/tracking/sqlalchemy_store/test_sqlalchemy_store.py</td>
+                    <td>11642</td>
+                    <td class="mono snippet">    # Step 12: Test list_scorer_versions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/add-review-comment/SKILL.md</td>
+                    <td>14</td>
+                    <td class="mono snippet">## Step 1: Locate the line to comment on</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/add-review-comment/SKILL.md</td>
+                    <td>18</td>
+                    <td class="mono snippet">## Step 2: Post the comment</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>104</td>
+                    <td class="mono snippet">    # Step 1: Select provider</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    # Step 2: Check provider availability</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>113</td>
+                    <td class="mono snippet">    # Step 3: Optionally connect experiment with code repository</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>116</td>
+                    <td class="mono snippet">    # Step 4: Ask for model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>119</td>
+                    <td class="mono snippet">    # Step 5: Ask for skill location</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">    # Step 6: Install skills</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/assistant/cli.py</td>
+                    <td>125</td>
+                    <td class="mono snippet">    # Step 7: Save configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>1142</td>
+                    <td class="mono snippet">    # Step 1: Page through traces to collect unique session IDs (up to max_results)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>1173</td>
+                    <td class="mono snippet">    # Step 2: Fetch complete traces for each session in parallel</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/types/schema.py</td>
+                    <td>266</td>
+                    <td class="mono snippet">        When two properties have the same name, we need to check if their dtypes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/langchain/databricks_dependencies.py</td>
+                    <td>190</td>
+                    <td class="mono snippet">    To keep backward compatibility, we need to check if the object is an instance of the</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/assistant/AssistantService.ts</td>
+                    <td>128</td>
+                    <td class="mono snippet">    // Step 1: POST the message to initiate processing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/assistant/AssistantService.ts</td>
+                    <td>145</td>
+                    <td class="mono snippet">    // Step 2: Get the session_id from the response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/assistant/AssistantService.ts</td>
+                    <td>157</td>
+                    <td class="mono snippet">    // Step 3: Connect to the SSE endpoint to receive the stream</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/timeline-tree/gantt/TimelineTreeGanttBars.tsx</td>
+                    <td>21</td>
+                    <td class="mono snippet">  // Step 1: raw interval</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/timeline-tree/gantt/TimelineTreeGanttBars.tsx</td>
+                    <td>24</td>
+                    <td class="mono snippet">  // Step 2: round to a &quot;nice&quot; interval</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/timeline-tree/gantt/TimelineTreeGanttBars.tsx</td>
+                    <td>36</td>
+                    <td class="mono snippet">  // Step 3: extend right bound so we always overshoot it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/timeline-tree/gantt/TimelineTreeGanttBars.tsx</td>
+                    <td>41</td>
+                    <td class="mono snippet">  // Step 4: Generate tick positions</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/graph-view/GraphView.workflow.ts</td>
+                    <td>244</td>
+                    <td class="mono snippet">    // Step 1: Position leaf nodes (no children) sequentially</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/graph-view/GraphView.workflow.ts</td>
+                    <td>255</td>
+                    <td class="mono snippet">    // Step 2: Center parent nodes above their positioned children</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/graph-view/GraphView.workflow.ts</td>
+                    <td>270</td>
+                    <td class="mono snippet">    // Step 3: Position any remaining unpositioned nodes in this layer</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/model-trace-explorer/graph-view/GraphView.workflow.ts</td>
+                    <td>279</td>
+                    <td class="mono snippet">    // Step 4: Resolve overlaps — sort by x, push right as needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/experiment-evaluation-runs/RunEvaluationButton.tsx</td>
+                    <td>16</td>
+                    <td class="mono snippet"># Step 1: Define evaluation dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/experiment-evaluation-runs/RunEvaluationButton.tsx</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Step 2: Define predict_fn</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/server/js/src/experiment-tracking/pages/experiment-evaluation-runs/RunEvaluationButton.tsx</td>
+                    <td>31</td>
+                    <td class="mono snippet"># Step 3: Run evaluation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/utils/async_logging/async_logging_queue.py</td>
+                    <td>148</td>
+                    <td class="mono snippet">                # `queue_size` is an estimate, so we need to check if the queue is empty.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/cli/crypto.py</td>
+                    <td>77</td>
+                    <td class="mono snippet">        # Step 1: Stop server (or ctrl-c if running in foreground)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/cli/crypto.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">        # Step 4: Run rotation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/cli/crypto.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">        # Step 5: Update deployment config (example for Kubernetes)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/cli/crypto.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # Step 6: Restart server</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/ai_commands/genai/analyze_experiment.md</td>
+                    <td>17</td>
+                    <td class="mono snippet">## Step 1: Setup and Configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/ai_commands/genai/analyze_experiment.md</td>
+                    <td>79</td>
+                    <td class="mono snippet">## Step 2: Analysis Phase</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/transformers/__init__.py</td>
+                    <td>2330</td>
+                    <td class="mono snippet">        The purpose of this function is to convert them into the correct format for input</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 12 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(6 hits · 30 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">mlflow/metrics/genai/model_utils.py</td>
+                    <td>347</td>
+                    <td class="mono snippet">    # new ones as requested, as long as the provider support chat endpoints.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/genai-traces-table/components/GenAiEvaluationTracesReview.utils.tsx</td>
+                    <td>908</td>
+                    <td class="mono snippet">  // It is not AI generated, and it doesn't have the `IS_FROM_AI` metadata field set to true</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/genai-traces-table/components/GenAiEvaluationTracesReview.tsx</td>
+                    <td>60</td>
+                    <td class="mono snippet">      // We check if there are no user provided overall assessments and if the last overall assessment was AI generated.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">mlflow/server/js/src/shared/web-shared/genai-traces-table/components/GenAiEvaluationTracesReview.tsx</td>
+                    <td>66</td>
+                    <td class="mono snippet">      // If we should repeat the AI generated overall assessment, we need to copy and add it to the list of assessments to save.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">mlflow/genai/scorers/job.py</td>
+                    <td>240</td>
+                    <td class="mono snippet">    # Preserve order of traces as requested</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">.github/workflows/triage.yml</td>
+                    <td>137</td>
+                    <td class="mono snippet">          🤖 This assessment was generated by AI and may be incorrect. A maintainer will review.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(11 hits · 22 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/pyfunc/test_spark.py</td>
+                    <td>128</td>
+                    <td class="mono snippet">    # Don't forget to revert these changes prior to pushing a branch!</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/tracing/client.py</td>
+                    <td>52</td>
+                    <td class="mono snippet">    # End the child span. Please make sure to end the child span before ending the root span.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/tracing/client.py</td>
+                    <td>80</td>
+                    <td class="mono snippet"># Alternatively, you can use search_traces() API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/tracing/fluent.py</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Alternatively, you can use `search_traces` API to retrieve</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/docker/train.py</td>
+                    <td>35</td>
+                    <td class="mono snippet">    # Read the wine-quality csv file (make sure you're running this from the root of MLflow!)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/evaluation/evaluate_with_model_validation.py</td>
+                    <td>102</td>
+                    <td class="mono snippet"># If you would like to catch model validation failures, you can add try except clauses around</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/gateway/ai21_labs/README.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">After obtaining the key, you can export it to your environment variables. Make sure to replace the '...' with your actual API key:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/gateway/anthropic/README.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">After obtaining the key, you can export it to your environment variables. Make sure to replace the '...' with your actual API key:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/ISSUE_TEMPLATE/good_first_issue.yaml</td>
+                    <td>22</td>
+                    <td class="mono snippet">                   # ^^ make sure to use this</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dev/update_ml_package_versions.py</td>
+                    <td>7</td>
+                    <td class="mono snippet"># How to run (make sure you're in the repository root):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">dev/update_mlflow_versions.py</td>
+                    <td>122</td>
+                    <td class="mono snippet"># version of a dependency. to work around, we make sure to</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(15 hits · 15 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>1815</td>
+                    <td class="mono snippet">    def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_fluent.py</td>
+                    <td>2410</td>
+                    <td class="mono snippet">    def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_provider.py</td>
+                    <td>477</td>
+                    <td class="mono snippet">    def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/test_otel_logging.py</td>
+                    <td>638</td>
+                    <td class="mono snippet">        def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/tracing/processor/test_otel_metrics.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">    def test_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/llama_index/test_llama_index_tracer.py</td>
+                    <td>738</td>
+                    <td class="mono snippet">        async def process_data(self, ev: ProcessEvent) -&gt; ResultEvent:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/llama_index/test_llama_index_tracer.py</td>
+                    <td>809</td>
+                    <td class="mono snippet">        async def process_data(self, ev: ProcessEvent) -&gt; ResultEvent:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/test_agent_server.py</td>
+                    <td>122</td>
+                    <td class="mono snippet">    def my_function(request):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/test_agent_server.py</td>
+                    <td>470</td>
+                    <td class="mono snippet">        def test_function(request):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/genai/test_agent_server.py</td>
+                    <td>488</td>
+                    <td class="mono snippet">        def test_function(request):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/pyfunc/sample_code/utils.py</td>
+                    <td>1</td>
+                    <td class="mono snippet">def my_function(input):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/fetch-diff/SKILL.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">15    16 |  def process_data(input_file: str) -&gt; dict:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>143</td>
+                    <td class="mono snippet">        def my_function(x, y):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/tracing/fluent.py</td>
+                    <td>155</td>
+                    <td class="mono snippet">        def my_function(x, y):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/clint/tests/test_index.py</td>
+                    <td>12</td>
+                    <td class="mono snippet">    test_file.write_text(&quot;def test_function(): pass&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(5 hits · 5 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">mlflow/protos/opentelemetry/update.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/sklearn_elasticnet_diabetes/osx/train_diabetes.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">#  Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">examples/sklearn_elasticnet_diabetes/linux/train_diabetes.py</td>
+                    <td>13</td>
+                    <td class="mono snippet">#  Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/set_matrix.py</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">dev/publish_model_catalog.sh</td>
+                    <td>4</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-04-29 18:58 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
