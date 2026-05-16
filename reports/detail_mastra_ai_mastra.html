@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — mastra-ai/mastra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>mastra-ai/mastra</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-low">1.0</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">1.0</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">926</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">1899</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">1,964,566</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">7786</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-05-15</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(60 hits · 600 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/background-tasks/index.ts</td>
+                    <td>228</td>
+                    <td class="mono snippet">        const res = await this.service.entities.background_task.scan.go({ pages: 'all' });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/memory/index.ts</td>
+                    <td>327</td>
+                    <td class="mono snippet">        messageIds.map(id =&gt; this.service.entities.message.query.primary({ entity: 'message', id }).go()),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/memory/index.ts</td>
+                    <td>424</td>
+                    <td class="mono snippet">      const query = this.service.entities.message.query.byThread({ entity: 'message', threadId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/memory/index.ts</td>
+                    <td>675</td>
+                    <td class="mono snippet">        : (await this.service.entities.thread.scan.go({ pages: 'all' })).data;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/memory/index.ts</td>
+                    <td>788</td>
+                    <td class="mono snippet">          const query = this.service.entities.message.query.byThread({ entity: 'message', threadId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/workflows/index.ts</td>
+                    <td>425</td>
+                    <td class="mono snippet">        query = this.service.entities.workflow_snapshot.query.primary({</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/scores/index.ts</td>
+                    <td>209</td>
+                    <td class="mono snippet">      const query = this.service.entities.score.query.byScorer({ entity: 'score', scorerId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/scores/index.ts</td>
+                    <td>278</td>
+                    <td class="mono snippet">      const query = this.service.entities.score.query.byRun({ entity: 'score', runId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/scores/index.ts</td>
+                    <td>331</td>
+                    <td class="mono snippet">      const query = this.service.entities.score.query.byEntityData({ entity: 'score', entityId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/dynamodb/src/storage/domains/scores/index.ts</td>
+                    <td>387</td>
+                    <td class="mono snippet">      const query = this.service.entities.score.query.bySpan({ entity: 'score', traceId, spanId });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/vectorize/src/vector/index.ts</td>
+                    <td>242</td>
+                    <td class="mono snippet">      await this.client.vectorize.indexes.metadataIndex.create(indexName, {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/vectorize/src/vector/index.ts</td>
+                    <td>262</td>
+                    <td class="mono snippet">      await this.client.vectorize.indexes.metadataIndex.delete(indexName, {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">stores/vectorize/src/vector/index.ts</td>
+                    <td>281</td>
+                    <td class="mono snippet">      const res = await this.client.vectorize.indexes.metadataIndex.list(indexName, {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">observability/_examples/otel-bridge/hono-multi/src/integration.test.ts</td>
+                    <td>109</td>
+                    <td class="mono snippet">        return data.data.getTraceByOtelId.spans.edges.map((edge: any) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1135</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1195</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1254</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1330</td>
+                    <td class="mono snippet">    const rmCalls = mockSandbox.process.exec.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1335</td>
+                    <td class="mono snippet">    const rmdirCalls = mockSandbox.process.exec.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1409</td>
+                    <td class="mono snippet">    const rmCalls = mockSandbox.process.exec.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1453</td>
+                    <td class="mono snippet">    const procMountsCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1458</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1489</td>
+                    <td class="mono snippet">    const procMountsCalls = mockSandbox.process.exec.mock.calls.filter((c: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/blaxel/src/sandbox/index.test.ts</td>
+                    <td>1548</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.process.exec.mock.calls.filter((call: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/daytona/src/sandbox/index.test.ts</td>
+                    <td>647</td>
+                    <td class="mono snippet">      const mountCall = mockSandbox.process.executeCommand.mock.calls.find((call: any[]) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/daytona/src/sandbox/index.test.ts</td>
+                    <td>677</td>
+                    <td class="mono snippet">      mockSandbox.process.executeCommand.mock.calls.find((call: any[]) =&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/daytona/src/sandbox/index.test.ts</td>
+                    <td>683</td>
+                    <td class="mono snippet">      const upload = mockSandbox.fs.uploadFile.mock.calls.find((call: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>894</td>
+                    <td class="mono snippet">      mockSandbox.commands.run.mock.calls.some(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>922</td>
+                    <td class="mono snippet">      mockSandbox.commands.run.mock.calls.some(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1072</td>
+                    <td class="mono snippet">    return mockSandbox.commands.run.mock.calls.find(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1079</td>
+                    <td class="mono snippet">    const writeCall = mockSandbox.files.write.mock.calls.find((call: any[]) =&gt;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1455</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1480</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1501</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1528</td>
+                    <td class="mono snippet">    const rmCalls = mockSandbox.commands.run.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1534</td>
+                    <td class="mono snippet">    const rmdirCalls = mockSandbox.commands.run.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1562</td>
+                    <td class="mono snippet">    const rmCalls = mockSandbox.commands.run.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1594</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1623</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1646</td>
+                    <td class="mono snippet">    const rmCalls = mockSandbox.commands.run.mock.calls.filter(</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1683</td>
+                    <td class="mono snippet">    const procMountsCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('/proc/mounts'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1687</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1711</td>
+                    <td class="mono snippet">    const procMountsCalls = mockSandbox.commands.run.mock.calls.filter((c: any[]) =&gt; c[0].includes('/proc/mounts'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">workspaces/e2b/src/sandbox/index.test.ts</td>
+                    <td>1755</td>
+                    <td class="mono snippet">    const fusermountCalls = mockSandbox.commands.run.mock.calls.filter((call: any[]) =&gt; call[0].includes('fusermount'));</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/stream/base/output.ts</td>
+                    <td>856</td>
+                    <td class="mono snippet">                  const responseMessages = self.messageList.get.response.aiV4.core();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/stream/base/output.ts</td>
+                    <td>1056</td>
+                    <td class="mono snippet">              content: self.messageList.get.response.aiV5.stepContent(),</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/agent/message-list/utils/convert-messages.ts</td>
+                    <td>74</td>
+                    <td class="mono snippet">        return this.messageList.get.all.aiV4.ui();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/agent/message-list/utils/convert-messages.ts</td>
+                    <td>76</td>
+                    <td class="mono snippet">        return this.messageList.get.all.aiV4.core();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/agent/message-list/utils/convert-messages.ts</td>
+                    <td>78</td>
+                    <td class="mono snippet">        return this.messageList.get.all.aiV5.ui();</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">packages/core/src/agent/message-list/utils/convert-messages.ts</td>
+                    <td>80</td>
+                    <td class="mono snippet">        return this.messageList.get.all.aiV5.model();</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 10 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(407 hits · 407 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">DEVELOPMENT.md</td>
+                    <td>85</td>
+                    <td class="mono snippet">### Step 1: Make your changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">DEVELOPMENT.md</td>
+                    <td>89</td>
+                    <td class="mono snippet">### Step 2: Build the packages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">DEVELOPMENT.md</td>
+                    <td>109</td>
+                    <td class="mono snippet">### Step 3: Test your changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Step 1: Get PR Information</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Step 2: Check for Clean Working Directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 3: Fetch and Checkout the Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 4: Run Lint and Format Fixes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 5: Check for Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 6: Commit and Push</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/gh-fix-lint.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">## Step 7: Return to Original Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/ralph-plan.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">### Step 1: Understand the Goal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/ralph-plan.md</td>
+                    <td>46</td>
+                    <td class="mono snippet">### Step 2: Define Background</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/ralph-plan.md</td>
+                    <td>53</td>
+                    <td class="mono snippet">### Step 3: Plan Setup Steps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/ralph-plan.md</td>
+                    <td>61</td>
+                    <td class="mono snippet">### Step 4: Break Down Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.cursor/commands/ralph-plan.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">### Step 5: Define Testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Step 1: Get PR Information</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Step 2: Check for Clean Working Directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 3: Fetch and Checkout the Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 4: Run Lint and Format Fixes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 5: Check for Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 6: Commit and Push</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/gh-fix-lint.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">## Step 7: Return to Original Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/ralph-plan.md</td>
+                    <td>38</td>
+                    <td class="mono snippet">### Step 1: Understand the Goal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/ralph-plan.md</td>
+                    <td>46</td>
+                    <td class="mono snippet">### Step 2: Define Background</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/ralph-plan.md</td>
+                    <td>53</td>
+                    <td class="mono snippet">### Step 3: Plan Setup Steps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/ralph-plan.md</td>
+                    <td>61</td>
+                    <td class="mono snippet">### Step 4: Break Down Tasks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.mastracode/commands/ralph-plan.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">### Step 5: Define Testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2865</td>
+                    <td class="mono snippet">      // Step 1: Start message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2877</td>
+                    <td class="mono snippet">      // Step 2: First text stream starts - &quot;Let me search&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2900</td>
+                    <td class="mono snippet">      // Step 3: Tool call</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2916</td>
+                    <td class="mono snippet">      // Step 4: Tool result</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2933</td>
+                    <td class="mono snippet">      // Step 5: Second text stream starts - &quot;Here's what I found&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">client-sdks/react/src/lib/ai-sdk/utils/toUIMessage.test.ts</td>
+                    <td>2956</td>
+                    <td class="mono snippet">      // Step 6: Finish</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/agent-network-vs-ralph-wiggum.md</td>
+                    <td>276</td>
+                    <td class="mono snippet">    // Step 1: Run LLM completion assessment (existing behavior)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/agent-network-vs-ralph-wiggum.md</td>
+                    <td>282</td>
+                    <td class="mono snippet">    // Step 2: If validation configured, run programmatic checks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>44</td>
+                    <td class="mono snippet">### Step 1: Find Failures to Investigate</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>55</td>
+                    <td class="mono snippet">### Step 2: Setup Investigation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>77</td>
+                    <td class="mono snippet">### Step 3: Investigate Each Question</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>144</td>
+                    <td class="mono snippet">### Step 4: Document Findings</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>181</td>
+                    <td class="mono snippet">### Step 5: Mark as Investigated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>193</td>
+                    <td class="mono snippet">### Step 6: Implement Fixes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>214</td>
+                    <td class="mono snippet">### Step 7: Mark as Fixed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">explorations/longmemeval/docs/INVESTIGATION_WORKFLOW.md</td>
+                    <td>220</td>
+                    <td class="mono snippet">### Step 8: Sync to Dataset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Step 1: Get PR Information</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>22</td>
+                    <td class="mono snippet">## Step 2: Check for Clean Working Directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Step 3: Fetch and Checkout the Branch</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>42</td>
+                    <td class="mono snippet">## Step 4: Run Lint and Format Fixes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>49</td>
+                    <td class="mono snippet">## Step 5: Check for Changes</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>57</td>
+                    <td class="mono snippet">## Step 6: Commit and Push</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.opencode/command/gh-fix-lint.md</td>
+                    <td>70</td>
+                    <td class="mono snippet">## Step 7: Return to Original Branch</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 357 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(203 hits · 406 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>136</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>138</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>249</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>251</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>389</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/workos/src/fga-provider.ts</td>
+                    <td>391</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tests/navigation.spec.ts</td>
+                    <td>130</td>
+                    <td class="mono snippet">// ─── Sidebar navigation tests ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/tests/navigation.spec.ts</td>
+                    <td>198</td>
+                    <td class="mono snippet">// ─── Admonitions and tabs on /guides/build-your-ui/ai-sdk-ui ──────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workspaces/agentfs/src/filesystem/index.integration.test.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">// ─── Basic Integration Tests ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workspaces/agentfs/src/filesystem/index.integration.test.ts</td>
+                    <td>170</td>
+                    <td class="mono snippet">// ─── Agent Isolation Tests ───────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workspaces/agentfs/src/filesystem/index.integration.test.ts</td>
+                    <td>240</td>
+                    <td class="mono snippet">// ─── CompositeFilesystem Integration Tests ───────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workspaces/agentfs/src/filesystem/index.integration.test.ts</td>
+                    <td>273</td>
+                    <td class="mono snippet">// ─── Shared Conformance Test Suite ───────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/evals/scorers/outcome.ts</td>
+                    <td>32</td>
+                    <td class="mono snippet">// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/evals/scorers/outcome.ts</td>
+                    <td>34</td>
+                    <td class="mono snippet">// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/evals/scorers/outcome.ts</td>
+                    <td>75</td>
+                    <td class="mono snippet">// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/evals/scorers/efficiency.ts</td>
+                    <td>21</td>
+                    <td class="mono snippet">// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/evals/scorers/efficiency.ts</td>
+                    <td>23</td>
+                    <td class="mono snippet">// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>86</td>
+                    <td class="mono snippet">  // ── Core dependencies (set once) ──────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>94</td>
+                    <td class="mono snippet">  // ── TUI framework (set once) ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>102</td>
+                    <td class="mono snippet">  // ── Agent / streaming ─────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>136</td>
+                    <td class="mono snippet">  // ── Thread / conversation ─────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>146</td>
+                    <td class="mono snippet">  // ── Inline interaction ────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>172</td>
+                    <td class="mono snippet">  // ── Status line ───────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>178</td>
+                    <td class="mono snippet">  // ── Observational Memory ──────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>186</td>
+                    <td class="mono snippet">  // ── Tasks ─────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>189</td>
+                    <td class="mono snippet">  // ── Goal loop ─────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>192</td>
+                    <td class="mono snippet">  // ── Input ─────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>199</td>
+                    <td class="mono snippet">  // ── Abort tracking ────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/state.ts</td>
+                    <td>204</td>
+                    <td class="mono snippet">  // ── Cleanup ───────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>17</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>19</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>29</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>72</td>
+                    <td class="mono snippet">  // ── Mutation API ──────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>116</td>
+                    <td class="mono snippet">  // ── Rendering ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>239</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/subagent-execution.ts</td>
+                    <td>241</td>
+                    <td class="mono snippet">// ─────────────────────────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/__tests__/subagent-execution.test.ts</td>
+                    <td>87</td>
+                    <td class="mono snippet">  // ─── Default behavior: NO collapse ──────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">mastracode/src/tui/components/__tests__/subagent-execution.test.ts</td>
+                    <td>126</td>
+                    <td class="mono snippet">  // ─── Opt-in collapse behavior ──────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>68</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>70</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>89</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>91</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>123</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>125</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>147</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>149</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>187</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/scripts/seed-fga.ts</td>
+                    <td>189</td>
+                    <td class="mono snippet">  // ──────────────────────────────────────────────────────────</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/mcp/external-app-server.ts</td>
+                    <td>18</td>
+                    <td class="mono snippet">// ── ui:// app resource: a color-mixer UI ────────────────────────────────────</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 153 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(141 hits · 282 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">server-adapters/express/src/__tests__/auth-middleware.test.ts</td>
+                    <td>17</td>
+                    <td class="mono snippet">          token === 'valid-token' ? { id: 'user-1', email: 'user@example.com' } : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">server-adapters/express/src/__tests__/auth-middleware.test.ts</td>
+                    <td>79</td>
+                    <td class="mono snippet">      email: 'user@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">server-adapters/hono/src/__tests__/auth-middleware.test.ts</td>
+                    <td>16</td>
+                    <td class="mono snippet">          token === 'valid-token' ? { id: 'user-1', email: 'user@example.com' } : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">server-adapters/fastify/src/__tests__/auth-middleware.test.ts</td>
+                    <td>16</td>
+                    <td class="mono snippet">          token === 'valid-token' ? { id: 'user-1', email: 'user@example.com' } : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">server-adapters/koa/src/__tests__/auth-middleware.test.ts</td>
+                    <td>18</td>
+                    <td class="mono snippet">          token === 'valid-token' ? { id: 'user-1', email: 'user@example.com' } : null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/okta/src/index.test.ts</td>
+                    <td>171</td>
+                    <td class="mono snippet">          profile: { login: 'user@example.com', email: 'user@example.com', firstName: 'Test', lastName: 'User' },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">auth/okta/src/index.test.ts</td>
+                    <td>180</td>
+                    <td class="mono snippet">        email: 'user@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">client-sdks/ai-sdk/src/__tests__/custom-data.test.ts</td>
+                    <td>129</td>
+                    <td class="mono snippet">                    name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">client-sdks/ai-sdk/src/__tests__/custom-data.test.ts</td>
+                    <td>160</td>
+                    <td class="mono snippet">      expect(customDataChunk.data.user.name).toBe('John Doe');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workflows/_test-utils/src/domains/structured-output.ts</td>
+                    <td>168</td>
+                    <td class="mono snippet">                  phone: '555-1234',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/astra/src/vector/index.test.ts</td>
+                    <td>428</td>
+                    <td class="mono snippet">            name: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.integration.test.ts</td>
+                    <td>255</td>
+                    <td class="mono snippet">        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.integration.test.ts</td>
+                    <td>255</td>
+                    <td class="mono snippet">        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>378</td>
+                    <td class="mono snippet">        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>378</td>
+                    <td class="mono snippet">        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>400</td>
+                    <td class="mono snippet">          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>400</td>
+                    <td class="mono snippet">          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>403</td>
+                    <td class="mono snippet">          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>403</td>
+                    <td class="mono snippet">          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>485</td>
+                    <td class="mono snippet">          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>485</td>
+                    <td class="mono snippet">          text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>488</td>
+                    <td class="mono snippet">          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">stores/couchbase/src/vector/index.unit.test.ts</td>
+                    <td>488</td>
+                    <td class="mono snippet">          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">observability/mastra/src/exporters/base.test.ts</td>
+                    <td>377</td>
+                    <td class="mono snippet">      metadata: { ...span.metadata, userName: 'John Doe', department: 'Engineering' },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">observability/mastra/src/exporters/base.test.ts</td>
+                    <td>389</td>
+                    <td class="mono snippet">      userName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">observability/mastra/src/span_processors/senstive-data-filter.test.ts</td>
+                    <td>267</td>
+                    <td class="mono snippet">                  fullName: 'John Doe',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">observability/mastra/src/span_processors/senstive-data-filter.test.ts</td>
+                    <td>313</td>
+                    <td class="mono snippet">                content: '{ email&quot;: &quot;test@test.com&quot; }',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">observability/mastra/src/span_processors/senstive-data-filter.test.ts</td>
+                    <td>328</td>
+                    <td class="mono snippet">        expect(input.messages[0].content).toBe('{ email&quot;: &quot;test@test.com&quot; }');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">browser/agent-browser/src/__tests__/dialog.test.ts</td>
+                    <td>112</td>
+                    <td class="mono snippet">    const result = await browser.dialog({ triggerRef: '@e3', action: 'accept', text: 'John Doe' });</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">browser/agent-browser/src/__tests__/dialog.test.ts</td>
+                    <td>114</td>
+                    <td class="mono snippet">    expect(mockDialog.accept).toHaveBeenCalledWith('John Doe');</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/auth/simple.ts</td>
+                    <td>17</td>
+                    <td class="mono snippet">        email: 'admin@example.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/auth/simple.ts</td>
+                    <td>31</td>
+                    <td class="mono snippet">      const adminEmails = ['admin@example.com', 'owner@example.com'];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/auth/better-auth.ts</td>
+                    <td>40</td>
+                    <td class="mono snippet">      const adminEmails = ['admin@example.com', 'owner@example.com'];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/workflows/other.ts</td>
+                    <td>121</td>
+                    <td class="mono snippet">      email: 'test@test.com',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/llm/tool-call-accuracy/index.test.ts</td>
+                    <td>604</td>
+                    <td class="mono snippet">                args: { to: 'user@example.com' },</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/content-similarity/index.test.ts</td>
+                    <td>99</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/content-similarity/index.test.ts</td>
+                    <td>99</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/keyword-coverage/index.test.ts</td>
+                    <td>113</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/keyword-coverage/index.test.ts</td>
+                    <td>113</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/textual-difference/index.test.ts</td>
+                    <td>75</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/code/textual-difference/index.test.ts</td>
+                    <td>75</td>
+                    <td class="mono snippet">    const output = [createTestMessage({ content: 'Lorem ipsum dolor sit amet', role: 'assistant', id: 'test-output' })];</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>4088</td>
+                    <td class="mono snippet">                        &quot;email&quot;: &quot;test@test.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>4269</td>
+                    <td class="mono snippet">                        &quot;email&quot;: &quot;test@test.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>4857</td>
+                    <td class="mono snippet">                        &quot;email&quot;: &quot;test@test.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>4989</td>
+                    <td class="mono snippet">                          &quot;email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>5081</td>
+                    <td class="mono snippet">                        &quot;email&quot;: &quot;test@test.com&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>5096</td>
+                    <td class="mono snippet">                        &quot;email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>5556</td>
+                    <td class="mono snippet">                          &quot;email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>6022</td>
+                    <td class="mono snippet">                          &quot;email&quot;: &quot;test@test.com&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/tools/hitl.md</td>
+                    <td>73</td>
+                    <td class="mono snippet">      email: 'test@test.com',</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 91 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(40 hits · 80 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">explorations/longmemeval/src/commands/investigate.ts</td>
+                    <td>901</td>
+                    <td class="mono snippet">    console.log(`\n💡 Don't forget to run: pnpm run sync-improved-om-qa\n`);</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/03-agent-memory/27-creating-learning-assistant.md</td>
+                    <td>94</td>
+                    <td class="mono snippet">// Don't forget to export this agent in your src/mastra/index.ts file</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/agent/src/mastra/agents/model-v2-agent.ts</td>
+                    <td>249</td>
+                    <td class="mono snippet"> * Another research agent that should NOT be used (for demonstration purposes)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/evals/src/scorers/llm/tool-call-accuracy/index.test.ts</td>
+                    <td>329</td>
+                    <td class="mono snippet">            content: 'I cannot provide weather information without checking.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>819</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>827</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>986</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1063</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1071</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1236</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1307</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1386</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1394</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1549</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1636</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1644</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1811</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1915</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>1931</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2064</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2072</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2173</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2251</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2294</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2395</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2475</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2483</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2676</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2763</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2771</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2872</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2958</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;You will be calling just *one* primitive at a time to accomplish the user task, every call to you is one decision in the pr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>2966</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-agent-gemini.e2e.json</td>
+                    <td>3141</td>
+                    <td class="mono snippet">                &quot;text&quot;: &quot;\n          You are a router in a network of specialized AI agents.\n          Your job is to decide which agent should handl</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/loop/network/index.ts</td>
+                    <td>234</td>
+                    <td class="mono snippet">          ## Available Workflows in Network (make sure to use inputs corresponding to the input schema when calling a workflow)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/loop/network/index.ts</td>
+                    <td>236</td>
+                    <td class="mono snippet">          ## Available Tools in Network (make sure to use inputs corresponding to the input schema when calling a tool)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>5372</td>
+                    <td class="mono snippet">          &quot;data: {\&quot;candidates\&quot;: [{\&quot;content\&quot;: {\&quot;parts\&quot;: [{\&quot;text\&quot;: \&quot; Niño and La Niña. \\n\\nMy research is now complete. Please let me know if</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/schema-compat/__recordings__/schema-compat-src-provider-compats-google.e2e.json</td>
+                    <td>1160</td>
+                    <td class="mono snippet">                    &quot;text&quot;: &quot;I have successfully called the `manySchemasTool` with valid sample data that matches all the specified schemas and constr</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/schema-compat/__recordings__/schema-compat-src-provider-compats-openai-reasoning.e2e.json</td>
+                    <td>1787</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;The tool has been called with valid sample data. Let me know if you need anything else!&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/playground-ui/src/ds/components/MarkdownRenderer/markdown-renderer.stories.tsx</td>
+                    <td>125</td>
+                    <td class="mono snippet">Here's a simple example:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(33 hits · 66 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.cursor/commands/pr.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Create a changeset using the CLI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.mastracode/commands/pr.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Create a changeset using the CLI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.opencode/command/pr.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Create a changeset using the CLI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workflows/temporal/README.md</td>
+                    <td>13</td>
+                    <td class="mono snippet">## Define a Temporal-backed workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.claude/commands/pr.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Create a changeset using the CLI</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.claude/skills/mastra-docs/references/GUIDE_QUICKSTART.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Create a new $TECHNOLOGY app (optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/styleguides/GUIDE_QUICKSTART.md</td>
+                    <td>30</td>
+                    <td class="mono snippet">## Create a new $TECHNOLOGY app (optional)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/03-agent-memory/27-creating-learning-assistant.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating a Practical Example: Personal Learning Assistant</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/03-agent-memory/04-creating-basic-memory-agent.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating a Basic Memory Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/05-chaining-steps-together.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/15-creating-parallel-steps.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Analysis Steps</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/12-using-agent-in-workflow.md</td>
+                    <td>7</td>
+                    <td class="mono snippet">## Creating an AI Analysis Step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/09-adding-a-third-step.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Summary Step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/13-creating-ai-enhanced-workflow.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Enhanced Workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/04-creating-a-second-step.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating a Second Step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/20-building-conditional-workflow.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Conditional Workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/08-running-workflows-programmatically.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating a Workflow Runner</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/16-building-parallel-workflow.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating the Parallel Workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/11-creating-an-ai-agent.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating an AI Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/11-creating-an-ai-agent.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating a Content Analysis Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/04-workflows/03-creating-your-first-step.md</td>
+                    <td>9</td>
+                    <td class="mono snippet">## Creating a Validation Step</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/01-first-agent/11-creating-transactions-tool.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating the getTransactions Tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/02-agent-tools-mcp/25-creating-notes-directory.md</td>
+                    <td>1</td>
+                    <td class="mono snippet"># Creating a Notes Directory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">docs/src/course/02-agent-tools-mcp/14-getting-github-mcp-url.md</td>
+                    <td>5</td>
+                    <td class="mono snippet">## Creating a GitHub Personal Access Token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/inngest/README.md</td>
+                    <td>52</td>
+                    <td class="mono snippet">## Define the Planning Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/inngest/README.md</td>
+                    <td>111</td>
+                    <td class="mono snippet">## Define the Activity Planner Workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/inngest/README.md</td>
+                    <td>313</td>
+                    <td class="mono snippet">## Define the activity planner workflow</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">examples/inngest/README.md</td>
+                    <td>657</td>
+                    <td class="mono snippet">### Creating a Durable Agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1712</td>
+                    <td class="mono snippet">          &quot;event: content_block_delta\ndata: {\&quot;type\&quot;:\&quot;content_block_delta\&quot;,\&quot;index\&quot;:0,\&quot;delta\&quot;:{\&quot;type\&quot;:\&quot;input_json_delta\&quot;,\&quot;partial_json\&quot;:\</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1824</td>
+                    <td class="mono snippet">                &quot;code&quot;: &quot;\n# Create a document about the benefits of TypeScript\n\ncontent = \&quot;\&quot;\&quot;# Benefits of Using TypeScript\n\nTypeScript enhanc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/acp/README.md</td>
+                    <td>20</td>
+                    <td class="mono snippet">## Create an ACP tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/call-external-mastra-workflow.yml</td>
+                    <td>43</td>
+                    <td class="mono snippet">          # Create the workflow run and capture the runId</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/prompts/pr.prompt.md</td>
+                    <td>10</td>
+                    <td class="mono snippet">## Create a changeset using the CLI</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(16 hits · 32 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">workspaces/docker/src/sandbox/process-manager.ts</td>
+                    <td>95</td>
+                    <td class="mono snippet">      // backoff would be more robust under heavy load, but overkill in practice.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1038</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;TypeScript is an open-source, strongly typed superset of JavaScript developed by Microsoft. It introduces optional static t</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1725</td>
+                    <td class="mono snippet">          &quot;event: content_block_start\ndata: {\&quot;type\&quot;:\&quot;content_block_start\&quot;,\&quot;index\&quot;:1,\&quot;content_block\&quot;:{\&quot;type\&quot;:\&quot;code_execution_tool_result\&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1824</td>
+                    <td class="mono snippet">                &quot;code&quot;: &quot;\n# Create a document about the benefits of TypeScript\n\ncontent = \&quot;\&quot;\&quot;# Benefits of Using TypeScript\n\nTypeScript enhanc</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-tools-provider-tools.e2e.json</td>
+                    <td>1832</td>
+                    <td class="mono snippet">                &quot;stdout&quot;: &quot;Document created successfully!\nWord count: 104\n\n==================================================\n# Benefits of Using </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/__recordings__/core-src-agent-__tests__-tool-handling.e2e.json</td>
+                    <td>1551</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;It seems there was an issue retrieving the information about TypeScript. However, I can provide a summary based on what I k</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/core/src/processors/processors/skills.test.ts</td>
+                    <td>37</td>
+                    <td class="mono snippet">  instructions: '# Testing\n\nHelp write comprehensive tests.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>2782</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;I'll help you research weather patterns in California and create a comprehensive summary. Let me start by explaining my res</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>2922</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;I'll help you research weather patterns in California and create a comprehensive summary. Let me start by explaining my res</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>3086</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;I'll help you research weather patterns in California and create a comprehensive summary. Let me start by explaining my res</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>3277</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;I'll help you research weather patterns in California and create a comprehensive summary. Let me start by explaining my res</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>3556</td>
+                    <td class="mono snippet">                  &quot;text&quot;: &quot;I'll help you research weather patterns in California and create a comprehensive summary. Let me start by explaining my res</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>5156</td>
+                    <td class="mono snippet">          &quot;ces cooler temperatures overall compared to the south.\\n* **Southern California:** Known for hotter, drier conditions. Coastal areas enjoy</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/memory/__recordings__/memory-integration-tests-src-message-ordering-v6.json</td>
+                    <td>5265</td>
+                    <td class="mono snippet">                      &quot;content&quot;: &quot;# Weather Patterns in California\n\nCalifornia is renowned for its diverse and complex climate system. While it is b</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">packages/mcp/src/client/configuration.e2e.test.ts</td>
+                    <td>315</td>
+                    <td class="mono snippet">      // Adding a small delay or an explicit trigger if the fixture supported it would be more robust.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">.github/workflows/secrets.e2e.yml</td>
+                    <td>122</td>
+                    <td class="mono snippet">          # The harness publishes a snapshot to a local registry then installs it</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Example Usage Blocks <small>(14 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-smoke-test/scripts/discover-release-scope.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-smoke-test/scripts/check-versioning-pr.sh</td>
+                    <td>5</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-docs/references/REFERENCE.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">## Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/builder-smoke-test/scripts/scaffold.sh</td>
+                    <td>22</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/builder-smoke-test/scripts/preflight.sh</td>
+                    <td>14</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/builder-smoke-test/scripts/seed-multi-user.sh</td>
+                    <td>20</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/builder-smoke-test/scripts/wait-for-server.sh</td>
+                    <td>6</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">stores/pg/src/storage/performance-indexes/performance-test.ts</td>
+                    <td>530</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">stores/dsql/src/storage/performance-indexes/performance-test.ts</td>
+                    <td>543</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">docs/styleguides/REFERENCE.md</td>
+                    <td>32</td>
+                    <td class="mono snippet">## Usage example</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/install-example.js</td>
+                    <td>95</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/ignore-example.js</td>
+                    <td>102</td>
+                    <td class="mono snippet">// Example usage</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/generate-package-docs.ts</td>
+                    <td>291</td>
+                    <td class="mono snippet">## How to use</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test-migration-e2e.sh</td>
+                    <td>11</td>
+                    <td class="mono snippet"># Usage:</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(8 hits · 8 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-smoke-test/references/environment-variables.md</td>
+                    <td>44</td>
+                    <td class="mono snippet"># Check if you're authenticated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-smoke-test/references/cloud-deploy.md</td>
+                    <td>52</td>
+                    <td class="mono snippet"># Check if credentials file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.claude/skills/mastra-smoke-test/references/tests/setup.md</td>
+                    <td>232</td>
+                    <td class="mono snippet"># Check if set</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">voice/google-gemini-live-api/README.md</td>
+                    <td>41</td>
+                    <td class="mono snippet"># Set path to service account JSON</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test-migration-e2e.sh</td>
+                    <td>137</td>
+                    <td class="mono snippet"># Check if test directory exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">scripts/test-migration-e2e.sh</td>
+                    <td>143</td>
+                    <td class="mono snippet"># Check if test file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/secrets.test-combined-stores.yml</td>
+                    <td>86</td>
+                    <td class="mono snippet">          # Check if we should include vectorize tests</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/workflows/regenerate-provider-registry.yml</td>
+                    <td>76</td>
+                    <td class="mono snippet">          # Check if an automated provider registry changeset already exists</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(4 hits · 4 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/core/src/_types/ai-sdk.types.d.ts</td>
+                    <td>4681</td>
+                    <td class="mono snippet"> export function getData(name: string): ValueOf&lt;typeof data&gt; {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/rag/src/document/document.test.ts</td>
+                    <td>3855</td>
+                    <td class="mono snippet">function processData(data) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/codemod/src/test/__fixtures__/runtime-context.output.ts</td>
+                    <td>22</td>
+                    <td class="mono snippet">function handleRequest(requestContext: RequestContext&lt;MyContext&gt;) {</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">packages/codemod/src/test/__fixtures__/runtime-context.input.ts</td>
+                    <td>22</td>
+                    <td class="mono snippet">function handleRequest(runtimeContext: RuntimeContext&lt;MyContext&gt;) {</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+    <div class="category-block" style="margin-top:2.5rem">
+        <h3>Score History</h3>
+        <div style="background:rgba(10,25,20,0.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(52,211,153,0.08); border-radius:16px; padding:1.5rem; margin-top:0.8rem; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+            <canvas id="historyChart" height="220"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const dates = ["2026-04-18", "2026-04-20", "2026-04-24", "2026-04-25", "2026-04-27", "2026-04-28", "2026-05-15"];
+        const scores = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        const matches = [823, 818, 830, 838, 838, 843, 926];
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Synth Score',
+                    data: scores,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52,211,153,0.10)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Hits',
+                    data: matches,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.08)',
+                    fill: false,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#060d13',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 3],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                    tooltip: { backgroundColor: 'rgba(6,13,19,0.9)', titleColor: '#f1f5f9', bodyColor: '#c8cdd8', borderColor: 'rgba(52,211,153,0.2)', borderWidth: 1 }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { type: 'linear', position: 'left', title: { display: true, text: 'Synth Score', color: '#34d399', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: 'Hits', color: '#f59e0b', font: { family: 'Inter' } }, ticks: { color: '#64748b' }, grid: { drawOnChartArea: false }, min: 0 }
+                }
+            }
+        });
+    })();
+    </script>
+</div>
+<footer>
+    Generated on 2026-05-15 22:34 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>

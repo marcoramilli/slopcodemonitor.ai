@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<title>AI Code Slop Monitor — letta-ai/letta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d13; color: #c8cdd8; line-height: 1.65; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: #34d399; text-decoration: none; transition: color 0.2s; }
+a:hover { color: #6ee7b7; text-decoration: none; }
+.container { max-width: 1340px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+header { position: relative; overflow: hidden; padding: 3rem 0 2.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(170deg, #060d13 0%, #0a1a14 40%, #060d13 100%); }
+header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 40% at 25% 20%, rgba(16,185,129,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 35% at 75% 60%, rgba(52,211,153,0.05) 0%, transparent 70%); pointer-events: none; }
+.header-brand { display: inline-flex; align-items: center; gap: 0.8rem; justify-content: center; position: relative; }
+.header-brand img { height: 44px; flex-shrink: 0; filter: drop-shadow(0 0 16px rgba(16,185,129,0.25)); }
+header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; position: relative; }
+.suggest-btn { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; padding: 0.5rem 1.3rem; background: linear-gradient(135deg, #059669, #10b981); color: #fff; font-weight: 600; font-size: 0.85rem; border: none; border-radius: 10px; text-decoration: none; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(16,185,129,0.2); }
+.suggest-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); color: #fff; }
+.suggest-btn svg { flex-shrink: 0; }
+.badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.badge-critical { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
+.badge-high { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.badge-medium { background: linear-gradient(135deg, #ca8a04, #eab308); color: #1a1a1a; box-shadow: 0 2px 8px rgba(202,138,4,0.15); }
+.badge-low { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.meta { background: rgba(10,25,20,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(52,211,153,0.08); border-radius: 16px; padding: 1.4rem 1.8rem; margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+.meta .item { text-align: center; }
+.meta .item .val { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; }
+.meta .item .lbl { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.back-link { display: inline-block; margin: 1.5rem 0; padding: 0.5rem 1.1rem; background: rgba(16,30,24,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+.back-link:hover { background: rgba(30,50,40,0.8); color: #e2e8f0; text-decoration: none; }
+.category-block { margin: 1.5rem 0; }
+.category-block h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+.category-block h3 small { color: #64748b; font-weight: 400; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.detail-table th { background: rgba(6,13,19,0.5); text-align: left; padding: 0.5rem 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; }
+.detail-table td { padding: 0.4rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.78rem; }
+.snippet { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sev-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.overflow { color: #64748b; font-size: 0.82rem; font-style: italic; }
+footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 2.5rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; position: relative; z-index: 1; }
+footer a { color: #34d399; }
+</style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-brand">
+            <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+            <h1>letta-ai/letta</h1>
+        </div>
+        <p>Detailed SynthScan Findings — <span class="badge badge-medium">12.5</span></p>
+    </div>
+</header>
+<div class="container">
+    <a class="back-link" href="../index.html">&larr; Back to Summary</a>
+    <div class="meta">
+        <div class="item"><div class="val">12.5</div><div class="lbl">Synth Score</div></div>
+        <div class="item"><div class="val">2171</div><div class="lbl">Hits</div></div>
+        <div class="item"><div class="val">3296</div><div class="lbl">Raw Score</div></div>
+        <div class="item"><div class="val">263,171</div><div class="lbl">LOC</div></div>
+        <div class="item"><div class="val">1091</div><div class="lbl">Files</div></div>
+        <div class="item"><div class="val">2026-05-15</div><div class="lbl">Scanned</div></div>
+    </div>
+    
+        <div class="category-block">
+            <h3>Decorative Section Separators <small>(504 hits · 1008 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>12</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>14</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>27</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>29</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>56</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>58</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>63</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>65</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>71</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>73</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>92</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>94</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>106</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>108</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>112</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>114</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>117</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>119</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>126</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>128</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>133</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>135</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>143</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>145</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>153</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>155</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>160</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>162</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>166</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>168</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>172</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>174</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>178</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>180</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>183</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>185</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>200</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>202</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>209</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>211</td>
+                    <td class="mono snippet">  # =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>231</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>233</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>334</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>336</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>370</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">conf.yaml</td>
+                    <td>372</td>
+                    <td class="mono snippet"># =============================================================================</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>16</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>18</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>47</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>49</td>
+                    <td class="mono snippet"># ------------------------------</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 454 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Self-Referential Comments <small>(437 hits · 874 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">CONTRIBUTING.md</td>
+                    <td>117</td>
+                    <td class="mono snippet">#### Creating a new Database Migration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/locust_test.py</td>
+                    <td>21</td>
+                    <td class="mono snippet">        # Create a user and get the token</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">        # Create a mock actor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>182</td>
+                    <td class="mono snippet">        # Create a mock actor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">        # Create a mock actor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">        # Create a mock actor</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>463</td>
+                    <td class="mono snippet">                    # Create a mock that has a remote attribute</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_openai_ws_session.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">        # Create a concrete subclass just for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    # Create a TPUF-enabled archive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>634</td>
+                    <td class="mono snippet">    # Create a unique archive ID for this test</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1901</td>
+                    <td class="mono snippet">    # Create an archive</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>2172</td>
+                    <td class="mono snippet">    # Create a conversation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>222</td>
+                    <td class="mono snippet">        # Create the server-side tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_utils.py</td>
+                    <td>708</td>
+                    <td class="mono snippet">    # Create a dict that when serialized will exceed limit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_secret.py</td>
+                    <td>198</td>
+                    <td class="mono snippet">            # Create a Secret from encrypted value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">    # Create the SandboxConfigManager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>261</td>
+                    <td class="mono snippet">    # Create the sandbox configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>409</td>
+                    <td class="mono snippet">    # Create a tool that uses the injected client and agent_id to actually clear a memory block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>456</td>
+                    <td class="mono snippet">    # Create the tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>479</td>
+                    <td class="mono snippet">    # Create the tool in the system</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>482</td>
+                    <td class="mono snippet">    # Create an agent with a memory block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>500</td>
+                    <td class="mono snippet">    # Create the sandbox for the tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>321</td>
+                    <td class="mono snippet">    # Create the SandboxConfigManager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>331</td>
+                    <td class="mono snippet">    # Create the sandbox configuration</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>1246</td>
+                    <td class="mono snippet">    # Create the tool with proper schema</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>1282</td>
+                    <td class="mono snippet">    # Create the sandbox and verify client injection is detected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>1343</td>
+                    <td class="mono snippet">    # Create the sandbox and verify client injection is detected</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>2385</td>
+                    <td class="mono snippet">#     # Create a streaming request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_override_model.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">        # Create a conversation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">    # Create a realistic-looking tool return with repeated data</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>333</td>
+                    <td class="mono snippet">    # Create a small conversation with ~5 messages</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>396</td>
+                    <td class="mono snippet">    # Create a large tool return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>589</td>
+                    <td class="mono snippet">#    # Create an extremely large tool return (100k chars)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>694</td>
+                    <td class="mono snippet">    # Create a conversation with enough messages to trigger summarization</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>792</td>
+                    <td class="mono snippet">    # Create a conversation with enough messages to summarize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>868</td>
+                    <td class="mono snippet">    # Create a conversation with enough messages to summarize</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1048</td>
+                    <td class="mono snippet">    # Create the V3 agent loop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1127</td>
+                    <td class="mono snippet">    # Create a real summarizer config using the default factory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1229</td>
+                    <td class="mono snippet">    # Create a real summarizer config using the default factory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1343</td>
+                    <td class="mono snippet">#     # Create a run for the agent using RunManager</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1347</td>
+                    <td class="mono snippet">#     # Create the agent loop using LettaAgentV3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1387</td>
+                    <td class="mono snippet">#     # Create a new run for the repaired agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1391</td>
+                    <td class="mono snippet">#     # Create a new agent loop with the repaired agent state</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1451</td>
+                    <td class="mono snippet">#    # Create an input message to trigger the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1457</td>
+                    <td class="mono snippet">#    # Create a proper run record in the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1466</td>
+                    <td class="mono snippet">#    # Create the agent loop using LettaAgentV3</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1485</td>
+                    <td class="mono snippet">#            # Create a mock response with the required structure</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1634</td>
+                    <td class="mono snippet">#    # Create an input message to trigger the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1640</td>
+                    <td class="mono snippet">#    # Create a proper run record in the database</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1649</td>
+                    <td class="mono snippet">#    # Create the agent loop using LettaAgentV3</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 387 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Excessive Try-Catch Wrapping <small>(790 hits · 809 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">test_watchdog_hang.py</td>
+                    <td>88</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>48</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>154</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>346</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>350</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>490</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>618</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>757</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1141</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1202</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1265</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1337</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>1894</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>2398</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>2480</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>2536</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_crypto_utils.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>79</td>
+                    <td class="mono snippet">                    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_tool_execution_sandbox.py</td>
+                    <td>452</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_cancellation.py</td>
+                    <td>124</td>
+                    <td class="mono snippet">            except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>360</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_async_tool_sandbox.py</td>
+                    <td>1242</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>373</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>511</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>667</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>703</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>859</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>1200</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>2026</td>
+                    <td class="mono snippet">                except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>2202</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/mcp_test.py</td>
+                    <td>216</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/mcp_test.py</td>
+                    <td>257</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/mcp_test.py</td>
+                    <td>277</td>
+                    <td class="mono snippet">        except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_override_model.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_override_model.py</td>
+                    <td>141</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sonnet_nonnative_reasoning_buffering.py</td>
+                    <td>87</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sonnet_nonnative_reasoning_buffering.py</td>
+                    <td>213</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>33</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_provider_trace_agents.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_provider_trace_agents.py</td>
+                    <td>160</td>
+                    <td class="mono snippet">                except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_internal_agents_count.py</td>
+                    <td>59</td>
+                    <td class="mono snippet">        except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_usage_tracking.py</td>
+                    <td>126</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>368</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>381</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>508</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>770</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1035</td>
+                    <td class="mono snippet">    except Exception as e:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_temporal_metrics_local.py</td>
+                    <td>115</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message_v2.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">    except Exception:</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 740 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Redundant / Tautological Comments <small>(205 hits · 205 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>64</td>
+                    <td class="mono snippet">    # Set environment to DEV for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_turbopuffer.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">            # Check if our message ID is in the results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>187</td>
+                    <td class="mono snippet">    # Set environment to DEV for testing</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>378</td>
+                    <td class="mono snippet">    # Check if next message is LettaStopReason to detect this case</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>831</td>
+                    <td class="mono snippet">    # Check if there are tool calls in the response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message.py</td>
+                    <td>905</td>
+                    <td class="mono snippet">    # Check if chunks are raw SSE strings (from background streaming)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1567</td>
+                    <td class="mono snippet">#        # Check if content has system_alert type with the summary message (object form)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1745</td>
+                    <td class="mono snippet">#        # Check if content has system_alert type with the summary message (object form)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sonnet_nonnative_reasoning_buffering.py</td>
+                    <td>200</td>
+                    <td class="mono snippet">                        # Check if this is inner thoughts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sonnet_nonnative_reasoning_buffering.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">    # Check if we detected large bursts</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>631</td>
+                    <td class="mono snippet">            # Check if modify method exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_temporal_metrics_local.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">    # Check if DogStatsD is listening</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message_v2.py</td>
+                    <td>752</td>
+                    <td class="mono snippet">    # Check if tool calls are grouped in a single message (parallel) or separate messages (sequential)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message_v2.py</td>
+                    <td>777</td>
+                    <td class="mono snippet">    # Check if we have true parallel tool calling</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_send_message_v2.py</td>
+                    <td>780</td>
+                    <td class="mono snippet">        # Check if the single message contains multiple tool calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_tool_schema_parsing.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">        # Check if we expect the conversion to fail</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_multi_modal_tool_returns.py</td>
+                    <td>398</td>
+                    <td class="mono snippet">                # Check if this is a tool return message that might contain our image</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_server_providers.py</td>
+                    <td>2383</td>
+                    <td class="mono snippet">        # Check if provider already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_server_providers.py</td>
+                    <td>2633</td>
+                    <td class="mono snippet">    # Set last_synced to indicate models are already synced</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_prompt_caching.py</td>
+                    <td>827</td>
+                    <td class="mono snippet">        # Check if ANY of the follow-up messages had a cache hit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_prompt_caching.py</td>
+                    <td>961</td>
+                    <td class="mono snippet">        # Check if ANY of the follow-up messages had a cache hit</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_cancellation.py</td>
+                    <td>1280</td>
+                    <td class="mono snippet">            # Check if message has tool_returns (new format) or tool_return (old format)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_agent_manager.py</td>
+                    <td>2008</td>
+                    <td class="mono snippet">                # Check if expected type is in the union</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">otel/start-otel-collector.sh</td>
+                    <td>92</td>
+                    <td class="mono snippet"># Check if update is needed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">sandbox/node_server.py</td>
+                    <td>66</td>
+                    <td class="mono snippet">                # Check if there was an error</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">.github/scripts/model-sweep/conftest.py</td>
+                    <td>166</td>
+                    <td class="mono snippet">    # Check if already running</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/d06594144ef3_add_and_migrate_encrypted_columns_for_.py</td>
+                    <td>37</td>
+                    <td class="mono snippet">    # Check if encryption key is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/8149a781ac1b_backfill_encrypted_columns_for_.py</td>
+                    <td>27</td>
+                    <td class="mono snippet">    # Check if encryption key is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/74e860718e0d_add_archival_memory_sharing.py</td>
+                    <td>57</td>
+                    <td class="mono snippet">        # Check if archives table already exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">alembic/versions/eff256d296cb_mcp_encrypted_data_migration.py</td>
+                    <td>30</td>
+                    <td class="mono snippet">    # Check if encryption key is available</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/streaming_utils.py</td>
+                    <td>287</td>
+                    <td class="mono snippet">                        # Check if this same chunk also contains the terminating quote (and optional delimiter)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/utils.py</td>
+                    <td>1167</td>
+                    <td class="mono snippet">    # Check if coro is an async generator instead of a coroutine</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>553</td>
+                    <td class="mono snippet">            # Check if inner thoughts is in the function call arguments (possible apparently if you are using Azure)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>1217</td>
+                    <td class="mono snippet">        # Check if there's a summary message in the message queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>1350</td>
+                    <td class="mono snippet">        # Check if there's a summary message in the message queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>1488</td>
+                    <td class="mono snippet">        # Check if there's a summary message in the message queue</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/local_llm/function_parser.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        # Check if it's a user message or system message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/local_llm/utils.py</td>
+                    <td>50</td>
+                    <td class="mono snippet">    # Check if the file exists</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/local_llm/settings/settings.py</td>
+                    <td>29</td>
+                    <td class="mono snippet">    # Check if settings_dir folder exists (if not, create it)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/local_llm/grammars/gbnf_grammar_generator.py</td>
+                    <td>85</td>
+                    <td class="mono snippet">    if not parts:  # Check if the list is empty</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/local_llm/grammars/gbnf_grammar_generator.py</td>
+                    <td>473</td>
+                    <td class="mono snippet">            # Check if the field is optional (not required)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>289</td>
+                    <td class="mono snippet">        # Check if we should use SGLang native adapter for multi-turn RL training.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>358</td>
+                    <td class="mono snippet">            # Check if step was cancelled - break out of the step loop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>424</td>
+                    <td class="mono snippet">        # Set context_tokens to expose actual context window usage (vs accumulated prompt_tokens)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>502</td>
+                    <td class="mono snippet">        # Check if we should use SGLang native adapter for multi-turn RL training</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">                # Check if step was cancelled - break out of the step loop</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>696</td>
+                    <td class="mono snippet">            # Set context_tokens to expose actual context window usage (vs accumulated prompt_tokens)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>1184</td>
+                    <td class="mono snippet">                        # Check if there's a fallback route for the current model</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>1625</td>
+                    <td class="mono snippet">                # Check if there are required-before-exit tools that haven't been called</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>1999</td>
+                    <td class="mono snippet">            # Check if the LLM hit max_tokens (finish_reason == &quot;length&quot;)</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 155 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Verbosity Indicators <small>(128 hits · 128 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">            # Step 1: User asks for the secret code - agent should call the tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">            # Step 2: Provide the tool return (simulating client-side execution)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">            # Step 3: Ask the agent what the secret code was (testing memory/context)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">            # Step 4: Validate the full conversation history makes sense</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>242</td>
+                    <td class="mono snippet">            # Step 1: Call the tool WITH client_tools specified - should pause for approval</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>261</td>
+                    <td class="mono snippet">            # Step 2: Provide client-side tool return</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>286</td>
+                    <td class="mono snippet">            # Step 3: Verify the client value was used, not the server value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>306</td>
+                    <td class="mono snippet">            # Step 4: Test that WITHOUT client_tools, server tool executes directly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>354</td>
+                    <td class="mono snippet">            # Step 1: Trigger the client-side tool call</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_client_side_tools.py</td>
+                    <td>366</td>
+                    <td class="mono snippet">            # Step 2: Provide an error response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_mcp_encryption.py</td>
+                    <td>251</td>
+                    <td class="mono snippet">            # Step 1: Create OAuth session (without tokens initially)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_mcp_encryption.py</td>
+                    <td>264</td>
+                    <td class="mono snippet">            # Step 2: Update session with tokens (simulating OAuth callback)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>58</td>
+                    <td class="mono snippet">        # Step 1: Get initial context window, system prompt, and human block value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>72</td>
+                    <td class="mono snippet">        # Step 2: Tell the agent to update its memory using the memory tool</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>84</td>
+                    <td class="mono snippet">        # Step 3: Verify block was modified but system prompt hasn't changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>97</td>
+                    <td class="mono snippet">        # Step 4: Send another message to the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>109</td>
+                    <td class="mono snippet">        # Step 5: Verify system prompt still hasn't changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>114</td>
+                    <td class="mono snippet">        # Step 6: Manually update a block via the API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>129</td>
+                    <td class="mono snippet">        # Step 7: Send another message and verify system prompt still hasn't changed</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>156</td>
+                    <td class="mono snippet">        # Step 1: Get initial context window</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>161</td>
+                    <td class="mono snippet">        # Step 2: Get the human block</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>170</td>
+                    <td class="mono snippet">        # Step 3: Update block via agent-specific endpoint (triggers recompilation)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>179</td>
+                    <td class="mono snippet">        # Step 4: Verify the block was updated</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>183</td>
+                    <td class="mono snippet">        # Step 5: Get context window and verify core memory was recompiled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>192</td>
+                    <td class="mono snippet">        # Step 6: System prompt template should NOT change (only memory content changes)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>205</td>
+                    <td class="mono snippet">        # Step 1: Get initial system prompt</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">        # Step 2: Manually update a block via the API</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>224</td>
+                    <td class="mono snippet">        # Step 3: Reset messages (this should trigger system prompt rebuild)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_system_prompt_prefix_caching.py</td>
+                    <td>227</td>
+                    <td class="mono snippet">        # Step 4: Verify system prompt HAS changed and includes the new memory</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>367</td>
+                    <td class="mono snippet">    # Step 0: create an agent with no tags</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>380</td>
+                    <td class="mono snippet">    # Step 1: Add multiple tags to the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>386</td>
+                    <td class="mono snippet">    # Step 2: Retrieve tags for the agent and verify they match the added tags</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>392</td>
+                    <td class="mono snippet">    # Step 3: Retrieve agents by each tag to ensure the agent is associated correctly</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>397</td>
+                    <td class="mono snippet">    # Step 4: Delete a specific tag from the agent and verify its removal</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>406</td>
+                    <td class="mono snippet">    # Step 5: Delete all remaining tags from the agent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1351</td>
+                    <td class="mono snippet">    # Step 1: Send message that triggers approval request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1358</td>
+                    <td class="mono snippet">    # Step 2: Start approval stream and wait for first chunk (sentinel approach)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1379</td>
+                    <td class="mono snippet">    # Step 3: Wait for first chunk before triggering cancellation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1395</td>
+                    <td class="mono snippet">    # Step 4: Accumulate remaining chunks (already collected above)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1397</td>
+                    <td class="mono snippet">    # Step 5: Verify we got chunks AND a cancelled stop reason</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1405</td>
+                    <td class="mono snippet">    # Step 6: Verify run status is cancelled</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1412</td>
+                    <td class="mono snippet">    # Step 7: Verify that approval response message is persisted</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1418</td>
+                    <td class="mono snippet">    # Step 8: Attempt retry with same response</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1438</td>
+                    <td class="mono snippet">    # Step 9: Accumulate chunks</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1441</td>
+                    <td class="mono snippet">    # Step 10: Verify we got chunks AND an end_turn stop reason</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1449</td>
+                    <td class="mono snippet">    # Step 11: Verify keep-alive message was sent</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1471</td>
+                    <td class="mono snippet">    # Step 1: Send message that triggers approval request</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1478</td>
+                    <td class="mono snippet">    # Step 2: Start approval stream and wait for first chunk (sentinel approach)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1499</td>
+                    <td class="mono snippet">    # Step 3: Wait for first chunk before triggering cancellation</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/integration_test_human_in_the_loop.py</td>
+                    <td>1515</td>
+                    <td class="mono snippet">    # Step 4: Verify we got cancelled</td>
+                </tr></tbody>
+            </table>
+            <p class="overflow">… and 78 more matches in this category</p>
+        </div>
+        <div class="category-block">
+            <h3>Cross-Language Confusion <small>(18 hits · 90 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/integration_test_typescript_tool_execution_sandbox.py</td>
+                    <td>595</td>
+                    <td class="mono snippet">        assert &quot;let client: any = null;&quot; in script</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/integration_test_typescript_tool_execution_sandbox.py</td>
+                    <td>615</td>
+                    <td class="mono snippet">        result, agent_state = parse_typescript_result('{&quot;results&quot;: 42, &quot;agent_state&quot;: null}')</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">tests/managers/test_message_manager.py</td>
+                    <td>1087</td>
+                    <td class="mono snippet">                arguments='{&quot;message&quot;: {&quot;status&quot;: &quot;success&quot;, &quot;data&quot;: {&quot;count&quot;: 42, &quot;items&quot;: [&quot;a&quot;, &quot;b&quot;]}, &quot;meta&quot;: null}}',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/streaming_utils.py</td>
+                    <td>106</td>
+                    <td class="mono snippet">            # numbers, null, or a nested object/array) streamed in next, the stream</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/local_llm/json_parser.py</td>
+                    <td>63</td>
+                    <td class="mono snippet">      - if (function call is not send_message &amp;&amp; prev message['role'] == user): insert heartbeat</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/groups.py</td>
+                    <td>168</td>
+                    <td class="mono snippet">    include_return_message_types: Optional[List[MessageType]] = Query(None, description=&quot;Message types to include in response. When null, all message </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/agents.py</td>
+                    <td>1601</td>
+                    <td class="mono snippet">    include_return_message_types: Optional[List[MessageType]] = Query(None, description=&quot;Message types to include in response. When null, all message </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/messages.py</td>
+                    <td>46</td>
+                    <td class="mono snippet">        None, description=&quot;Message types to include in response. When null, all message types are returned.&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/conversations.py</td>
+                    <td>214</td>
+                    <td class="mono snippet">    include_return_message_types: Optional[List[MessageType]] = Query(None, description=&quot;Message types to include in response. When null, all message </td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/schemas/providers.py</td>
+                    <td>283</td>
+                    <td class="mono snippet">                #     &quot;param&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/schemas/providers/openai.py</td>
+                    <td>184</td>
+                    <td class="mono snippet">                #     &quot;param&quot;: null,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/functions/schema_validator.py</td>
+                    <td>173</td>
+                    <td class="mono snippet">            # They represent union types (e.g., string | null)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/functions/helpers.py</td>
+                    <td>288</td>
+                    <td class="mono snippet">        # If we have exactly one type and null, make it Optional</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/llm_api/helpers.py</td>
+                    <td>39</td>
+                    <td class="mono snippet">        # If it's simple primitives only (string, null, integer, boolean, etc), flatten to type array</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/mcp_server_manager.py</td>
+                    <td>9</td>
+                    <td class="mono snippet">from sqlalchemy import delete, desc, null, select</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_sandbox/typescript_generator.py</td>
+                    <td>140</td>
+                    <td class="mono snippet">            &quot;let client: any = null;&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_sandbox/typescript_generator.py</td>
+                    <td>209</td>
+                    <td class="mono snippet">    lines.append(&quot;const _output = { results: _result, agent_state: null };&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/provider_trace_backends/clickhouse.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        # OpenAI Responses API returns {&quot;error&quot;: null} on success</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>AI Slop Vocabulary <small>(48 hits · 76 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_summarizer.py</td>
+                    <td>1307</td>
+                    <td class="mono snippet">### in order to leverage caching (for self compaction)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_agent_serialization_v2.py</td>
+                    <td>772</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test file export functionality with comprehensive validation&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_usage_tracking.py</td>
+                    <td>449</td>
+                    <td class="mono snippet">    # Use Anthropic Sonnet 4.5 for this test as it has the most comprehensive caching</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_managers.py</td>
+                    <td>1279</td>
+                    <td class="mono snippet">    # Create an agent using the comprehensive fixture.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_managers.py</td>
+                    <td>1297</td>
+                    <td class="mono snippet">    # Create an agent using the comprehensive fixture.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/test_managers.py</td>
+                    <td>3612</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test comprehensive tag functionality for passages.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/managers/conftest.py</td>
+                    <td>364</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Create a comprehensive test agent with all features.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/managers/test_passage_manager.py</td>
+                    <td>815</td>
+                    <td class="mono snippet">    &quot;&quot;&quot;Test comprehensive tag functionality for passages.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/managers/test_agent_manager.py</td>
+                    <td>1210</td>
+                    <td class="mono snippet">    # Create an agent using the comprehensive fixture.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/managers/test_agent_manager.py</td>
+                    <td>1228</td>
+                    <td class="mono snippet">    # Create an agent using the comprehensive fixture.</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test_empty_archival/agent_state/2024-01-11_12_44_32_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test_empty_archival/agent_state/2024-01-11_12_44_33_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test_attach/agent_state/2024-01-11_12_42_19_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test_attach/agent_state/2024-01-11_12_42_17_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test/agent_state/2024-01-11_12_43_59_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/memgpt-0.2.11/agents/agent_test/agent_state/2024-01-11_12_43_57_PM.json</td>
+                    <td>1</td>
+                    <td class="mono snippet">{&quot;model&quot;: &quot;gpt-4&quot;, &quot;system&quot;: &quot;You are Letta, the latest version of Limnal Corporation's digital companion, developed in 2023.\nYour task is to convers</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/streaming_utils.py</td>
+                    <td>268</td>
+                    <td class="mono snippet">        # Not in message yet: accumulate until we see '&lt;json_key&gt;': (robust to split fragments)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>314</td>
+                    <td class="mono snippet">        &quot;&quot;&quot;Get response from LLM API with robust retry mechanism.&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>950</td>
+                    <td class="mono snippet">                # Fallback if for some reason context_window is missing, just set to the default</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>1134</td>
+                    <td class="mono snippet">            # Fallback if for some reason context_window is missing, just set to the default</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/agent.py</td>
+                    <td>1740</td>
+                    <td class="mono snippet">        # If it exists in the input message, elevate it to the 'message' level</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/serialize_schemas/marshmallow_agent.py</td>
+                    <td>117</td>
+                    <td class="mono snippet">                        # no user messages, just return system message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/serialize_schemas/marshmallow_agent.py</td>
+                    <td>152</td>
+                    <td class="mono snippet">                        # no user messages, just return system message</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>1238</td>
+                    <td class="mono snippet">                                # NOTE: we no longer refresh the system prompt before compaction so we can leverage cache for self mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/agents/letta_agent_v3.py</td>
+                    <td>1461</td>
+                    <td class="mono snippet">                    # NOTE: we no longer refresh the system prompt before compaction so we can leverage cache for self mode</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/server/rest_api/interface.py</td>
+                    <td>307</td>
+                    <td class="mono snippet">        # To make streamed arguments robust, we add a JSON-aware incremental</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/server/rest_api/interface.py</td>
+                    <td>1120</td>
+                    <td class="mono snippet">        # Example where we just pass through the raw stream from the underlying OpenAI SSE stream</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/server/rest_api/auth_token.py</td>
+                    <td>15</td>
+                    <td class="mono snippet">            # user is admin so we just return the default uuid</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/tools.py</td>
+                    <td>557</td>
+                    <td class="mono snippet">        # TODO: don't do this in the future (just return MCPServer)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/server/rest_api/routers/v1/tools.py</td>
+                    <td>612</td>
+                    <td class="mono snippet">        # TODO: don't do this in the future (just return MCPServer)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/sandbox_config.py</td>
+                    <td>45</td>
+                    <td class="mono snippet">        # If `data` is not a dict (e.g., it's another Pydantic model), just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/sandbox_config.py</td>
+                    <td>73</td>
+                    <td class="mono snippet">        # If `data` is not a dict (e.g., it's another Pydantic model), just return it</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/message.py</td>
+                    <td>641</td>
+                    <td class="mono snippet">                # TODO remove the cast and just return the native type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/message.py</td>
+                    <td>728</td>
+                    <td class="mono snippet">        # If assistant mode is off, just create one ToolCallMessage with all tool calls</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/providers/anthropic.py</td>
+                    <td>138</td>
+                    <td class="mono snippet">            # just use a cheap model to count some tokens - as of 5/7/2025 this is faster than fetching the list of models</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/providers/base.py</td>
+                    <td>96</td>
+                    <td class="mono snippet">        # Simplified asyncio handling - just use asyncio.run()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/schemas/providers/base.py</td>
+                    <td>120</td>
+                    <td class="mono snippet">        # Simplified asyncio handling - just use asyncio.run()</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/functions/typescript_parser.py</td>
+                    <td>180</td>
+                    <td class="mono snippet">    # Handle union types (simplified - just use string)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/functions/mcp_client/types.py</td>
+                    <td>94</td>
+                    <td class="mono snippet">        # If the result still contains unreplaced templates, just return original value</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/orm/sqlalchemy_base.py</td>
+                    <td>278</td>
+                    <td class="mono snippet">        # TODO (cliandy): can make this more robust down the line</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/llm_api/openai_client.py</td>
+                    <td>574</td>
+                    <td class="mono snippet">                # don't raise error since this isn't robust against edge cases</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/llm_api/openai_client.py</td>
+                    <td>646</td>
+                    <td class="mono snippet">                # For text or json_object, just pass the type</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/services/mcp_manager.py</td>
+                    <td>1130</td>
+                    <td class="mono snippet">        # TODO: @jnjpng make this check more robust and remove direct os.getenv</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/services/mcp_server_manager.py</td>
+                    <td>1326</td>
+                    <td class="mono snippet">        # TODO: @jnjpng make this check more robust and remove direct os.getenv</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/services/tool_sandbox/modal_sandbox_v2.py</td>
+                    <td>418</td>
+                    <td class="mono snippet">        # Start with a more robust base image with development tools</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/interfaces/anthropic_streaming_interface.py</td>
+                    <td>150</td>
+                    <td class="mono snippet">        # This interface doesn't track cache tokens, so we just use the raw values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/interfaces/anthropic_streaming_interface.py</td>
+                    <td>702</td>
+                    <td class="mono snippet">        # This interface doesn't track cache tokens, so we just use the raw values</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/interfaces/openai_streaming_interface.py</td>
+                    <td>476</td>
+                    <td class="mono snippet">                                # Minimal, robust extraction: only emit the value of &quot;message&quot;.</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Hallucination Indicators <small>(4 hits · 40 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">letta/orm/sqlalchemy_base.py</td>
+                    <td>270</td>
+                    <td class="mono snippet">            query = query.join(cls.identities).filter(cls.identities.property.mapper.class_.identifier_key.in_(identifier_keys))</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">letta/jobs/llm_batch_job_polling.py</td>
+                    <td>55</td>
+                    <td class="mono snippet">        response = await server.anthropic_async_client.beta.messages.batches.retrieve(batch_id_str)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">letta/jobs/llm_batch_job_polling.py</td>
+                    <td>80</td>
+                    <td class="mono snippet">        results = await server.anthropic_async_client.beta.messages.batches.results(batch_resp_id)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td>
+                    <td class="mono">letta/services/block_manager.py</td>
+                    <td>404</td>
+                    <td class="mono snippet">                    BlockModel.identities.property.mapper.class_.identifier_key.in_(identifier_keys)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Overly Generic Function Names <small>(20 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>338</td>
+                    <td class="mono snippet">def test_function(x: int, y: int) -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>395</td>
+                    <td class="mono snippet">        mock_tool.source_code = &quot;def test_function(x, y): return x * y&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_modal_sandbox_v2.py</td>
+                    <td>408</td>
+                    <td class="mono snippet">        mock_tool.source_code = &quot;def test_function(x, y): return x + y&quot;  # Reset</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_utils.py</td>
+                    <td>92</td>
+                    <td class="mono snippet">def my_function(a: int, b: float, c: str, d: list, e: dict, f: CustomClass = None):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>111</td>
+                    <td class="mono snippet">        def test_function(e2b_sandbox_mode, ...):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/conftest.py</td>
+                    <td>177</td>
+                    <td class="mono snippet">        def test_function(turbopuffer_mode, ...):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>1639</td>
+                    <td class="mono snippet">        def main_function(x: int, y: int) -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>1722</td>
+                    <td class="mono snippet">#        def main_function(x: int, y: int) -&gt; int:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/test_sdk_client.py</td>
+                    <td>1752</td>
+                    <td class="mono snippet">#            def process_data(data: str, count: int) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1805</td>
+                    <td class="mono snippet">def test_function(arg1: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1834</td>
+                    <td class="mono snippet">def test_function(arg1: str, arg2: int) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1870</td>
+                    <td class="mono snippet">def test_function(arg1: str, arg2: int = 5) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1903</td>
+                    <td class="mono snippet">def test_function(old_arg: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1938</td>
+                    <td class="mono snippet">def test_function():</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1957</td>
+                    <td class="mono snippet">def test_function(arg1: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>1986</td>
+                    <td class="mono snippet">def test_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>2019</td>
+                    <td class="mono snippet">def test_function() -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>2034</td>
+                    <td class="mono snippet">def test_function(new_arg: str) -&gt; str:</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">tests/managers/test_tool_manager.py</td>
+                    <td>2067</td>
+                    <td class="mono snippet">        source_code=&quot;def test_function(): pass&quot;,</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#34d399"></span>LOW</td>
+                    <td class="mono">letta/validators.py</td>
+                    <td>136</td>
+                    <td class="mono snippet">        def my_function(agent_id: str, folder_id: str):</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Synthetic Comment Markers <small>(4 hits · 20 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_sandbox/local_sandbox.py</td>
+                    <td>149</td>
+                    <td class="mono snippet">            print(f&quot;Auto-generated code for debugging:\n\n{code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_executor/tool_execution_sandbox.py</td>
+                    <td>49</td>
+                    <td class="mono snippet">    # This is the variable name in the auto-generated code that contains the function results</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_executor/tool_execution_sandbox.py</td>
+                    <td>167</td>
+                    <td class="mono snippet">            logger.error(f&quot;Logging out tool {self.tool_name} auto-generated code for debugging: \n\n{code}&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td>
+                    <td class="mono">letta/services/tool_executor/tool_execution_sandbox.py</td>
+                    <td>233</td>
+                    <td class="mono snippet">            logger.debug(f&quot;Tool {self.tool_name} auto-generated code for debugging: \n\n{code}&quot;)</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Fake / Example Data <small>(7 hits · 14 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/integration_test_typescript_tool_execution_sandbox.py</td>
+                    <td>425</td>
+                    <td class="mono snippet">        assert result.func_return == &quot;John Doe&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/sdk/mcp_servers_test.py</td>
+                    <td>1072</td>
+                    <td class="mono snippet">                        &quot;content&quot;: 'Use the create_person tool to create a person named &quot;John Doe&quot;, age 30, '</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/sdk/mcp_servers_test.py</td>
+                    <td>1073</td>
+                    <td class="mono snippet">                        'email &quot;john@example.com&quot;, with address at &quot;123 Main St&quot;, city &quot;New York&quot;, zip &quot;10001&quot;.',</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/sdk/mcp_servers_test.py</td>
+                    <td>1089</td>
+                    <td class="mono snippet">                assert &quot;John Doe&quot; in person_return.tool_return, &quot;Expected person name in response&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/api_server.go</td>
+                    <td>360</td>
+                    <td class="mono snippet">	userService.CreateUser(&quot;John Doe&quot;, &quot;john@example.com&quot;)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/test.md</td>
+                    <td>78</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">tests/data/test.md</td>
+                    <td>78</td>
+                    <td class="mono snippet">1. Lorem ipsum dolor sit amet</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+        <div class="category-block">
+            <h3>Slop Phrases <small>(6 hits · 12 pts)</small></h3>
+            <table class="detail-table">
+                <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead>
+                <tbody>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">WEBHOOK_SETUP.md</td>
+                    <td>74</td>
+                    <td class="mono snippet">Here's a simple example of a webhook endpoint (using FastAPI):</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/local_llm/llm_chat_completion_wrappers/chatml.py</td>
+                    <td>24</td>
+                    <td class="mono snippet"># Don't forget to use send_message, otherwise the user won't see your message&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/local_llm/llm_chat_completion_wrappers/llama3.py</td>
+                    <td>23</td>
+                    <td class="mono snippet"># Don't forget to use send_message, otherwise the user won't see your message&quot;&quot;&quot;</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/server/server.py</td>
+                    <td>1847</td>
+                    <td class="mono snippet">        # Write out the file, and make sure to in include the top-level mcpConfig (wrapped to avoid blocking event loop)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/server/server.py</td>
+                    <td>1891</td>
+                    <td class="mono snippet">        # Write out the file, and make sure to in include the top-level mcpConfig (wrapped to avoid blocking event loop)</td>
+                </tr>
+                <tr>
+                    <td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td>
+                    <td class="mono">letta/llm_api/anthropic_client.py</td>
+                    <td>973</td>
+                    <td class="mono snippet">        # make sure to check for overflow errors, regardless of error type</td>
+                </tr></tbody>
+            </table>
+            
+        </div>
+    
+</div>
+<footer>
+    Generated on 2026-05-15 22:34 UTC &middot; AI Code Slop Monitor &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a>
+    <br>
+    <a class="suggest-btn" style="margin-top:0.75rem" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository to be Scanned
+    </a>
+</footer>
+</body>
+</html>
