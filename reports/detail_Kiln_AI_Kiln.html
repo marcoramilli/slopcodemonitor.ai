@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kiln-AI/Kiln &mdash; AI Code Slop Monitor</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<meta name="description" content="SynthScan analysis of Kiln-AI/Kiln: adjusted score 16.8, 5749 pattern hits.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+
+:root {
+  --bg:        #07101a;
+  --bg2:       #0b1929;
+  --surface:   rgba(11,25,41,0.7);
+  --border:    rgba(6,182,212,0.12);
+  --border-hi: rgba(6,182,212,0.3);
+  --cyan:      #06b6d4;
+  --emerald:   #10b981;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --text:      #cbd5e1;
+  --text-dim:  #64748b;
+  --text-hi:   #f1f5f9;
+  --radius:    18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:#67e8f9}
+
+/* ── Animated background grid ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(6,182,212,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:gridPan 40s linear infinite;
+  pointer-events:none;
+}
+@keyframes gridPan{0%{background-position:0 0}100%{background-position:60px 60px}}
+
+/* Radial glow blobs */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 5%,  rgba(6,182,212,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 45% at 90% 95%, rgba(16,185,129,0.05) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99,102,241,0.04) 0%,transparent 70%);
+}
+
+.container{max-width:1380px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,16,26,0.85);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1380px;margin:0 auto;padding:.75rem 2rem;
+}
+.nav-logo{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1rem;
+  background:linear-gradient(135deg,var(--cyan),var(--emerald));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-logo img{height:30px;filter:drop-shadow(0 0 10px rgba(6,182,212,.4))}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{color:var(--text-dim);font-size:.85rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text-hi)}
+.suggest-btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:600;
+  background:linear-gradient(135deg,#0e7490,#0891b2);
+  color:#fff;transition:all .25s;box-shadow:0 4px 14px rgba(6,182,212,.2);
+}
+.suggest-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,182,212,.35);color:#fff}
+.suggest-btn svg{flex-shrink:0}
+
+/* ── HERO ── */
+.hero{
+  position:relative;padding:5rem 0 4rem;text-align:center;
+  border-bottom:1px solid var(--border);overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(170deg,#07101a 0%,#0b1e2e 45%,#07101a 100%);
+  z-index:0;
+}
+.hero-content{position:relative;z-index:1}
+.hero-eyebrow{
+  display:inline-block;
+  padding:.3rem 1rem;border-radius:999px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);
+  color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero h1{
+  font-size:clamp(2.2rem,5vw,4rem);font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,#67e8f9 0%,#06b6d4 35%,#10b981 65%,#34d399 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1;margin-bottom:.9rem;
+}
+.hero-sub{color:var(--text-dim);font-size:1.05rem;max-width:960px;margin:0 auto 2.5rem;text-align:center}
+.hero-sub strong{color:var(--text)}
+
+/* ── KPI GRID ── */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1.25rem;margin:3rem 0 2rem;
+}
+.kpi-card{
+  background:var(--surface);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.6rem 1.2rem;text-align:center;position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .3s;
+}
+.kpi-card:hover{border-color:var(--border-hi);box-shadow:0 0 40px rgba(6,182,212,.08);transform:translateY(-2px)}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.5;
+}
+.kpi-card .kpi-val{
+  font-size:2.4rem;font-weight:900;letter-spacing:-1px;
+  color:var(--text-hi);
+}
+.kpi-card .kpi-lbl{
+  color:var(--text-dim);font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.08em;font-weight:600;margin-top:.4rem;
+}
+
+/* ── SECTION ── */
+section{padding:4rem 0;border-top:1px solid rgba(255,255,255,0.04)}
+section h2{
+  font-size:1.5rem;font-weight:800;letter-spacing:-.3px;color:var(--text-hi);
+  margin-bottom:.5rem;
+}
+.section-sub{color:var(--text-dim);margin-bottom:2rem;font-size:.95rem}
+.section-sub strong{color:var(--text)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.6rem;box-shadow:0 4px 24px rgba(0,0,0,.15);
+  transition:border-color .3s;
+}
+.card:hover{border-color:var(--border-hi)}
+.card h3{font-size:1rem;font-weight:700;color:var(--text-hi);margin-bottom:1.2rem}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;padding:.2em .7em;border-radius:999px;
+  font-size:.78rem;font-weight:700;color:#fff;letter-spacing:.02em;
+}
+.badge-critical{background:linear-gradient(135deg,#b91c1c,#ef4444);box-shadow:0 2px 8px rgba(239,68,68,.3)}
+.badge-high    {background:linear-gradient(135deg,#b45309,#f59e0b);box-shadow:0 2px 8px rgba(245,158,11,.25)}
+.badge-medium  {background:linear-gradient(135deg,#92400e,#d97706);box-shadow:0 2px 8px rgba(217,119,6,.2)}
+.badge-low     {background:linear-gradient(135deg,#065f46,#10b981);box-shadow:0 2px 8px rgba(16,185,129,.25)}
+.badge-unknown {background:rgba(100,116,139,.3);color:#94a3b8}
+
+/* ── LEADERBOARD ── */
+.leaderboard-row{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.6rem .75rem;border-radius:10px;margin-bottom:.4rem;
+  background:rgba(255,255,255,.02);transition:background .2s;
+}
+.leaderboard-row:hover{background:rgba(6,182,212,.05)}
+.lb-rank{color:var(--text-dim);font-size:.75rem;font-weight:700;width:24px;flex-shrink:0;text-align:right}
+.lb-name{flex:1;font-size:.85rem;font-weight:500;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-bar-wrap{width:120px;height:6px;background:rgba(255,255,255,.07);border-radius:3px;flex-shrink:0}
+.lb-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.lb-score{font-size:.8rem;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+
+/* ── CATEGORY ACCORDION ── */
+.cat-item{
+  border:1px solid var(--border);border-radius:12px;margin-bottom:.6rem;
+  overflow:hidden;transition:border-color .2s;
+}
+.cat-item:hover{border-color:var(--border-hi)}
+.cat-header{
+  display:flex;align-items:center;gap:1rem;padding:.85rem 1.1rem;
+  cursor:pointer;user-select:none;
+}
+.cat-header::-webkit-details-marker{display:none}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-name{flex:1;font-weight:600;font-size:.9rem;color:var(--text-hi)}
+.cat-meta{font-size:.78rem;color:var(--text-dim)}
+.cat-body{padding:0 1.1rem 1rem;font-size:.83rem;color:var(--text-dim);line-height:1.7}
+.cat-body table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.78rem}
+.cat-body th{color:var(--text-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;
+  padding:.4rem .6rem;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+.cat-body td{padding:.35rem .6rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.76rem}
+.snip{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sev-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+/* ── EXPLORER TABLE ── */
+.table-wrap{
+  background:rgba(7,16,26,.6);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;
+}
+.table-controls{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  gap:.75rem;padding:1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.05);
+}
+.table-controls input,
+.table-controls select{
+  background:rgba(7,16,26,.8);border:1px solid var(--border);border-radius:10px;
+  padding:.5rem .9rem;color:var(--text-hi);font-size:.85rem;
+  transition:border-color .2s;
+}
+.table-controls input{width:260px}
+.table-controls input:focus,
+.table-controls select:focus{outline:none;border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.1)}
+.ctrl-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{
+  background:rgba(7,16,26,.6);padding:.75rem 1rem;
+  color:var(--text-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;
+  font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;transition:color .2s;
+  text-align:left;
+}
+.tbl th:hover{color:var(--text-hi)}
+.tbl th .arr{margin-left:3px;font-size:.6rem}
+.tbl td{padding:.65rem 1rem;border-top:1px solid rgba(255,255,255,.04)}
+.tbl tr:hover td{background:rgba(6,182,212,.03)}
+.pagination{display:flex;gap:.4rem;align-items:center}
+.pagination button{
+  background:rgba(11,25,41,.8);border:1px solid var(--border);border-radius:8px;
+  color:var(--text-dim);padding:.4rem .8rem;font-size:.78rem;cursor:pointer;transition:all .2s;
+}
+.pagination button:hover:not(:disabled){background:rgba(6,182,212,.1);color:var(--text-hi)}
+.pagination button:disabled{opacity:.3;cursor:default}
+.pagination span{color:var(--text-dim);font-size:.78rem}
+
+/* ── TREND LIST ── */
+.trend-item{margin-bottom:1.5rem;padding:1rem 1.2rem;border:1px solid var(--border);border-radius:12px;background:rgba(7,16,26,.4)}
+.trend-header{display:flex;justify-content:space-between;margin-bottom:.6rem;align-items:center}
+.trend-name{font-weight:700;font-size:.9rem;color:var(--text-hi)}
+
+/* ── METHODOLOGY ── */
+.method-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.87rem}
+.method-table th{color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  padding:.6rem .9rem;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+.method-table td{padding:.55rem .9rem;border-bottom:1px solid rgba(255,255,255,.04)}
+
+/* ── SCORE PILL ── */
+.pill{
+  display:inline-block;padding:.18em .65em;border-radius:999px;
+  font-size:.77rem;font-weight:700;color:#fff;
+}
+.pill-critical{background:linear-gradient(135deg,#b91c1c,#ef4444)}
+.pill-high    {background:linear-gradient(135deg,#b45309,#f59e0b)}
+.pill-medium  {background:linear-gradient(135deg,#92400e,#d97706)}
+.pill-low     {background:linear-gradient(135deg,#065f46,#10b981)}
+
+/* ── SCROLL FADE-IN ── */
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:none}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;color:var(--text-dim);font-size:.8rem;
+  padding:3rem 0;border-top:1px solid rgba(255,255,255,.05);
+  margin-top:1rem;position:relative;z-index:1;
+}
+footer a{color:var(--cyan)}
+footer a:hover{color:#67e8f9}
+
+/* ── SCREENSHOTS ── */
+.screenshots-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+  margin-top:1.5rem;
+}
+.screenshot-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.screenshot-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.screenshot-card img{
+  width:100%;display:block;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.screenshot-caption{
+  padding:.75rem 1rem;color:var(--text-dim);font-size:.82rem;text-align:center;
+}
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .card-grid-2,.card-grid-3{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .screenshots-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .hero h1{font-size:2rem;letter-spacing:-1px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .table-controls input{width:100%}
+}
+
+
+/* ── Detail page extras ── */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;color:var(--text-dim);font-size:.85rem;margin-bottom:1.2rem}
+.breadcrumb a{color:var(--cyan)}
+.breadcrumb .sep{color:#334155}
+.detail-hero{padding:4.5rem 0 3rem;text-align:left}
+.detail-hero h1{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,var(--text-hi) 0%,var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.detail-badges{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+.meta-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin:2rem 0}
+.meta-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.25rem;
+  transition:border-color .2s,transform .2s;
+}
+.meta-card:hover{border-color:var(--border-hi);transform:translateY(-2px)}
+.meta-val{font-size:1.6rem;font-weight:800;letter-spacing:-0.5px;line-height:1.1}
+.meta-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700}
+.disc-notice{
+  background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);
+  border-radius:12px;padding:.8rem 1.2rem;margin:1.2rem 0;font-size:.87rem;color:#93c5fd
+}
+.disc-notice strong{color:#60a5fa}
+.sev-pill{
+  display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .85rem;
+  border-radius:999px;border:1px solid;font-size:.78rem;font-weight:700;margin:.2rem
+}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0}
+@media(max-width:800px){.chart-row{grid-template-columns:1fr}}
+.match-filter{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center}
+.match-filter input,.match-filter select{
+  background:rgba(7,16,26,.8);border:1px solid var(--border);border-radius:10px;
+  padding:.45rem .85rem;color:var(--text-hi);font-size:.83rem;transition:border-color .2s;
+}
+.match-filter input:focus,.match-filter select:focus{outline:none;border-color:rgba(6,182,212,.5)}
+.match-filter input{width:240px}
+.no-history{
+  display:flex;align-items:center;justify-content:center;min-height:200px;
+  color:var(--text-dim);font-size:.9rem;text-align:center;
+}
+.back-link{color:var(--cyan);font-weight:600}
+.back-link:hover{color:#67e8f9}
+.overflow-note{color:#64748b;font-size:.82rem;font-style:italic}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <img src="../images/logo.png" alt="" onerror="this.style.display='none'">
+      AI Slop Monitor
+    </div>
+    <ul class="nav-links" style="display:flex">
+      <li><a href="../index.html">&larr; All Repositories</a></li>
+      <li><a href="https://github.com/Kiln-AI/Kiln" target="_blank" rel="noopener">GitHub &rarr;</a></li>
+    </ul>
+    <a class="suggest-btn" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+      Suggest Repo
+    </a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<div class="detail-hero">
+  <div class="container">
+    <div class="breadcrumb fade-in">
+      <a href="../index.html">Home</a>
+      <span class="sep">/</span>
+      <a href="https://github.com/Kiln-AI/Kiln" target="_blank" rel="noopener">Kiln-AI</a>
+      <span class="sep">/</span>
+      <span style="color:var(--text-hi);font-weight:600">Kiln</span>
+    </div>
+    <div class="hero-eyebrow fade-in">Repository Analysis</div>
+    <h1 class="fade-in">Kiln-AI/Kiln</h1>
+    <p class="hero-sub fade-in" style="text-align:left;margin:.6rem 0 0">Build, Evaluate, and Optimize AI Systems. Includes evals, RAG, agents, fine-tuning, synthetic data generation, dataset management, MCP, and more.</p>
+    <div class="detail-badges fade-in">
+      <span class="badge badge-high" style="font-size:1rem;padding:.35em 1.1em">16.8</span>
+      <span style="color:#f59e0b;font-weight:700;font-size:.95rem">Moderate AI signal</span>
+      <a href="https://github.com/Kiln-AI/Kiln" target="_blank" rel="noopener" style="color:var(--text-dim);font-size:.85rem;margin-left:.25rem">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub
+      </a>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ═══ META STRIP ═══ -->
+<div class="container">
+  <div class="meta-strip">
+    <div class="meta-card fade-in"><div class="meta-val" style="color:#f59e0b">16.8</div><div class="meta-lbl">Adjusted Score</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">16.8</div><div class="meta-lbl">Raw Score</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#60a5fa">100%</div><div class="meta-lbl">Time Factor</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">2026-07-04</div><div class="meta-lbl">Last Push</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#f59e0b">4,946</div><div class="meta-lbl">Stars</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#a78bfa">Python</div><div class="meta-lbl">Language</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">382,748</div><div class="meta-lbl">Lines of Code</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">1680</div><div class="meta-lbl">Files</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#f87171">5749</div><div class="meta-lbl">Pattern Hits</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">2026-07-05</div><div class="meta-lbl">Scan Date</div></div>
+  </div>
+
+  <!-- ═══ CHARTS ROW ═══ -->
+  <div class="chart-row">
+    <div class="card"><h3>Score History</h3><div class="no-history">No multi-scan history yet &mdash; run the scanner again to build trend data.</div></div>
+    <div class="card">
+      <h3>Severity Breakdown</h3>
+      <div style="margin-bottom:1rem"><span class="sev-pill" style="border-color:#ef4444;color:#ef4444">CRITICAL <strong>2</strong></span><span class="sev-pill" style="border-color:#f59e0b;color:#f59e0b">HIGH <strong>122</strong></span><span class="sev-pill" style="border-color:#eab308;color:#eab308">MEDIUM <strong>359</strong></span><span class="sev-pill" style="border-color:#34d399;color:#34d399">LOW <strong>5266</strong></span></div>
+      <div style="height:180px"><canvas id="sevChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ═══ PATTERN FINDINGS ═══ -->
+  <div style="margin:2.5rem 0">
+    <h2 class="fade-in" style="margin-bottom:.3rem">Pattern Findings</h2>
+    <p class="section-sub fade-in">5749 matches across 20 categories.
+    Click a row to expand file-level details.</p>
+    <div class="match-filter fade-in">
+      <input id="catSearch" type="text" placeholder="&#x1F50E;&#xFE0E; Filter by text&hellip;" oninput="filterCats()">
+      <select id="catSevFilter" onchange="filterCats()">
+        <option value="">All severities</option>
+        <option value="CRITICAL">CRITICAL</option>
+        <option value="HIGH">HIGH</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="LOW">LOW</option>
+      </select>
+    </div>
+    <div id="catList">
+      <details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Hyper-Verbose Identifiers</span><span class="cat-meta">4443 hits &middot; 3918 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">conftest.py</td><td>117</td><td class="mono snip">def pytest_collection_modifyitems(config, items):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_start_background_syncs.py</td><td>40</td><td class="mono snip">async def test_start_background_syncs_passes_oauth_token(tmp_path: Path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_start_background_syncs.py</td><td>88</td><td class="mono snip">async def test_start_background_syncs_passes_pat_token(tmp_path: Path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>103</td><td class="mono snip">    def test_quit_app_with_tray_and_root(self, mock_tk_root, mock_kiln_tray):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>133</td><td class="mono snip">    def test_on_quit_without_root(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>152</td><td class="mono snip">    def test_resource_path_with_meipass(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>162</td><td class="mono snip">    def test_resource_path_without_meipass(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>200</td><td class="mono snip">    def test_run_tray_already_exists(self, mock_tk_root, mock_kiln_tray):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>212</td><td class="mono snip">    def test_run_tray_windows_default(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>226</td><td class="mono snip">    def test_run_tray_macos_no_default(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>239</td><td class="mono snip">    def test_close_splash_with_pyi_splash(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>249</td><td class="mono snip">    def test_close_splash_without_pyi_splash(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/test_desktop.py</td><td>270</td><td class="mono snip">    def test_run_in_thread_calls_app_on_quit(self, mock_tk_root):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>142</td><td class="mono snip">def test_validate_input_transform_template_valid(client):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>153</td><td class="mono snip">def test_validate_input_transform_template_invalid(client):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>166</td><td class="mono snip">def test_validate_input_transform_template_empty(client):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>177</td><td class="mono snip">def test_validate_mcp_input_schema_plaintext_success(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>202</td><td class="mono snip">def test_validate_mcp_input_schema_plaintext_fails(mock_task, tool_schema, error_match):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>208</td><td class="mono snip">def test_validate_mcp_input_schema_structured_success(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>220</td><td class="mono snip">def test_validate_mcp_input_schema_structured_fails(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>229</td><td class="mono snip">def test_validate_mcp_output_schema_success(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>257</td><td class="mono snip">def test_validate_mcp_output_schema_fails(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>266</td><td class="mono snip">def test_load_mcp_tool_success(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>284</td><td class="mono snip">def test_load_mcp_tool_fails_not_mcp_tool_id(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>296</td><td class="mono snip">def test_load_mcp_tool_fails_wrong_type(mock_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>313</td><td class="mono snip">async def test_load_mcp_input_schema_success():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>324</td><td class="mono snip">async def test_load_mcp_input_schema_fails():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>337</td><td class="mono snip">async def test_load_mcp_output_schema_success():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>351</td><td class="mono snip">async def test_load_mcp_output_schema_fails():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>359</td><td class="mono snip">def test_create_task_from_tool_plaintext(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>416</td><td class="mono snip">def test_create_task_from_tool_structured(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>482</td><td class="mono snip">def test_create_task_from_tool_sanitizes_names(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>548</td><td class="mono snip">def test_create_task_from_tool_invalid_tool(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>579</td><td class="mono snip">def test_create_mcp_run_config_success(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>633</td><td class="mono snip">def test_create_mcp_run_config_plaintext_success(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>698</td><td class="mono snip">def test_create_mcp_run_config_input_schema_mismatch(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>756</td><td class="mono snip">def test_tasks_compatible_with_tool_mixed_results(client, project_and_tasks):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>811</td><td class="mono snip">def test_tasks_compatible_with_tool_invalid_tool(client, project_and_tasks):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>831</td><td class="mono snip">def test_tasks_compatible_with_tool_empty_project(client, tmp_path):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>935</td><td class="mono snip">def test_schemas_compatible_true(task_schema, tool_schema, description):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>976</td><td class="mono snip">def test_schemas_compatible_false(task_schema, tool_schema, description):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>980</td><td class="mono snip">def test_resolve_mcp_tool_from_id_success():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>1005</td><td class="mono snip">def test_resolve_mcp_tool_from_id_not_mcp():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>1013</td><td class="mono snip">def test_create_mcp_run_config_properties():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_run_config_api.py</td><td>1037</td><td class="mono snip">def test_create_mcp_run_config_properties_no_output_schema():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>101</td><td class="mono snip">def mock_repair_task_run_human_edited(improvement_task, data_source):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>193</td><td class="mono snip">def test_repair_run_missing_model_info(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>216</td><td class="mono snip">def test_repair_run_human_source(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>269</td><td class="mono snip">    async def mock_acompletion_checking_response(self, **kwargs):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>338</td><td class="mono snip">def test_repair_run_with_model_override(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>367</td><td class="mono snip">def test_repair_run_override_requires_both_fields(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>381</td><td class="mono snip">def test_repair_run_override_rederives_structured_output_mode(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_agent_api.py</td><td>195</td><td class="mono snip">    def test_two_tags_both_counted(self, task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_agent_api.py</td><td>365</td><td class="mono snip">    def test_excludes_generators_includes_real_prompts(self, task, project):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_agent_api.py</td><td>434</td><td class="mono snip">    def test_generators_from_task_instruction_count(self, task, project):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_agent_api.py</td><td>541</td><td class="mono snip">    def test_ordering_within_groups(self, task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/webhost.py</td><td>63</td><td class="mono snip">    def not_found_exception_handler(request, exc):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_data_gen_api.py</td><td>896</td><td class="mono snip">def test_combine_guidance_session_only(test_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_data_gen_api.py</td><td>905</td><td class="mono snip">def test_combine_guidance_empty_returns_none(test_task):</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_data_gen_api.py</td><td>912</td><td class="mono snip">def test_combine_guidance_override_wins_over_persisted(test_task):</td></tr><tr><td colspan="4" class="overflow-note">4383 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Self-Referential Comments</span><span class="cat-meta">271 hits &middot; 808 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/linux_installer.sh</td><td>190</td><td class="mono snip">    # Create the desktop entry file</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/studio_server/test_prompt_optimization_job_api.py</td><td>2238</td><td class="mono snip">    # Create a target run config</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/studio_server/test_prompt_optimization_job_api.py</td><td>2513</td><td class="mono snip">    # Create a prompt</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/studio_server/test_prompt_optimization_job_api.py</td><td>2552</td><td class="mono snip">    # Create a run config</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4141</td><td class="mono snip">    # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4150</td><td class="mono snip">    # Create a run config with ID &quot;default&quot; for the task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4227</td><td class="mono snip">    # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4236</td><td class="mono snip">    # Create a run config with ID &quot;default&quot; for the task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4277</td><td class="mono snip">    # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4286</td><td class="mono snip">    # Create a run config with ID &quot;default&quot; for the task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4399</td><td class="mono snip">    # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4408</td><td class="mono snip">    # Create a run config with ID &quot;default&quot; for the task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4466</td><td class="mono snip">    # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4475</td><td class="mono snip">    # Create a run config for the task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>380</td><td class="mono snip">        # Create the tool with empty tools</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>436</td><td class="mono snip">        # Create the tool with successful validation</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>558</td><td class="mono snip">        # Create the tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>697</td><td class="mono snip">        # Create a mapping of server URLs to their tools</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>788</td><td class="mono snip">    # Create a tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>802</td><td class="mono snip">        # Create the tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1148</td><td class="mono snip">    # Create a mock ExternalToolServer</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1181</td><td class="mono snip">    # Create a mock ExternalToolServer</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1203</td><td class="mono snip">    # Create a mock ExternalToolServer</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1225</td><td class="mono snip">    # Create a mock ExternalToolServer</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1249</td><td class="mono snip">    # Create a mock ExternalToolServer with kiln_task type</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1514</td><td class="mono snip">    # Create a tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1652</td><td class="mono snip">            # Create the tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1776</td><td class="mono snip">    # Create a tool server with secret headers</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1796</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1881</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1926</td><td class="mono snip">    # Create a tool server first</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1942</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>1986</td><td class="mono snip">    # Create a tool server with secret headers</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2006</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2449</td><td class="mono snip">    # Create a local MCP tool server with secret env vars</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2470</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2517</td><td class="mono snip">    # Create a local MCP tool server without secret env vars</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2534</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2577</td><td class="mono snip">    # Create a local MCP tool server with secret env vars</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2598</td><td class="mono snip">            # Create the tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2639</td><td class="mono snip">    # Create a local MCP tool server first</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2656</td><td class="mono snip">            # Create the local tool server first (without mocking Config to avoid interference)</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2715</td><td class="mono snip">        # Create the tool with successful validation</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2791</td><td class="mono snip">        # Create the tool with successful validation</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2862</td><td class="mono snip">        # Create the tool with successful validation</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>2944</td><td class="mono snip">        # Create the local MCP tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3019</td><td class="mono snip">        # Create a test task</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3037</td><td class="mono snip">        # Create a Kiln task tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3171</td><td class="mono snip">        # Create the local MCP tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3269</td><td class="mono snip">        # Create the local MCP tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3496</td><td class="mono snip">    # Create an MCP tool server to trigger the RAG set inclusion</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3510</td><td class="mono snip">        # Create the MCP server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3561</td><td class="mono snip">    # Create a RAG config</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3575</td><td class="mono snip">    # Create an MCP tool server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3589</td><td class="mono snip">        # Create the MCP server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3833</td><td class="mono snip">        # Create a mock KilnTaskTool</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3865</td><td class="mono snip">        # Create a mock KilnTaskTool with minimal fields</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>3950</td><td class="mono snip">        # Create a non-kiln task server to ensure it's filtered out</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4005</td><td class="mono snip">        # Create a non-kiln task server</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>4038</td><td class="mono snip">        # Create a valid task first</td></tr><tr><td colspan="4" class="overflow-note">211 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Docstring Block Structure</span><span class="cat-meta">82 hits &middot; 410 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_client/api/chat/list_sessions_v1_chat_sessions_get.py</td><td>123</td><td class="mono snip">List Sessions
+
+    Args:
+        limit (int | Unset):  Default: 50.
+        offset (int | Unset):  Default: 0.
+
+    Rais</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_client/api/chat/list_sessions_v1_chat_sessions_get.py</td><td>163</td><td class="mono snip">List Sessions
+
+    Args:
+        limit (int | Unset):  Default: 50.
+        offset (int | Unset):  Default: 0.
+
+    Rais</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_client/api/chat/list_sessions_v1_chat_sessions_get.py</td><td>197</td><td class="mono snip">List Sessions
+
+    Args:
+        limit (int | Unset):  Default: 50.
+        offset (int | Unset):  Default: 0.
+
+    Rais</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_client/api/chat/list_sessions_v1_chat_sessions_get.py</td><td>235</td><td class="mono snip">List Sessions
+
+    Args:
+        limit (int | Unset):  Default: 50.
+        offset (int | Unset):  Default: 0.
+
+    Rais</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t/delete_session_v1_chat_sessions_session_id_delete.py</td><td>115</td><td class="mono snip">Delete Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t/delete_session_v1_chat_sessions_session_id_delete.py</td><td>152</td><td class="mono snip">Delete Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t/delete_session_v1_chat_sessions_session_id_delete.py</td><td>183</td><td class="mono snip">Delete Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t/delete_session_v1_chat_sessions_session_id_delete.py</td><td>218</td><td class="mono snip">Delete Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pi/chat/get_session_v1_chat_sessions_session_id_get.py</td><td>117</td><td class="mono snip">Get Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pi/chat/get_session_v1_chat_sessions_session_id_get.py</td><td>154</td><td class="mono snip">Get Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pi/chat/get_session_v1_chat_sessions_session_id_get.py</td><td>185</td><td class="mono snip">Get Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pi/chat/get_session_v1_chat_sessions_session_id_get.py</td><td>220</td><td class="mono snip">Get Session
+
+    Args:
+        session_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_ai_server_client/api/chat/handle_chat_v1_chat_post.py</td><td>112</td><td class="mono snip">Handle Chat
+
+    Args:
+        body (ChatRequest):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_ai_server_client/api/chat/handle_chat_v1_chat_post.py</td><td>149</td><td class="mono snip">Handle Chat
+
+    Args:
+        body (ChatRequest):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_ai_server_client/api/chat/handle_chat_v1_chat_post.py</td><td>180</td><td class="mono snip">Handle Chat
+
+    Args:
+        body (ChatRequest):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…_ai_server_client/api/chat/handle_chat_v1_chat_post.py</td><td>215</td><td class="mono snip">Handle Chat
+
+    Args:
+        body (ChatRequest):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/copilot/clarify_spec_v1_copilot_clarify_spec_post.py</td><td>68</td><td class="mono snip">Clarify Spec
+
+     Clarify a specification.
+
+    Args:
+        body (ClarifySpecInput):
+
+    Raises:
+        errors.Unex</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/copilot/clarify_spec_v1_copilot_clarify_spec_post.py</td><td>99</td><td class="mono snip">Clarify Spec
+
+     Clarify a specification.
+
+    Args:
+        body (ClarifySpecInput):
+
+    Raises:
+        errors.Unex</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/copilot/clarify_spec_v1_copilot_clarify_spec_post.py</td><td>125</td><td class="mono snip">Clarify Spec
+
+     Clarify a specification.
+
+    Args:
+        body (ClarifySpecInput):
+
+    Raises:
+        errors.Unex</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/copilot/clarify_spec_v1_copilot_clarify_spec_post.py</td><td>154</td><td class="mono snip">Clarify Spec
+
+     Clarify a specification.
+
+    Args:
+        body (ClarifySpecInput):
+
+    Raises:
+        errors.Unex</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…copilot/question_spec_v1_copilot_question_spec_post.py</td><td>68</td><td class="mono snip">Question Spec
+
+     Generate questions to help clarify a specification.
+
+    Args:
+        body (SpecQuestionerApiInput)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…copilot/question_spec_v1_copilot_question_spec_post.py</td><td>99</td><td class="mono snip">Question Spec
+
+     Generate questions to help clarify a specification.
+
+    Args:
+        body (SpecQuestionerApiInput)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…copilot/question_spec_v1_copilot_question_spec_post.py</td><td>125</td><td class="mono snip">Question Spec
+
+     Generate questions to help clarify a specification.
+
+    Args:
+        body (SpecQuestionerApiInput)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…copilot/question_spec_v1_copilot_question_spec_post.py</td><td>154</td><td class="mono snip">Question Spec
+
+     Generate questions to help clarify a specification.
+
+    Args:
+        body (SpecQuestionerApiInput)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…th_answers_v1_copilot_refine_spec_with_answers_post.py</td><td>68</td><td class="mono snip">Refine Spec With Answers
+
+     Refine a specification with answers.
+
+    Args:
+        body (SubmitAnswersRequest): Requ</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…th_answers_v1_copilot_refine_spec_with_answers_post.py</td><td>99</td><td class="mono snip">Refine Spec With Answers
+
+     Refine a specification with answers.
+
+    Args:
+        body (SubmitAnswersRequest): Requ</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…th_answers_v1_copilot_refine_spec_with_answers_post.py</td><td>125</td><td class="mono snip">Refine Spec With Answers
+
+     Refine a specification with answers.
+
+    Args:
+        body (SubmitAnswersRequest): Requ</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…th_answers_v1_copilot_refine_spec_with_answers_post.py</td><td>154</td><td class="mono snip">Refine Spec With Answers
+
+     Refine a specification with answers.
+
+    Args:
+        body (SubmitAnswersRequest): Requ</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pilot/generate_batch_v1_copilot_generate_batch_post.py</td><td>68</td><td class="mono snip">Generate Batch
+
+     Generate a batch of data.
+
+    Args:
+        body (GenerateBatchInput): Input for batch generation </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pilot/generate_batch_v1_copilot_generate_batch_post.py</td><td>100</td><td class="mono snip">Generate Batch
+
+     Generate a batch of data.
+
+    Args:
+        body (GenerateBatchInput): Input for batch generation </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pilot/generate_batch_v1_copilot_generate_batch_post.py</td><td>127</td><td class="mono snip">Generate Batch
+
+     Generate a batch of data.
+
+    Args:
+        body (GenerateBatchInput): Input for batch generation </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…pilot/generate_batch_v1_copilot_generate_batch_post.py</td><td>157</td><td class="mono snip">Generate Batch
+
+     Generate a batch of data.
+
+    Args:
+        body (GenerateBatchInput): Input for batch generation </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…api/copilot/refine_spec_v1_copilot_refine_spec_post.py</td><td>68</td><td class="mono snip">Refine Spec
+
+     Refine a specification.
+
+    Args:
+        body (RefineSpecInput):
+
+    Raises:
+        errors.Unexpec</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…api/copilot/refine_spec_v1_copilot_refine_spec_post.py</td><td>99</td><td class="mono snip">Refine Spec
+
+     Refine a specification.
+
+    Args:
+        body (RefineSpecInput):
+
+    Raises:
+        errors.Unexpec</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…api/copilot/refine_spec_v1_copilot_refine_spec_post.py</td><td>125</td><td class="mono snip">Refine Spec
+
+     Refine a specification.
+
+    Args:
+        body (RefineSpecInput):
+
+    Raises:
+        errors.Unexpec</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…api/copilot/refine_spec_v1_copilot_refine_spec_post.py</td><td>154</td><td class="mono snip">Refine Spec
+
+     Refine a specification.
+
+    Args:
+        body (RefineSpecInput):
+
+    Raises:
+        errors.Unexpec</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/auth/check_entitlements_v1_check_entitlements_get.py</td><td>78</td><td class="mono snip">Check Entitlements
+
+     Check whether the authenticated user's organization has the given entitlement
+    feature code(</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/auth/check_entitlements_v1_check_entitlements_get.py</td><td>113</td><td class="mono snip">Check Entitlements
+
+     Check whether the authenticated user's organization has the given entitlement
+    feature code(</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/auth/check_entitlements_v1_check_entitlements_get.py</td><td>143</td><td class="mono snip">Check Entitlements
+
+     Check whether the authenticated user's organization has the given entitlement
+    feature code(</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…i/auth/check_entitlements_v1_check_entitlements_get.py</td><td>176</td><td class="mono snip">Check Entitlements
+
+     Check whether the authenticated user's organization has the given entitlement
+    feature code(</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t_v1_jobs_prompt_optimization_job_job_id_result_get.py</td><td>63</td><td class="mono snip">Get Prompt Optimization Job Result
+
+    Args:
+        job_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t_v1_jobs_prompt_optimization_job_job_id_result_get.py</td><td>92</td><td class="mono snip">Get Prompt Optimization Job Result
+
+    Args:
+        job_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t_v1_jobs_prompt_optimization_job_job_id_result_get.py</td><td>116</td><td class="mono snip">Get Prompt Optimization Job Result
+
+    Args:
+        job_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…t_v1_jobs_prompt_optimization_job_job_id_result_get.py</td><td>143</td><td class="mono snip">Get Prompt Optimization Job Result
+
+    Args:
+        job_id (str):
+
+    Raises:
+        errors.UnexpectedStatus: If the</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…jobs/start_sample_job_v1_jobs_sample_job_start_post.py</td><td>67</td><td class="mono snip">Start Sample Job
+
+     Start a new sample job.
+
+    Args:
+        message: The message to process
+        user_id: The a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…jobs/start_sample_job_v1_jobs_sample_job_start_post.py</td><td>108</td><td class="mono snip">Start Sample Job
+
+     Start a new sample job.
+
+    Args:
+        message: The message to process
+        user_id: The a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…jobs/start_sample_job_v1_jobs_sample_job_start_post.py</td><td>144</td><td class="mono snip">Start Sample Job
+
+     Start a new sample job.
+
+    Args:
+        message: The message to process
+        user_id: The a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…jobs/start_sample_job_v1_jobs_sample_job_start_post.py</td><td>183</td><td class="mono snip">Start Sample Job
+
+     Start a new sample job.
+
+    Args:
+        message: The message to process
+        user_id: The a</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s_prompt_optimization_job_check_model_supported_get.py</td><td>72</td><td class="mono snip">Check Prompt Optimization Model Supported
+
+    Args:
+        model_name (str):
+        model_provider_name (str):
+
+    R</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s_prompt_optimization_job_check_model_supported_get.py</td><td>104</td><td class="mono snip">Check Prompt Optimization Model Supported
+
+    Args:
+        model_name (str):
+        model_provider_name (str):
+
+    R</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s_prompt_optimization_job_check_model_supported_get.py</td><td>131</td><td class="mono snip">Check Prompt Optimization Model Supported
+
+    Args:
+        model_name (str):
+        model_provider_name (str):
+
+    R</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s_prompt_optimization_job_check_model_supported_get.py</td><td>161</td><td class="mono snip">Check Prompt Optimization Model Supported
+
+    Args:
+        model_name (str):
+        model_provider_name (str):
+
+    R</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ple_job_result_v1_jobs_sample_job_job_id_result_get.py</td><td>63</td><td class="mono snip">Get Sample Job Result
+
+     Get the result of a sample job.
+
+    Args:
+        job_id: The job ID
+
+    Returns:
+        </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ple_job_result_v1_jobs_sample_job_job_id_result_get.py</td><td>103</td><td class="mono snip">Get Sample Job Result
+
+     Get the result of a sample job.
+
+    Args:
+        job_id: The job ID
+
+    Returns:
+        </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ple_job_result_v1_jobs_sample_job_job_id_result_get.py</td><td>138</td><td class="mono snip">Get Sample Job Result
+
+     Get the result of a sample job.
+
+    Args:
+        job_id: The job ID
+
+    Returns:
+        </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ple_job_result_v1_jobs_sample_job_job_id_result_get.py</td><td>176</td><td class="mono snip">Get Sample Job Result
+
+     Get the result of a sample job.
+
+    Args:
+        job_id: The job ID
+
+    Returns:
+        </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s/get_job_status_v1_jobs_job_type_job_id_status_get.py</td><td>67</td><td class="mono snip">Get Job Status
+
+     Get the status of a job.
+
+    Args:
+        job_type: The type of job
+        job_id: The job ID
+
+ </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s/get_job_status_v1_jobs_job_type_job_id_status_get.py</td><td>111</td><td class="mono snip">Get Job Status
+
+     Get the status of a job.
+
+    Args:
+        job_type: The type of job
+        job_id: The job ID
+
+ </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s/get_job_status_v1_jobs_job_type_job_id_status_get.py</td><td>150</td><td class="mono snip">Get Job Status
+
+     Get the status of a job.
+
+    Args:
+        job_type: The type of job
+        job_id: The job ID
+
+ </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…s/get_job_status_v1_jobs_job_type_job_id_status_get.py</td><td>192</td><td class="mono snip">Get Job Status
+
+     Get the status of a job.
+
+    Args:
+        job_type: The type of job
+        job_id: The job ID
+
+ </td></tr><tr><td colspan="4" class="overflow-note">22 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Unused Imports</span><span class="cat-meta">389 hits &middot; 330 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/desktop.py</td><td>19</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…io_server/api_client/kiln_ai_server_client/__init__.py</td><td>3</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…io_server/api_client/kiln_ai_server_client/__init__.py</td><td>3</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ion_v1_chat_sessions_session_id_delete_response_426.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…client/models/handle_chat_v1_chat_post_response_500.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_ai_server_client/models/examples_for_feedback_item.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ient/models/mcp_tool_reference_output_schema_type_0.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…r/api_client/kiln_ai_server_client/models/task_info.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…t/kiln_ai_server_client/models/question_with_answer.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…lient/kiln_ai_server_client/models/tools_run_config.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…api_client/kiln_ai_server_client/models/data_source.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ient/models/chat_completion_developer_message_param.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er_client/models/chat_completion_user_message_param.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…kiln_ai_server_client/models/chat_session_list_item.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ent/kiln_ai_server_client/models/requirement_rating.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…server_client/models/spec_spec_field_current_values.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…client/models/handle_chat_v1_chat_post_response_404.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ent/kiln_ai_server_client/models/task_output_rating.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…kiln_ai_server_client/models/data_source_properties.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…n_ai_server_client/models/mcp_run_config_properties.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…i_client/kiln_ai_server_client/models/chat_snapshot.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…lient/kiln_ai_server_client/models/validation_error.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ai_server_client/models/api_key_verification_result.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ient/kiln_ai_server_client/models/sample_job_output.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…client/kiln_ai_server_client/models/kiln_base_model.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…client/models/handle_chat_v1_chat_post_response_400.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…lient/kiln_ai_server_client/models/spec_spec_fields.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ient/kiln_ai_server_client/models/refine_spec_input.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erver_client/models/specification_input_spec_fields.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…iln_ai_server_client/models/create_api_key_response.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/task_run.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…kiln_ai_server_client/models/submit_answers_request.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…dels/synthetic_data_generation_session_config_input.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…rver_client/models/kiln_agent_run_config_properties.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ent/kiln_ai_server_client/models/mcp_tool_reference.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ession_v1_chat_sessions_session_id_get_response_426.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ls/chat_completion_message_function_tool_call_param.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/question.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…i_client/kiln_ai_server_client/models/task_metadata.py</td><td>1</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>3</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>4</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>5</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>6</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>7</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>10</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>11</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>12</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>13</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>14</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>15</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>16</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>17</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>18</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>19</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>20</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>21</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>22</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>23</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>24</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/__init__.py</td><td>25</td><td class="mono snip"></td></tr><tr><td colspan="4" class="overflow-note">329 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Decorative Section Separators</span><span class="cat-meta">72 hits &middot; 258 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">checks.sh</td><td>40</td><td class="mono snip"># ── Parallel check runner ────────────────────────────────────────────</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">checks.sh</td><td>135</td><td class="mono snip"># ── Kick off all checks ──────────────────────────────────────────────</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">checks.sh</td><td>171</td><td class="mono snip"># ── Wait and summarize ────────────────────────────────────────────────</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>226</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>228</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>47</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>49</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>67</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>69</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>271</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>273</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>389</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>391</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>406</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>408</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>451</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>453</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>129</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>131</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>199</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>201</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>277</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>279</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>327</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>329</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>394</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>396</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>510</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>512</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>26</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>28</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>466</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>468</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>108</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>110</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>167</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>169</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>231</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>233</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>26</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>28</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>31</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>33</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>100</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>102</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>125</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.agents/scripts/provider_utils.py</td><td>129</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>55</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>57</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>81</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>83</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>172</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>174</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>273</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>275</td><td class="mono snip"># ---------------------------------------------------------------------------</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/adapters/test_provider_tools.py</td><td>1287</td><td class="mono snip"># =============================================================================</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/adapters/test_provider_tools.py</td><td>1289</td><td class="mono snip"># =============================================================================</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…pters/model_adapters/test_litellm_adapter_streaming.py</td><td>831</td><td class="mono snip"># ── Mocked variants (CI-friendly, no real API calls) ──────────────────────────</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/datamodel/test_basemodel.py</td><td>1212</td><td class="mono snip"># ============================================================================</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/datamodel/test_basemodel.py</td><td>1214</td><td class="mono snip"># ============================================================================</td></tr><tr><td colspan="4" class="overflow-note">12 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Excessive Try-Catch Wrapping</span><span class="cat-meta">192 hits &middot; 198 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/custom_tray.py</td><td>15</td><td class="mono snip">except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/custom_tray.py</td><td>50</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/desktop.py</td><td>138</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/copilot_api.py</td><td>438</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/copilot_api.py</td><td>443</td><td class="mono snip">                except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/webhost.py</td><td>24</td><td class="mono snip">    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/webhost.py</td><td>44</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/webhost.py</td><td>19</td><td class="mono snip">def studio_path():</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/settings_api.py</td><td>74</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/settings_api.py</td><td>97</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/prompt_api.py</td><td>43</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>444</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>784</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>81</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>98</td><td class="mono snip">    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1083</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1123</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1178</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1204</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1238</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1277</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1300</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1332</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1364</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1398</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1437</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1475</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1508</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1537</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1587</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>2153</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>845</td><td class="mono snip">            except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/tool_api.py</td><td>325</td><td class="mono snip">                    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/tool_api.py</td><td>984</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>209</td><td class="mono snip">    except Exception as cleanup_error:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>279</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>334</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>402</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>485</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>597</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>665</td><td class="mono snip">            except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>713</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>754</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>802</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/run_config_api.py</td><td>217</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/run_config_api.py</td><td>382</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/stream_session.py</td><td>284</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/registry.py</td><td>247</td><td class="mono snip">            except Exception as exc:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/registry.py</td><td>430</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/registry.py</td><td>466</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/error_log.py</td><td>31</td><td class="mono snip">    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/error_log.py</td><td>57</td><td class="mono snip">    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/error_log.py</td><td>66</td><td class="mono snip">    except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/util/resource_limits.py</td><td>29</td><td class="mono snip">    except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>73</td><td class="mono snip">        except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>194</td><td class="mono snip">            except Exception:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>239</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>262</td><td class="mono snip">        except Exception as e:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>285</td><td class="mono snip">        except Exception as first_push_error:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>293</td><td class="mono snip">            except Exception as fetch_err:</td></tr><tr><td colspan="4" class="overflow-note">132 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Cross-File Repetition</span><span class="cat-meta">24 hits &middot; 120 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…op/studio_server/api_client/test_kiln_server_client.py</td><td>0</td><td class="mono snip">verify the client is configured with the correct base url.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…op/studio_server/api_client/test_kiln_server_client.py</td><td>0</td><td class="mono snip">verify the client is configured with the correct base url.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…op/studio_server/api_client/test_kiln_server_client.py</td><td>0</td><td class="mono snip">verify the client is configured with the correct base url.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/git_sync/errors.py</td><td>0</td><td class="mono snip">git authentication failed or expired (bad/expired token, 401/403).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/git_auth_recovery/architecture.md</td><td>0</td><td class="mono snip">git authentication failed or expired (bad/expired token, 401/403).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/git_auth_recovery/phase_plans/phase_1.md</td><td>0</td><td class="mono snip">git authentication failed or expired (bad/expired token, 401/403).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/agent_approvals/architecture.md</td><td>0</td><td class="mono snip">raised when an endpoint has no known policy (fail-safe block).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/agent_approvals/functional_spec.md</td><td>0</td><td class="mono snip">raised when an endpoint has no known policy (fail-safe block).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…server/kiln_server/utils/agent_checks/policy_lookup.py</td><td>0</td><td class="mono snip">raised when an endpoint has no known policy (fail-safe block).</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/templates/architecture.md</td><td>0</td><td class="mono snip">validate that the template compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/templates/functional_spec.md</td><td>0</td><td class="mono snip">validate that the template compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/utils/jinja_engine.py</td><td>0</td><td class="mono snip">validate that the template compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/templates/architecture.md</td><td>0</td><td class="mono snip">validate that a jinja2 expression compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">specs/projects/templates/functional_spec.md</td><td>0</td><td class="mono snip">validate that a jinja2 expression compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/utils/jinja_engine.py</td><td>0</td><td class="mono snip">validate that a jinja2 expression compiles. raises valueerror on syntax error.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/utils/test_pdf_utils.py</td><td>0</td><td class="mono snip">test running convert_pdf_to_images concurrently from multiple tasks.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/utils/test_pdf_utils.py</td><td>0</td><td class="mono snip">test running convert_pdf_to_images concurrently from multiple tasks.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/utils/test_pdf_utils.py</td><td>0</td><td class="mono snip">test running convert_pdf_to_images concurrently from multiple tasks.</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/test_provider_tools.py</td><td>0</td><td class="mono snip">test successful creation of a fine-tuned model provider</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/test_provider_tools.py</td><td>0</td><td class="mono snip">test successful creation of a fine-tuned model provider</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/test_provider_tools.py</td><td>0</td><td class="mono snip">test successful creation of a fine-tuned model provider</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_vector_store.py</td><td>0</td><td class="mono snip">we added discriminated union and the store_type in the properties, but older configs did not have the store_type in the </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_vector_store.py</td><td>0</td><td class="mono snip">we added discriminated union and the store_type in the properties, but older configs did not have the store_type in the </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_vector_store.py</td><td>0</td><td class="mono snip">we added discriminated union and the store_type in the properties, but older configs did not have the store_type in the </td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Deep Nesting</span><span class="cat-meta">127 hits &middot; 112 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>213</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>283</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>308</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>413</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_generate_docs.py</td><td>37</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>824</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_server.py</td><td>273</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/agent_api.py</td><td>228</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>255</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1598</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1675</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1710</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1802</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1825</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>1989</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>275</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>420</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>487</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>688</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/eval_api.py</td><td>600</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/eval_api.py</td><td>1298</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/eval_api.py</td><td>1445</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>227</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>647</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/tool_api.py</td><td>277</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/tool_api.py</td><td>455</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>342</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>617</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er_client/models/chat_completion_user_message_param.py</td><td>46</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er_client/models/chat_completion_user_message_param.py</td><td>88</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er_client/models/chat_completion_user_message_param.py</td><td>96</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/task_run.py</td><td>103</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/task_run.py</td><td>263</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…er/api_client/kiln_ai_server_client/models/task_run.py</td><td>408</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…els/chat_completion_assistant_message_param_wrapper.py</td><td>59</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…els/chat_completion_assistant_message_param_wrapper.py</td><td>164</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…els/chat_completion_assistant_message_param_wrapper.py</td><td>194</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/test_routes.py</td><td>1039</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/test_integration.py</td><td>57</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/test_integration.py</td><td>177</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/test_integration.py</td><td>234</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/test_integration.py</td><td>334</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/chat/stream_session.py</td><td>100</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/events.py</td><td>87</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/error_log.py</td><td>35</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_api.py</td><td>431</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/git_sync_api.py</td><td>692</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/clone.py</td><td>61</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/clone.py</td><td>274</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/clone.py</td><td>78</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/integration_tests/conftest.py</td><td>486</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/desktop/git_sync/integration_tests/test_decorators.py</td><td>163</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">.agents/scripts/provider_utils.py</td><td>182</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…n-check-finetune-deprecation/scripts/check_finetune.py</td><td>120</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…kills/kiln-check-deprecation/scripts/check_provider.py</td><td>68</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…kills/kiln-check-deprecation/scripts/check_provider.py</td><td>149</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/tools/test_mcp_session_manager.py</td><td>830</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/tools/mcp_session_manager.py</td><td>331</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/logging.py</td><td>98</td><td class="mono snip"></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/config.py</td><td>270</td><td class="mono snip"></td></tr><tr><td colspan="4" class="overflow-note">67 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Redundant / Tautological Comments</span><span class="cat-meta">45 hits &middot; 79 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">conftest.py</td><td>99</td><td class="mono snip">    # Check if we're running manually (eg, in vscode)</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">conftest.py</td><td>108</td><td class="mono snip">    # Check if all of the items are the same prefix, expluding a.b.c[param]</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/linux_installer.sh</td><td>32</td><td class="mono snip"># Check if we're on a supported platform</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/linux_installer.sh</td><td>105</td><td class="mono snip">    # Check if we can write to current directory</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/linux_installer.sh</td><td>239</td><td class="mono snip">    # Check if the Kiln executable exists</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/linux_installer.sh</td><td>245</td><td class="mono snip">    # Check if this is an upgrade</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/finetune_api.py</td><td>874</td><td class="mono snip">            # Check if the model supports tools via 'supportTools'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>1285</td><td class="mono snip">    # Check if all built-in models are present in the response</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>1291</td><td class="mono snip">    # Check if the number of models in the response matches the number of built-in models</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>3379</td><td class="mono snip">    # Check if all built-in embedding models are present in the response</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>3385</td><td class="mono snip">    # Check if the number of models in the response matches the number of built-in embedding models</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>3646</td><td class="mono snip">    # Check if all built-in reranker models are present in the response</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_provider_api.py</td><td>3652</td><td class="mono snip">    # Check if the number of models in the response matches the number of built-in reranker models</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/provider_api.py</td><td>697</td><td class="mono snip">            # Check if provider is configured</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/eval_api.py</td><td>1351</td><td class="mono snip">                # Check if we should count this eval_run. Not every eval_run has to go into the stats:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/eval_api.py</td><td>1544</td><td class="mono snip">                # Check if this dataset_id is expected for this eval</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>344</td><td class="mono snip">        # Set parent to task to ensure the correct path is used</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/tool_api.py</td><td>505</td><td class="mono snip">        # Check if the tool server has missing secrets (e.g. new user syncing existing project)</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…p/desktop/studio_server/prompt_optimization_job_api.py</td><td>432</td><td class="mono snip">            # Check if eval has a default config</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/tools/mcp_session_manager.py</td><td>337</td><td class="mono snip">        # Check if the exception itself is of the target type</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/tools/tool_registry.py</td><td>54</td><td class="mono snip">    # Check if this looks like an MCP or Kiln Task tool ID that requires a project</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/logging.py</td><td>71</td><td class="mono snip">        # Print the messages for the request in LiteLLM Message list, pretty print</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/logging.py</td><td>137</td><td class="mono snip">    # Check if we already have a custom litellm logger</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/logging.py</td><td>155</td><td class="mono snip">    # Set formatter to match the default formatting</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/dataset_import.py</td><td>159</td><td class="mono snip">    # Assign tags to runs</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/dataset_import.py</td><td>239</td><td class="mono snip">        # Check if we have headers</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/validation.py</td><td>57</td><td class="mono snip">    # Check if name is None or empty</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/validation.py</td><td>64</td><td class="mono snip">    # Check if name contains only lowercase letters, numbers, and underscores</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/prompt_builders.py</td><td>494</td><td class="mono snip">    # Check if the prompt_id matches any enum value</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_prompt_adaptors.py</td><td>62</td><td class="mono snip">    # Check if Ollama API is running</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_prompt_adaptors.py</td><td>71</td><td class="mono snip">    # Check if Ollama API is running</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_prompt_adaptors.py</td><td>80</td><td class="mono snip">    # Check if Ollama API is running</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_prompt_adaptors.py</td><td>89</td><td class="mono snip">    # Check if Ollama API is running</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_remote_config.py</td><td>1415</td><td class="mono snip">    # Check if uv is available</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/test_remote_config.py</td><td>1487</td><td class="mono snip">        # Check if the test passed</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/core/kiln_ai/adapters/fine_tune/fireworks_finetune.py</td><td>440</td><td class="mono snip">        # Check if the model is already deployed</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…e/kiln_ai/adapters/fine_tune/test_together_finetune.py</td><td>43</td><td class="mono snip">    # Check if any status is missing from categorization</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…e/kiln_ai/adapters/fine_tune/test_together_finetune.py</td><td>49</td><td class="mono snip">    # Check if any status appears in multiple categories</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/fine_tune/vertex_finetune.py</td><td>178</td><td class="mono snip">        # Check if bucket exists and create it if it doesn't</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ore/kiln_ai/adapters/model_adapters/litellm_adapter.py</td><td>320</td><td class="mono snip">            # Check if we were interrupted by tool calls</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/eval/test_eval_runner.py</td><td>350</td><td class="mono snip">    # Set filter to match the task</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/eval/test_eval_runner.py</td><td>442</td><td class="mono snip">    # Set filter to match the task</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/external_tool_server.py</td><td>414</td><td class="mono snip">        # Check if secrets are already saved</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/task_output.py</td><td>78</td><td class="mono snip">        # Check if we have the old format (dict of floats)</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…bs/core/kiln_ai/datamodel/test_external_tool_server.py</td><td>713</td><td class="mono snip">        # Set ID to test retrieval from config</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Cross-Language Confusion</span><span class="cat-meta">14 hits &middot; 62 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>417</td><td class="mono snip">        # we do not save the TaskRun to disk, so the ID is null, but we need</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/git_sync/conftest.py</td><td>86</td><td class="mono snip">    remote.push([f&quot;refs/heads/{branch}&quot;])</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/git_sync/git_sync_manager.py</td><td>460</td><td class="mono snip">        remote.push([f&quot;refs/heads/{branch_name}&quot;], callbacks=callbacks)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/git_sync/clone.py</td><td>400</td><td class="mono snip">    remote.push([f&quot;refs/heads/{branch_name}&quot;], callbacks=push_cb)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">app/desktop/git_sync/clone.py</td><td>462</td><td class="mono snip">        remote.push([f&quot;refs/heads/{branch_name}&quot;], callbacks=push_cb)</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ktop/git_sync/integration_tests/test_crash_recovery.py</td><td>126</td><td class="mono snip">    remote.push([f&quot;+refs/heads/{branch}&quot;])</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/parsers/test_json_parser.py</td><td>66</td><td class="mono snip">        &quot;null&quot;: null,</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/repair/test_repair_task.py</td><td>48</td><td class="mono snip">      &quot;default&quot;: null,</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/repair/test_repair_task.py</td><td>92</td><td class="mono snip">            output='{&quot;setup&quot;: &quot;Why did the chicken cross the road?&quot;, &quot;punchline&quot;: &quot;To get to the other side&quot;, &quot;rating&quot;: </td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/adapters/repair/test_repair_task.py</td><td>126</td><td class="mono snip">        == '{&quot;setup&quot;: &quot;Why did the chicken cross the road?&quot;, &quot;punchline&quot;: &quot;To get to the other side&quot;, &quot;rating&quot;: null}'</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>1093</td><td class="mono snip">    set (typically to null). It must still load — Pydantic's default</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_model_perf.py</td><td>37</td><td class="mono snip">      &quot;default&quot;: null,</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/core/kiln_ai/datamodel/test_json_schema.py</td><td>45</td><td class="mono snip">      &quot;default&quot;: null,</td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>1761</td><td class="mono snip">            '{&quot;train&quot;: null, &quot;test&quot;: 0.5}',</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Fake / Example Data</span><span class="cat-meta">49 hits &middot; 45 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/git_sync/integration_tests/test_fixtures.py</td><td>156</td><td class="mono snip">        sig = pygit2.Signature(&quot;Test&quot;, &quot;test@test.com&quot;)</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/web_ui/src/lib/git_sync/url_utils.test.ts</td><td>51</td><td class="mono snip">    expect(try_convert_ssh_to_https(&quot;user@example.com&quot;)).toBe(</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/web_ui/src/lib/git_sync/url_utils.test.ts</td><td>52</td><td class="mono snip">      &quot;user@example.com&quot;,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/README.md</td><td>200</td><td class="mono snip">        properties={&quot;created_by&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/README.md</td><td>206</td><td class="mono snip">            properties={&quot;created_by&quot;: &quot;Jane Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…i/adapters/vector_store_loaders/test_lancedb_loader.py</td><td>37</td><td class="mono snip">        [&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot; for _ in range(n)]</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…i/adapters/vector_store_loaders/test_lancedb_loader.py</td><td>37</td><td class="mono snip">        [&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot; for _ in range(n)]</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…pters/vector_store_loaders/test_vector_store_loader.py</td><td>31</td><td class="mono snip">        [&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot; for _ in range(n)]</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…pters/vector_store_loaders/test_vector_store_loader.py</td><td>31</td><td class="mono snip">        [&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot; for _ in range(n)]</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/repair/test_repair_task.py</td><td>89</td><td class="mono snip">            type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>36</td><td class="mono snip">            properties={&quot;created_by&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>42</td><td class="mono snip">                properties={&quot;created_by&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>54</td><td class="mono snip">    assert task_run.input_source.properties == {&quot;created_by&quot;: &quot;John Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>57</td><td class="mono snip">    assert task_run.output.source.properties == {&quot;created_by&quot;: &quot;John Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>86</td><td class="mono snip">                properties={&quot;created_by&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>92</td><td class="mono snip">                    properties={&quot;wrong_key&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>236</td><td class="mono snip">        == '{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 31}'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>404</td><td class="mono snip">        valid_task_output.input = '{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>410</td><td class="mono snip">        loaded_task_output.input = '{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>416</td><td class="mono snip">            input='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>438</td><td class="mono snip">            properties={&quot;created_by&quot;: &quot;John Doe&quot;},</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>442</td><td class="mono snip">    assert output.source.properties[&quot;created_by&quot;] == &quot;John Doe&quot;</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>165</td><td class="mono snip">                    output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>184</td><td class="mono snip">            output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 31}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>192</td><td class="mono snip">            output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 31}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>317</td><td class="mono snip">            output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>331</td><td class="mono snip">        task_output.output.output = '{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>340</td><td class="mono snip">        loaded_task_output.output.output = '{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;forty&quot;}'</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>353</td><td class="mono snip">                output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>386</td><td class="mono snip">        input='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>679</td><td class="mono snip">            output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>687</td><td class="mono snip">            output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>707</td><td class="mono snip">                output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>715</td><td class="mono snip">                output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30',  # missing closing brace</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>733</td><td class="mono snip">                output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: 30}',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_example_models.py</td><td>741</td><td class="mono snip">                output='{&quot;name&quot;: &quot;John Doe&quot;, &quot;age&quot;: &quot;thirty&quot;}',  # invalid schema</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_datasource.py</td><td>9</td><td class="mono snip">        type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;John Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_datasource.py</td><td>12</td><td class="mono snip">    assert data_source.properties[&quot;created_by&quot;] == &quot;John Doe&quot;</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_datasource.py</td><td>86</td><td class="mono snip">                &quot;created_by&quot;: &quot;John Doe&quot;,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/test_datasource.py</td><td>102</td><td class="mono snip">                &quot;created_by&quot;: &quot;John Doe&quot;,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>860</td><td class="mono snip">            type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>865</td><td class="mono snip">                type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>872</td><td class="mono snip">                type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>419</td><td class="mono snip">            type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>424</td><td class="mono snip">                type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>462</td><td class="mono snip">            type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>467</td><td class="mono snip">                type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>583</td><td class="mono snip">            type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/test_run_api.py</td><td>588</td><td class="mono snip">                type=DataSourceType.human, properties={&quot;created_by&quot;: &quot;Jane Doe&quot;}</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#ef4444"></span><span class="cat-name">Hallucination Indicators</span><span class="cat-meta">2 hits &middot; 25 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td><td class="mono">…iln_ai/tools/built_in_tools/test_kiln_api_call_tool.py</td><td>143</td><td class="mono snip">            query = route.calls.last.request.url.query.decode()</td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td><td class="mono">…iln_ai/tools/built_in_tools/test_kiln_api_call_tool.py</td><td>709</td><td class="mono snip">            query = route.calls.last.request.url.query.decode()</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">AI Slop Vocabulary</span><span class="cat-meta">14 hits &middot; 25 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/web_ui/src/routes/(app)/sidebar_rail_item.test.ts</td><td>8</td><td class="mono snip">// `container` so the assertions are robust to portaling. Also explicitly</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/tools/test_rag_tools.py</td><td>900</td><td class="mono snip">        multiline_description = &quot;&quot;&quot;This is a comprehensive search tool that:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/dataset_import.py</td><td>184</td><td class="mono snip">    # note that we don't persist the run yet, we just create and validate it</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/utils/filesystem_cache.py</td><td>26</td><td class="mono snip">        # worst case we just return None</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/adapters/test_adapter_registry.py</td><td>507</td><td class="mono snip">    &quot;&quot;&quot;Mock all config values for comprehensive testing.&quot;&quot;&quot;</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/adapters/test_remote_config.py</td><td>519</td><td class="mono snip">    &quot;&quot;&quot;Test comprehensive handling of invalid models and providers during deserialization.&quot;&quot;&quot;</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/adapters/test_remote_config.py</td><td>660</td><td class="mono snip">    &quot;&quot;&quot;Test comprehensive handling of invalid embedding models and providers during deserialization.&quot;&quot;&quot;</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…e/kiln_ai/adapters/fine_tune/test_dataset_formatter.py</td><td>759</td><td class="mono snip">    # It should just use the reasoning output if both thinking and chain_of_thought are present</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…e/kiln_ai/adapters/fine_tune/test_dataset_formatter.py</td><td>812</td><td class="mono snip">    # It should just use the reasoning output if both thinking and chain_of_thought are present</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/adapters/model_adapters/test_litellm_adapter_tools.py</td><td>236</td><td class="mono snip">    # Usage should add up, not just return the last one.</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/adapters/model_adapters/test_litellm_adapter_tools.py</td><td>325</td><td class="mono snip">    # Usage should add up, not just return the last one.</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/parsers/r1_parser.py</td><td>27</td><td class="mono snip">        # If they do it already, great just return. If not we parse it ourselves. Not ideal, but better than upstream ch</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/kiln_ai/adapters/vector_store/test_lancedb_adapter.py</td><td>950</td><td class="mono snip">    # before inserting data, we should simply return an empty list</td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">libs/core/kiln_ai/datamodel/strict_mode.py</td><td>8</td><td class="mono snip"># Strict mode enables extra validations that we want to enforce in Kiln App (and any other client that wants best practi</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Over-Commented Block</span><span class="cat-meta">14 hits &middot; 14 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/data_gen_api.py</td><td>741</td><td class="mono snip">                if isinstance(sample_input, (dict, list))</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/jobs/registry.py</td><td>81</td><td class="mono snip">        self._cancel_intent: set[str] = set()</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/web_ui/playwright.config.ts</td><td>61</td><td class="mono snip">    //   name: 'webkit',</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_ui/src/lib/ui/animations/questioning_animation.svelte</td><td>101</td><td class="mono snip">          /* ========== CONTAINER 1 - Visible on initial load ========== */</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_ui/src/lib/ui/animations/questioning_animation.svelte</td><td>121</td><td class="mono snip">          #c2-connector-3,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ct_id]/[task_id]/data_guide_setup/guide_preview.svelte</td><td>21</td><td class="mono snip">  export let guide: string = &quot;&quot;</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/setup.cfg</td><td>1</td><td class="mono snip"># empty, but needed by setuptools</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/ml_model_list.py</td><td>7601</td><td class="mono snip">            #     multimodal_capable=True,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/ml_model_list.py</td><td>7621</td><td class="mono snip">        editorial_notes=&quot;Open, state-of-the-art model from Moonshot AI. Excellent price-to-performance ratio.&quot;,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/core/kiln_ai/adapters/vector_store/lancedb_helpers.py</td><td>61</td><td class="mono snip">            &quot;kiln_doc_id&quot;: document_id,</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/adapters/eval/test_g_eval_data.py</td><td>1</td><td class="mono snip"># Saved a real RunOutput, with real logprobs via:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/setup.cfg</td><td>1</td><td class="mono snip"># empty, but needed by setuptools</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">.github/workflows/windows_release_build.yml</td><td>41</td><td class="mono snip">        #   # for source-map upload (web bundle). The desktop python bundle</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">.github/workflows/build_desktop.yml</td><td>41</td><td class="mono snip">      # Use GH python version (includes TK/TCL)</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Synthetic Comment Markers</span><span class="cat-meta">1 hit &middot; 8 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…ore/kiln_ai/adapters/chunkers/test_semantic_chunker.py</td><td>284</td><td class="mono snip">        # random paragraphs generated by ChatGPT - the idea is they are about very different topics so should</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Verbosity Indicators</span><span class="cat-meta">5 hits &middot; 5 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>303</td><td class="mono snip">        # Step 1: original Run.</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_repair_api.py</td><td>318</td><td class="mono snip">        # Step 2: Repair, hitting the real endpoint with the persisted run.</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>939</td><td class="mono snip">    # Step 1: Create a tool server</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>953</td><td class="mono snip">        # Step 1: Create the tool server</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">app/desktop/studio_server/test_tool_api.py</td><td>964</td><td class="mono snip">        # Step 2: Verify it appears in the list</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Magic Placeholder Names</span><span class="cat-meta">1 hit &middot; 5 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…project_id]/add_tools/local_mcp/edit_local_tool.svelte</td><td>352</td><td class="mono snip">              info_description=&quot;The value of the environment variable, such as 'your-api-key-here'&quot;</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Overly Generic Function Names</span><span class="cat-meta">2 hits &middot; 2 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…op/studio_server/api_client/test_kiln_server_client.py</td><td>166</td><td class="mono snip">        async def handle_request(request: httpx.Request) -&gt; httpx.Response:</td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/server/kiln_server/run_api.py</td><td>404</td><td class="mono snip">    async def run_task(</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Dead Code</span><span class="cat-meta">1 hit &middot; 2 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">app/desktop/studio_server/chat/test_stream_session.py</td><td>90</td><td class="mono snip"></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Example Usage Blocks</span><span class="cat-meta">1 hit &middot; 2 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">libs/core/kiln_ai/datamodel/basemodel.py</td><td>293</td><td class="mono snip"># Usage:</td></tr></tbody></table></div></details>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>Scanned 2026-07-05 &middot; Generated 2026-07-05 10:59 UTC &middot; AI Code Slop Monitor
+    &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan" target="_blank" rel="noopener">SynthScan</a></p>
+    <p style="margin-top:.75rem">
+      <a class="back-link" href="../index.html">&larr; Back to all repositories</a>
+      &ensp;
+      <a class="suggest-btn" style="display:inline-flex" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+      </a>
+    </p>
+  </div>
+</footer>
+
+<script>
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ── History chart ──
+(function() {
+  const ctx = document.getElementById('histChart');
+  if (!ctx) return;
+  const grid = 'rgba(255,255,255,0.05)';
+  const tip  = {backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+                  borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,padding:10};
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["2026-07-04"],
+      datasets: [
+        {
+          label: 'Adjusted Score', data: [16.8], yAxisID: 'y',
+          borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)',
+          fill: true, tension: .35, pointRadius: 5, borderWidth: 2,
+          pointBackgroundColor: '#06b6d4', pointBorderColor: '#07101a', pointBorderWidth: 2,
+        },
+        {
+          label: 'Pattern Hits', data: [5749], yAxisID: 'y1',
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.06)',
+          fill: false, tension: .35, pointRadius: 4, borderWidth: 2,
+          pointBackgroundColor: '#f59e0b', borderDash: [5,3],
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: {mode:'index', intersect:false},
+      plugins: {legend: {labels: {color:'#94a3b8'}}, tooltip: tip},
+      scales: {
+        x: {grid:{color:grid}, ticks:{color:'#64748b',font:{size:11}}},
+        y: {type:'linear', position:'left', min:0,
+             title:{display:true,text:'Score',color:'#06b6d4'},
+             grid:{color:grid}, ticks:{color:'#64748b'}},
+        y1: {type:'linear', position:'right', min:0,
+              title:{display:true,text:'Hits',color:'#f59e0b'},
+              grid:{drawOnChartArea:false}, ticks:{color:'#64748b'}},
+      },
+    },
+  });
+})();
+
+// ── Severity bar chart ──
+(function() {
+  const ctx = document.getElementById('sevChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+      datasets: [{
+        data: [2, 122, 359, 5266],
+        backgroundColor: ["#ef4444", "#f59e0b", "#eab308", "#34d399"],
+        borderRadius: 8, barPercentage: .6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display: false},
+        tooltip: {
+          backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+          borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,
+          callbacks: {label: c => c.parsed.y + ' findings'},
+        },
+      },
+      scales: {
+        x: {grid:{display:false}, ticks:{color:'#94a3b8',font:{weight:'bold',size:12}}},
+        y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#64748b'}, min:0},
+      },
+    },
+  });
+})();
+
+// ── Scroll fade-in ──
+const io = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+  {threshold: 0.08}
+);
+document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+// ── Category filter ──
+function filterCats() {
+  const q   = document.getElementById('catSearch').value.toLowerCase();
+  const sev = document.getElementById('catSevFilter').value.toLowerCase();
+  document.querySelectorAll('#catList details').forEach(el => {
+    const txt = el.textContent.toLowerCase();
+    el.style.display = ((!sev || txt.includes(sev)) && (!q || txt.includes(q))) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>
