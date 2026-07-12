@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>tensorflow/serving &mdash; AI Code Slop Monitor</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4CKBCJHWF9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4CKBCJHWF9');
+</script>
+<meta name="description" content="SynthScan analysis of tensorflow/serving: adjusted score 23.0, 411 pattern hits.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+
+:root {
+  --bg:        #07101a;
+  --bg2:       #0b1929;
+  --surface:   rgba(11,25,41,0.7);
+  --border:    rgba(6,182,212,0.12);
+  --border-hi: rgba(6,182,212,0.3);
+  --cyan:      #06b6d4;
+  --emerald:   #10b981;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --text:      #cbd5e1;
+  --text-dim:  #64748b;
+  --text-hi:   #f1f5f9;
+  --radius:    18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.65;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:var(--cyan);text-decoration:none;transition:color .2s}
+a:hover{color:#67e8f9}
+
+/* ── Animated background grid ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(6,182,212,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:gridPan 40s linear infinite;
+  pointer-events:none;
+}
+@keyframes gridPan{0%{background-position:0 0}100%{background-position:60px 60px}}
+
+/* Radial glow blobs */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 5%,  rgba(6,182,212,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 45% at 90% 95%, rgba(16,185,129,0.05) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99,102,241,0.04) 0%,transparent 70%);
+}
+
+.container{max-width:1380px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,16,26,0.85);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1380px;margin:0 auto;padding:.75rem 2rem;
+}
+.nav-logo{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1rem;
+  background:linear-gradient(135deg,var(--cyan),var(--emerald));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-logo img{height:30px;filter:drop-shadow(0 0 10px rgba(6,182,212,.4))}
+.version-badge{
+  display:inline-block;padding:.1em .45em;
+  border-radius:5px;font-size:.6rem;font-weight:700;letter-spacing:.04em;
+  background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);
+  color:var(--cyan);vertical-align:middle;opacity:.85;
+  -webkit-text-fill-color:var(--cyan);
+}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{color:var(--text-dim);font-size:.85rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text-hi)}
+.suggest-btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:600;
+  background:linear-gradient(135deg,#0e7490,#0891b2);
+  color:#fff;transition:all .25s;box-shadow:0 4px 14px rgba(6,182,212,.2);
+}
+.suggest-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,182,212,.35);color:#fff}
+.suggest-btn svg{flex-shrink:0}
+
+/* ── HERO ── */
+.hero{
+  position:relative;padding:5rem 0 4rem;text-align:center;
+  border-bottom:1px solid var(--border);overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(170deg,#07101a 0%,#0b1e2e 45%,#07101a 100%);
+  z-index:0;
+}
+.hero-content{position:relative;z-index:1}
+.hero-eyebrow{
+  display:inline-block;
+  padding:.3rem 1rem;border-radius:999px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);
+  color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero h1{
+  font-size:clamp(2.2rem,5vw,4rem);font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,#67e8f9 0%,#06b6d4 35%,#10b981 65%,#34d399 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1;margin-bottom:.9rem;
+}
+.hero-sub{color:var(--text-dim);font-size:1.05rem;max-width:960px;margin:0 auto 2.5rem;text-align:center}
+.hero-sub strong{color:var(--text)}
+
+/* ── KPI GRID ── */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1.25rem;margin:3rem 0 2rem;
+}
+.kpi-card{
+  background:var(--surface);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.6rem 1.2rem;text-align:center;position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .3s;
+}
+.kpi-card:hover{border-color:var(--border-hi);box-shadow:0 0 40px rgba(6,182,212,.08);transform:translateY(-2px)}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.5;
+}
+.kpi-card .kpi-val{
+  font-size:2.4rem;font-weight:900;letter-spacing:-1px;
+  color:var(--text-hi);
+}
+.kpi-card .kpi-lbl{
+  color:var(--text-dim);font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.08em;font-weight:600;margin-top:.4rem;
+}
+
+/* ── SECTION ── */
+section{padding:4rem 0;border-top:1px solid rgba(255,255,255,0.04)}
+section h2{
+  font-size:1.5rem;font-weight:800;letter-spacing:-.3px;color:var(--text-hi);
+  margin-bottom:.5rem;
+}
+.section-sub{color:var(--text-dim);margin-bottom:2rem;font-size:.95rem}
+.section-sub strong{color:var(--text)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.6rem;box-shadow:0 4px 24px rgba(0,0,0,.15);
+  transition:border-color .3s;
+}
+.card:hover{border-color:var(--border-hi)}
+.card h3{font-size:1rem;font-weight:700;color:var(--text-hi);margin-bottom:1.2rem}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;padding:.2em .7em;border-radius:999px;
+  font-size:.78rem;font-weight:700;color:#fff;letter-spacing:.02em;
+}
+.badge-critical{background:linear-gradient(135deg,#b91c1c,#ef4444);box-shadow:0 2px 8px rgba(239,68,68,.3)}
+.badge-high    {background:linear-gradient(135deg,#b45309,#f59e0b);box-shadow:0 2px 8px rgba(245,158,11,.25)}
+.badge-medium  {background:linear-gradient(135deg,#92400e,#d97706);box-shadow:0 2px 8px rgba(217,119,6,.2)}
+.badge-low     {background:linear-gradient(135deg,#065f46,#10b981);box-shadow:0 2px 8px rgba(16,185,129,.25)}
+.badge-unknown {background:rgba(100,116,139,.3);color:#94a3b8}
+
+/* ── LEADERBOARD ── */
+.leaderboard-row{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.6rem .75rem;border-radius:10px;margin-bottom:.4rem;
+  background:rgba(255,255,255,.02);transition:background .2s;
+}
+.leaderboard-row:hover{background:rgba(6,182,212,.05)}
+.lb-rank{color:var(--text-dim);font-size:.75rem;font-weight:700;width:24px;flex-shrink:0;text-align:right}
+.lb-name{flex:1;font-size:.85rem;font-weight:500;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-bar-wrap{width:120px;height:6px;background:rgba(255,255,255,.07);border-radius:3px;flex-shrink:0}
+.lb-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.lb-score{font-size:.8rem;font-weight:700;width:38px;text-align:right;flex-shrink:0}
+
+/* ── CATEGORY ACCORDION ── */
+.cat-item{
+  border:1px solid var(--border);border-radius:12px;margin-bottom:.6rem;
+  overflow:hidden;transition:border-color .2s;
+}
+.cat-item:hover{border-color:var(--border-hi)}
+.cat-header{
+  display:flex;align-items:center;gap:1rem;padding:.85rem 1.1rem;
+  cursor:pointer;user-select:none;
+}
+.cat-header::-webkit-details-marker{display:none}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-name{flex:1;font-weight:600;font-size:.9rem;color:var(--text-hi)}
+.cat-meta{font-size:.78rem;color:var(--text-dim)}
+.cat-body{padding:0 1.1rem 1rem;font-size:.83rem;color:var(--text-dim);line-height:1.7}
+.cat-body table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.78rem}
+.cat-body th{color:var(--text-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;
+  padding:.4rem .6rem;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+.cat-body td{padding:.35rem .6rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.76rem}
+.snip{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sev-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+/* ── EXPLORER TABLE ── */
+.table-wrap{
+  background:rgba(7,16,26,.6);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;
+}
+.table-controls{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  gap:.75rem;padding:1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.05);
+}
+.table-controls input,
+.table-controls select{
+  background:rgba(7,16,26,.8);border:1px solid var(--border);border-radius:10px;
+  padding:.5rem .9rem;color:var(--text-hi);font-size:.85rem;
+  transition:border-color .2s;
+}
+.table-controls input{width:260px}
+.table-controls input:focus,
+.table-controls select:focus{outline:none;border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.1)}
+.ctrl-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{
+  background:rgba(7,16,26,.6);padding:.75rem 1rem;
+  color:var(--text-dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;
+  font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;transition:color .2s;
+  text-align:left;
+}
+.tbl th:hover{color:var(--text-hi)}
+.tbl th .arr{margin-left:3px;font-size:.6rem}
+.tbl td{padding:.65rem 1rem;border-top:1px solid rgba(255,255,255,.04)}
+.tbl tr:hover td{background:rgba(6,182,212,.03)}
+.pagination{display:flex;gap:.4rem;align-items:center}
+.pagination button{
+  background:rgba(11,25,41,.8);border:1px solid var(--border);border-radius:8px;
+  color:var(--text-dim);padding:.4rem .8rem;font-size:.78rem;cursor:pointer;transition:all .2s;
+}
+.pagination button:hover:not(:disabled){background:rgba(6,182,212,.1);color:var(--text-hi)}
+.pagination button:disabled{opacity:.3;cursor:default}
+.pagination span{color:var(--text-dim);font-size:.78rem}
+
+/* ── TREND LIST ── */
+.trend-item{margin-bottom:1.5rem;padding:1rem 1.2rem;border:1px solid var(--border);border-radius:12px;background:rgba(7,16,26,.4)}
+.trend-header{display:flex;justify-content:space-between;margin-bottom:.6rem;align-items:center}
+.trend-name{font-weight:700;font-size:.9rem;color:var(--text-hi)}
+
+/* ── METHODOLOGY ── */
+.method-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.87rem}
+.method-table th{color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  padding:.6rem .9rem;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+.method-table td{padding:.55rem .9rem;border-bottom:1px solid rgba(255,255,255,.04)}
+
+/* ── SCORE PILL ── */
+.pill{
+  display:inline-block;padding:.18em .65em;border-radius:999px;
+  font-size:.77rem;font-weight:700;color:#fff;
+}
+.pill-critical{background:linear-gradient(135deg,#b91c1c,#ef4444)}
+.pill-high    {background:linear-gradient(135deg,#b45309,#f59e0b)}
+.pill-medium  {background:linear-gradient(135deg,#92400e,#d97706)}
+.pill-low     {background:linear-gradient(135deg,#065f46,#10b981)}
+
+/* ── SCROLL FADE-IN ── */
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:none}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;color:var(--text-dim);font-size:.8rem;
+  padding:3rem 0;border-top:1px solid rgba(255,255,255,.05);
+  margin-top:1rem;position:relative;z-index:1;
+}
+footer a{color:var(--cyan)}
+footer a:hover{color:#67e8f9}
+
+/* ── SCREENSHOTS ── */
+.screenshots-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+  margin-top:1.5rem;
+}
+.screenshot-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.screenshot-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.screenshot-card img{
+  width:100%;display:block;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.screenshot-caption{
+  padding:.75rem 1rem;color:var(--text-dim);font-size:.82rem;text-align:center;
+}
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .card-grid-2,.card-grid-3{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .screenshots-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .hero h1{font-size:2rem;letter-spacing:-0.5px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .table-controls input{width:100%}
+}
+
+
+/* ── Detail page extras ── */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;color:var(--text-dim);font-size:.85rem;margin-bottom:1.2rem}
+.breadcrumb a{color:var(--cyan)}
+.breadcrumb .sep{color:#334155}
+.detail-hero{padding:4.5rem 0 3rem;text-align:left}
+.detail-hero h1{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,var(--text-hi) 0%,var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.detail-badges{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+.meta-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin:2rem 0}
+.meta-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.25rem;
+  transition:border-color .2s,transform .2s;
+}
+.meta-card:hover{border-color:var(--border-hi);transform:translateY(-2px)}
+.meta-val{font-size:1.6rem;font-weight:800;letter-spacing:-0.5px;line-height:1.1}
+.meta-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-weight:700}
+.disc-notice{
+  background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);
+  border-radius:12px;padding:.8rem 1.2rem;margin:1.2rem 0;font-size:.87rem;color:#93c5fd
+}
+.disc-notice strong{color:#60a5fa}
+.sev-pill{
+  display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .85rem;
+  border-radius:999px;border:1px solid;font-size:.78rem;font-weight:700;margin:.2rem
+}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0}
+@media(max-width:800px){.chart-row{grid-template-columns:1fr}}
+.match-filter{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center}
+.match-filter input,.match-filter select{
+  background:rgba(7,16,26,.8);border:1px solid var(--border);border-radius:10px;
+  padding:.45rem .85rem;color:var(--text-hi);font-size:.83rem;transition:border-color .2s;
+}
+.match-filter input:focus,.match-filter select:focus{outline:none;border-color:rgba(6,182,212,.5)}
+.match-filter input{width:240px}
+.no-history{
+  display:flex;align-items:center;justify-content:center;min-height:200px;
+  color:var(--text-dim);font-size:.9rem;text-align:center;
+}
+.back-link{color:var(--cyan);font-weight:600}
+.back-link:hover{color:#67e8f9}
+.overflow-note{color:#64748b;font-size:.82rem;font-style:italic}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+    </div>
+    <ul class="nav-links" style="display:flex">
+      <li><a href="../index_dark.html">&larr; All Repositories</a></li>
+      <li><a href="https://github.com/tensorflow/serving" target="_blank" rel="noopener">GitHub &rarr;</a></li>
+    </ul>
+    <div style="display:flex; gap:0.5rem">
+        <a class="suggest-btn" href="javascript:void(0)" onclick="toggleTheme()" style="background:transparent;border:1px solid currentColor;color:inherit;">
+          🌓 Theme
+        </a>
+        <a class="suggest-btn" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+          Suggest Repo
+        </a>
+        <div style="display:flex;align-items:center;margin-left:0.5rem;">
+            <a class="github-button" href="https://github.com/marcoramilli/SLOP-Code-Calculator" data-color-scheme="no-preference: { 'light' if light else 'dark' }; light: light; dark: dark;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star marcoramilli/SLOP-Code-Calculator on GitHub">Star</a>
+            <script async defer src="https://buttons.github.io/buttons.js"></script>
+        </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<div class="detail-hero">
+  <div class="container">
+    <div class="breadcrumb fade-in">
+      <a href="../index_dark.html">Home</a>
+      <span class="sep">/</span>
+      <a href="https://github.com/tensorflow/serving" target="_blank" rel="noopener">tensorflow</a>
+      <span class="sep">/</span>
+      <span style="color:var(--text-hi);font-weight:600">serving</span>
+    </div>
+    <div class="hero-eyebrow fade-in">Repository Analysis</div>
+    <h1 class="fade-in">tensorflow/serving</h1>
+    <p class="hero-sub fade-in" style="text-align:left;margin:.6rem 0 0">A flexible, high-performance serving system for machine learning models</p>
+    <div class="detail-badges fade-in">
+      <span class="badge badge-high" style="font-size:1rem;padding:.35em 1.1em">23.0</span>
+      <span style="color:#f59e0b;font-weight:700;font-size:.95rem">Moderate AI signal</span>
+      <a href="https://github.com/tensorflow/serving" target="_blank" rel="noopener" style="color:var(--text-dim);font-size:.85rem;margin-left:.25rem">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38  0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0  1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub
+      </a>
+    </div>
+    
+    <div style="margin-top:2rem;padding:1.75rem 0 0;border-top:1px solid var(--border)">
+      <h2 style="font-size:1.1rem;font-weight:700;color:var(--text-hi);margin-bottom:1rem">Analysis Overview</h2>
+      <p style="color:var(--text-dim);font-size:.92rem;line-height:1.75;margin-bottom:.85rem">
+        This report presents the forensic synthetic code analysis of
+        <strong style="color:var(--text-hi)">tensorflow/serving</strong>, a <strong style="color:var(--text-hi)">C++</strong> project with <strong style="color:var(--text-hi)">6,355 GitHub stars</strong>.
+        SynthScan v2.0 examined <strong style="color:var(--text-hi)">30,605 lines of code</strong> across
+        <strong style="color:var(--text-hi)">260 source files</strong>, recording
+        <strong style="color:var(--text-hi)">411 pattern matches</strong>
+        distributed across 13 syntactic categories.
+        The overall adjusted score of <strong style="color:#f59e0b">23.0</strong>
+        places this repository in the <strong style="color:#f59e0b">Moderate AI signal</strong> band.
+      </p>
+      <p style="color:var(--text-dim);font-size:.92rem;line-height:1.75">
+        The scanner applied 160+ deterministic lexical heuristics, multi-line block detectors,
+        abstract syntax tree depth profilers, and a cross-file Jaccard similarity matrix to construct
+        a statistically normalised synthetic code estimate.
+        All matches are individually weighted by severity coefficient and contextual multiplier
+        before summation, and the resulting headline score is temporally discounted
+        to account for the repository's development history relative to the commercial emergence
+        of large language model coding tooling (November 2022 onward).
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ META STRIP ═══ -->
+<div class="container">
+  <div class="meta-strip">
+    <div class="meta-card fade-in"><div class="meta-val" style="color:#f59e0b">23.0</div><div class="meta-lbl">Adjusted Score</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">23.0</div><div class="meta-lbl">Raw Score</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#60a5fa">100%</div><div class="meta-lbl">Time Factor</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">2026-07-07</div><div class="meta-lbl">Last Push</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#f59e0b">6,355</div><div class="meta-lbl">Stars</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#a78bfa">C++</div><div class="meta-lbl">Language</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">30,605</div><div class="meta-lbl">Lines of Code</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">260</div><div class="meta-lbl">Files</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#f87171">411</div><div class="meta-lbl">Pattern Hits</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#94a3b8">2026-07-08</div><div class="meta-lbl">Scan Date</div></div><div class="meta-card fade-in"><div class="meta-val" style="color:#f87171">0.08</div><div class="meta-lbl">HC Hit Rate</div></div>
+  </div>
+
+  <!-- ═══ METRICS GLOSSARY ═══ -->
+  <div style="margin:2rem 0 2.5rem;padding:1.5rem 2rem;border:1px solid var(--border);">
+    <h3 style="font-size:.9rem;font-weight:700;color:var(--text-hi);margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:.06em">What These Metrics Mean</h3>
+    <dl style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.85rem 2.5rem">
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">Adjusted Score</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">Primary synthetic code indicator. Raw score normalised per 1,000 lines of code and multiplied by the temporal discount factor. This is the definitive comparative metric &mdash; use it to rank repositories by AI authorship density.</dd></div>
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">Raw Score</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">The unmodified sum of all severity-weighted, context-multiplied pattern match scores before temporal discounting. Reflects the absolute signal strength independent of when the repository was last active.</dd></div>
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">Time Factor</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">The temporal discount multiplier (0&ndash;100%) applied to the raw score. Repositories last updated before ChatGPT's launch (Nov 2022) receive a 5% factor. Full signal is only assigned to repositories active in the post-adoption era (Jan 2024+).</dd></div>
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">Pattern Hits</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">Total count of individual pattern matches across all files and categories. A high hit count with a low score may indicate a very large codebase with isolated AI snippets; a low count with a high score indicates dense, concentrated AI signatures.</dd></div>
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">HC Hit Rate</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">High+Critical pattern hits per file, averaged across the repository. This orthogonal signal catches repositories where a few files are densely packed with high-severity AI tells &mdash; a strong indicator even when the normalised score appears moderate due to codebase size.</dd></div>
+      <div><dt style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-hi);font-weight:700;margin-bottom:.3rem">Lines of Code / Files</dt><dd style="font-size:.82rem;color:var(--text-dim);line-height:1.65">Total lines and files analysed. The scanner examines 94 file extensions. These denominators are used to normalise the score, enabling fair comparison between repositories of vastly different sizes.</dd></div>
+    </dl>
+  </div>
+
+  <!-- ═══ CHARTS ROW ═══ -->
+  <div class="chart-row">
+    <div class="card"><h3>Score History</h3><p style="color:var(--text-dim);font-size:.85rem;margin-bottom:1.25rem;line-height:1.7">This chart maps the temporal evolution of the adjusted synthetic code score across successive scan runs. An <strong style="color:var(--text-hi)">upward trajectory</strong> indicates ongoing incorporation of AI-generated code or expanding LLM-assisted scaffolding; a <strong style="color:var(--text-hi)">stable or declining trajectory</strong> may reflect active human refactoring, code removal, or the adoption of stricter authorship policies. The dashed secondary line (right axis) independently tracks total raw pattern hit count, which can diverge from the normalised score when codebase size changes significantly between scans.</p><div style="height:250px"><canvas id="histChart"></canvas></div></div>
+    <div class="card">
+      <h3>Severity Breakdown</h3>
+      <p style="color:var(--text-dim);font-size:.85rem;margin-bottom:1.25rem;line-height:1.7">
+        Classifies detected patterns by their diagnostic confidence and structural impact.
+        <strong style="color:var(--text-hi)">CRITICAL</strong> patterns (coefficient&nbsp;10) represent definitive synthetic signatures &mdash;
+        hallucinated imports, explicit LLM attribution metadata &mdash; virtually never produced by human authors.
+        <strong style="color:var(--text-hi)">HIGH</strong>&nbsp;(5) indicates strong structural tells such as cross-file repetition or cross-linguistic idioms.
+        <strong style="color:var(--text-hi)">MEDIUM</strong>&nbsp;(2) covers recognisable conversational padding and AI-specific vocabulary.
+        <strong style="color:var(--text-hi)">LOW</strong>&nbsp;(1) captures subtle indicators like tautological comments and generic boilerplate that require density to carry independent signal.
+      </p>
+      <div style="margin-bottom:1rem"><span class="sev-pill" style="border-color:#ef4444;color:#ef4444">CRITICAL <strong>18</strong></span><span class="sev-pill" style="border-color:#f59e0b;color:#f59e0b">HIGH <strong>2</strong></span><span class="sev-pill" style="border-color:#eab308;color:#eab308">MEDIUM <strong>66</strong></span><span class="sev-pill" style="border-color:#34d399;color:#34d399">LOW <strong>325</strong></span></div>
+      <div style="height:160px"><canvas id="sevChart"></canvas></div>
+    </div>
+  </div>
+
+  
+<div class="card fade-in" style="margin:2.5rem 0 0">
+  <h3>Directory Score Breakdown</h3>
+  <p style="color:var(--text-dim);font-size:.85rem;margin-bottom:1.25rem;line-height:1.7">
+    This horizontal bar chart decomposes the repository's raw synthetic code score by top-level directory,
+    allowing you to pinpoint precisely which modules or components carry the highest AI authorship density.
+    Directories with disproportionately high scores relative to their size warrant targeted manual review:
+    concentrated AI signatures often trace back to mass-generated configuration layers, auto-ported test suites,
+    LLM-scaffolded boilerplate classes, or entire subsystems authored under heavy copilot assistance.
+    Use this view to prioritise your human code-review effort.
+  </p>
+  <div style="height:480px"><canvas id="dirChart"></canvas></div>
+</div>
+
+  <!-- ═══ PATTERN FINDINGS ═══ -->
+  <div style="margin:2.5rem 0 0">
+    <h2 class="fade-in" style="margin-bottom:.75rem">Pattern Findings</h2>
+    <p style="color:var(--text-dim);font-size:.92rem;line-height:1.75;margin-bottom:1rem">
+      The scanner identified <strong style="color:var(--text-hi)">411 distinct pattern matches</strong>
+      across <strong style="color:var(--text-hi)">13 syntactic categories</strong>.
+      Each entry below represents a discrete location in the source code where the engine recorded
+      a statistically significant AI authorship indicator.
+      Expand any category row to inspect the individual file paths, line numbers, code snippets,
+      and the lexical context (CODE, COMMENT, or STRING) in which each match was detected.
+    </p>
+    <p style="color:var(--text-dim);font-size:.88rem;line-height:1.7;margin-bottom:1.5rem;padding:1rem 1.25rem;border-left:3px solid var(--border)">
+      <strong style="color:var(--text-hi)">Reading the findings table:</strong>
+      The <em>Severity</em> column indicates the diagnostic confidence level (CRITICAL / HIGH / MEDIUM / LOW).
+      The <em>Context</em> column identifies whether the match occurred inside executable code, an inline comment, or a string literal &mdash;
+      comment-context matches receive a ×1.5 weight because LLMs systematically over-annotate.
+      The &#9889; bolt icon marks <em>clustered</em> matches: three or more patterns within a 10-line window,
+      each receiving an additional ×1.5 density multiplier as dense clusters constitute far stronger
+      evidence of synthetic authorship than isolated hits.
+    </p>
+    <div class="match-filter fade-in">
+      <input id="catSearch" type="text" placeholder="&#x1F50E;&#xFE0E; Filter by text&hellip;" oninput="filterCats()">
+      <select id="catSevFilter" onchange="filterCats()">
+        <option value="">All severities</option>
+        <option value="CRITICAL">CRITICAL</option>
+        <option value="HIGH">HIGH</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="LOW">LOW</option>
+      </select>
+    </div>
+    <div id="catList">
+      <details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Over-Commented Block</span><span class="cat-meta">255 hits &middot; 255 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tools/run_in_docker.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tools/run_in_docker.sh</td><td>21</td><td class="mono snip"># a source tree. Also useful for running python scripts without having to</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tools/gen_status_stamp.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/experimental/example/half_plus_two_with_rpop.py</td><td>1</td><td class="mono snip"># Copyright 2020 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/experimental/example/remote_predict_client.py</td><td>1</td><td class="mono snip"># Copyright 2020 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/example/half_plus_two_with_rpop_client.py</td><td>1</td><td class="mono snip"># Copyright 2020 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>1</td><td class="mono snip"># Copyright 2020 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/ops/remote_predict/kernels/remote_predict_op_kernel.h</td><td>21</td><td class="mono snip">#include &quot;absl/flags/flag.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>1</td><td class="mono snip"># Copyright 2020 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/tools/docker/setup.sources.sh</td><td>1</td><td class="mono snip">#!/usr/bin/env bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_mkl_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_gpu_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow_serving/tools/docker/tests/dockerfile_devel_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…nsorflow_serving/tools/docker/tests/docker_test_lib.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…nsorflow_serving/tools/docker/tests/dockerfile_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_mkl_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ng/tools/docker/tests/dockerfile_devel_gpu_trt_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_gpu_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/tools/docker/tests/dockerfile_gpu_trt_test.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…sorflow_serving/tools/pip_package/build_pip_package.sh</td><td>1</td><td class="mono snip">#!/bin/bash</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/tools/pip_package/setup.py</td><td>1</td><td class="mono snip"># Copyright 2017 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/model_service_pb2_grpc.py</td><td>1</td><td class="mono snip"># Copyright 2018 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2_grpc.py</td><td>1</td><td class="mono snip"># Copyright 2016 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2.py</td><td>1</td><td class="mono snip"># Copyright 2016 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/model_service_pb2.py</td><td>1</td><td class="mono snip"># Copyright 2018 Google Inc. All Rights Reserved.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/classifier.h</td><td>21</td><td class="mono snip"></td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/regressor.h</td><td>21</td><td class="mono snip">#include &quot;tensorflow_serving/apis/regression.pb.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_state_monitor.h</td><td>21</td><td class="mono snip">#include &lt;map&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_state_monitor.h</td><td>121</td><td class="mono snip">  BoundedLog GetBoundedLog() const TF_LOCKS_EXCLUDED(mu_);</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_state_monitor.h</td><td>141</td><td class="mono snip">  ///</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/resource_preserving_policy.h</td><td>21</td><td class="mono snip">#include &quot;absl/types/optional.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…orflow_serving/core/aspired_versions_manager_builder.h</td><td>21</td><td class="mono snip">#include &quot;tensorflow/core/lib/core/status.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…orflow_serving/core/aspired_versions_manager_builder.h</td><td>41</td><td class="mono snip">///</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…orflow_serving/core/aspired_versions_manager_builder.h</td><td>61</td><td class="mono snip">  using Options = AspiredVersionsManager::Options;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_state.h</td><td>21</td><td class="mono snip"></td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_state.h</td><td>41</td><td class="mono snip">  // The state of the servable as maintained by a manager. These states can only</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>21</td><td class="mono snip">#include &lt;type_traits&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>41</td><td class="mono snip">// to take a dependency on SavedModelBundle and Servable.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>61</td><td class="mono snip">// memory resources are specified, Unload() releases that amount of memory to</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>101</td><td class="mono snip">  // Constructor that takes a single resource estimator, to use for estimating</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>181</td><td class="mono snip"></td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/simple_loader.h</td><td>201</td><td class="mono snip">// For more complex behaviors, SimpleLoaderSourceAdapter is inapplicable. You</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/manager.h</td><td>21</td><td class="mono snip">#include &lt;memory&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/manager.h</td><td>81</td><td class="mono snip">  /// Gets a list of all available servable ids, i.e. each of these can</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/source.h</td><td>21</td><td class="mono snip"></td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/source.h</td><td>41</td><td class="mono snip">/// find out about new servables and/or new versions of servables and/or the</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/source.h</td><td>61</td><td class="mono snip">/// state should be deferred to the first applicable Loader::Load() call, i.e.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…nsorflow_serving/core/availability_preserving_policy.h</td><td>21</td><td class="mono snip">#include &quot;tensorflow_serving/core/aspired_version_policy.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_id.h</td><td>21</td><td class="mono snip">#include &lt;unordered_map&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_id.h</td><td>41</td><td class="mono snip">  // active servable with the largest version number.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_handle.h</td><td>41</td><td class="mono snip">  virtual AnyPtr servable() = 0;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/servable_handle.h</td><td>61</td><td class="mono snip">///     // Define or use an existing servable:</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/static_source_router.h</td><td>21</td><td class="mono snip">#include &lt;vector&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/request_logger.h</td><td>21</td><td class="mono snip">#include &lt;vector&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/source_router.h</td><td>21</td><td class="mono snip">#include &lt;vector&gt;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/source_router.h</td><td>41</td><td class="mono snip">//  /path/to/some/orange/servable</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/static_manager.h</td><td>21</td><td class="mono snip">#include &quot;absl/synchronization/notification.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/loader.h</td><td>21</td><td class="mono snip">#include &quot;tensorflow/core/lib/core/errors.h&quot;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/loader.h</td><td>41</td><td class="mono snip">/// A Loader should start in an unloaded state, meaning that no work has been</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/loader.h</td><td>61</td><td class="mono snip">  virtual ~Loader() = default;</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td colspan="4" class="overflow-note">195 more matches not shown…</td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#ef4444"></span><span class="cat-name">Hallucination Indicators</span><span class="cat-meta">18 hits &middot; 172 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td><td class="mono">tensorflow_serving/example/resnet_client_grpc.py</td><td>35</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('server', 'localhost:8500',</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td><td class="mono">tensorflow_serving/example/resnet_client_grpc.py</td><td>37</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('image', '',</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>42</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_integer(</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>44</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_integer('num_tests', 100, 'Number of test images')</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>45</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('server', '',</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>47</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('work_dir', '/tmp', 'Working directory. ')</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>39</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_integer('training_iteration', 1000,</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>41</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_integer('model_version', 1,</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>43</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('work_dir', '/tmp', 'Working directory.')</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>104</td><td class="mono snip">  builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(export_path)</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>107</td><td class="mono snip">  classification_inputs = tf.compat.v1.saved_model.utils.build_tensor_info(</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>109</td><td class="mono snip">  classification_outputs_classes = tf.compat.v1.saved_model.utils.build_tensor_info(</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>111</td><td class="mono snip">  classification_outputs_scores = tf.compat.v1.saved_model.utils.build_tensor_info(</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>115</td><td class="mono snip">      tf.compat.v1.saved_model.signature_def_utils.build_signature_def(</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>131</td><td class="mono snip">  tensor_info_x = tf.compat.v1.saved_model.utils.build_tensor_info(x)</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>132</td><td class="mono snip">  tensor_info_y = tf.compat.v1.saved_model.utils.build_tensor_info(y)</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>135</td><td class="mono snip">      tf.compat.v1.saved_model.signature_def_utils.build_signature_def(</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#ef4444"></span>CRITICAL</td><td class="mono">…g/model_servers/tensorflow_model_server_test_client.py</td><td>30</td><td class="mono snip">tf.compat.v1.app.flags.DEFINE_string('server', 'localhost:8500',</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Decorative Section Separators</span><span class="cat-meta">54 hits &middot; 162 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tools/run_in_docker.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tools/gen_status_stamp.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/experimental/example/half_plus_two_with_rpop.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/experimental/example/remote_predict_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…experimental/example/half_plus_two_with_rpop_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/tools/docker/setup.sources.sh</td><td>16</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_mkl_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_mkl_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_mkl_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_gpu_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_gpu_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_gpu_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ow_serving/tools/docker/tests/dockerfile_devel_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ow_serving/tools/docker/tests/dockerfile_devel_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ow_serving/tools/docker/tests/dockerfile_devel_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…nsorflow_serving/tools/docker/tests/docker_test_lib.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…nsorflow_serving/tools/docker/tests/dockerfile_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…nsorflow_serving/tools/docker/tests/dockerfile_test.sh</td><td>31</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…nsorflow_serving/tools/docker/tests/dockerfile_test.sh</td><td>39</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_mkl_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_mkl_test.sh</td><td>31</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…flow_serving/tools/docker/tests/dockerfile_mkl_test.sh</td><td>39</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ng/tools/docker/tests/dockerfile_devel_gpu_trt_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ng/tools/docker/tests/dockerfile_devel_gpu_trt_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ng/tools/docker/tests/dockerfile_devel_gpu_trt_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_gpu_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_gpu_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/tools/docker/tests/dockerfile_devel_gpu_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/tools/docker/tests/dockerfile_gpu_trt_test.sh</td><td>15</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/tools/docker/tests/dockerfile_gpu_trt_test.sh</td><td>32</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/tools/docker/tests/dockerfile_gpu_trt_test.sh</td><td>40</td><td class="mono snip"># ------------------------------------------------------------------------------</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/apis/model_service_pb2_grpc.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2_grpc.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/apis/model_service_pb2.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_warmup.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_client_grpc.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_k8s.yaml</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…/servables/tensorflow/testdata/parse_example_tflite.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/servables/tensorflow/testdata/export_counter.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…vables/tensorflow/testdata/export_bad_half_plus_two.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/model_servers/profiler_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…g/model_servers/tensorflow_model_server_test_client.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…batching/test_util/matrix_half_plus_two_saved_model.py</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">.github/workflows/stale.yaml</td><td>14</td><td class="mono snip"># ==============================================================================</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Unused Imports</span><span class="cat-meta">38 hits &middot; 38 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/experimental/example/remote_predict_client.py</td><td>20</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/example/half_plus_two_with_rpop_client.py</td><td>39</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>20</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>21</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…experimental/tensorflow/ops/remote_predict/__init__.py</td><td>23</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>17</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>18</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ow/ops/remote_predict/python/ops/remote_predict_ops.py</td><td>26</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2.py</td><td>27</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/prediction_service_pb2.py</td><td>28</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/model_service_pb2.py</td><td>23</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/apis/model_service_pb2.py</td><td>24</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/resnet_warmup.py</td><td>34</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/resnet_client_grpc.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/resnet_client.py</td><td>30</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>28</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/mnist_saved_model.py</td><td>28</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>20</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/servables/tensorflow/testdata/export_counter.py</td><td>21</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/servables/tensorflow/testdata/export_counter.py</td><td>22</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/servables/tensorflow/testdata/export_counter.py</td><td>23</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>48</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>49</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>50</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>18</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>20</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/model_servers/profiler_client.py</td><td>17</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/model_servers/profiler_client.py</td><td>18</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/model_servers/profiler_client.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…g/model_servers/tensorflow_model_server_test_client.py</td><td>17</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…g/model_servers/tensorflow_model_server_test_client.py</td><td>18</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…g/model_servers/tensorflow_model_server_test_client.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>18</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>19</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>20</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Self-Referential Comments</span><span class="cat-meta">10 hits &middot; 26 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/experimental/example/half_plus_two_with_rpop.py</td><td>82</td><td class="mono snip">      # Create a placeholder for serialized tensorflow.Example messages to be</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…erving/experimental/example/half_plus_two_with_rpop.py</td><td>113</td><td class="mono snip">    # Initialize all variables and then save the SavedModel.</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_warmup.py</td><td>71</td><td class="mono snip">  # Create the assets.extra directory, assuming model_dir is the versioned</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/example/resnet_warmup.py</td><td>92</td><td class="mono snip">      # Create the inference request</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>140</td><td class="mono snip">  # Create an assets file that can be saved and restored as part of the</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>303</td><td class="mono snip">      # Create a placeholder for serialized tensorflow.Example messages to be</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>325</td><td class="mono snip">        # Create a small convolution op to trigger MKL</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>336</td><td class="mono snip">        # Create a small convolution op to trigger MKL</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>349</td><td class="mono snip">        # Create a small convolution op to trigger MKL</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>379</td><td class="mono snip">    # Initialize all variables and then save the SavedModel.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Fake / Example Data</span><span class="cat-meta">10 hits &middot; 13 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>101</td><td class="mono snip">  def __init__(self, images, labels, fake_data=False, one_hot=False):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>102</td><td class="mono snip">    &quot;&quot;&quot;Construct a DataSet. one_hot arg is used only if fake_data is true.&quot;&quot;&quot;</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>104</td><td class="mono snip">    if fake_data:</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>142</td><td class="mono snip">  def next_batch(self, batch_size, fake_data=False):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>144</td><td class="mono snip">    if fake_data:</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>171</td><td class="mono snip">def read_data_sets(train_dir, fake_data=False, one_hot=False):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>179</td><td class="mono snip">  if fake_data:</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>180</td><td class="mono snip">    data_sets.train = DataSet([], [], fake_data=True, one_hot=one_hot)</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>181</td><td class="mono snip">    data_sets.validation = DataSet([], [], fake_data=True, one_hot=one_hot)</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW<span title="Clustered — 3+ hits in 10-line window" style="color:#f59e0b;font-size:.85rem;margin-left:2px">&#9889;</span></td><td class="mono">tensorflow_serving/example/mnist_input_data.py</td><td>182</td><td class="mono snip">    data_sets.test = DataSet([], [], fake_data=True, one_hot=one_hot)</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Hyper-Verbose Identifiers</span><span class="cat-meta">11 hits &middot; 10 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/experimental/example/half_plus_two_with_rpop.py</td><td>46</td><td class="mono snip">def _generate_saved_model_for_half_plus_two(export_dir, target_address,</td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…/servables/tensorflow/testdata/parse_example_tflite.py</td><td>66</td><td class="mono snip">def _generate_tflite_for_parse_example_with_string(export_dir):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…erving/servables/tensorflow/testdata/export_counter.py</td><td>37</td><td class="mono snip">def build_signature_def_from_tensors(inputs, outputs, method_name):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>105</td><td class="mono snip">def _build_regression_signature(input_tensor, output_tensor):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>122</td><td class="mono snip">def _build_classification_signature(input_tensor, scores_tensor):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…ables/tensorflow/testdata/saved_model_half_plus_two.py</td><td>259</td><td class="mono snip">def _generate_saved_model_for_half_plus_two(</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>655</td><td class="mono snip">  def test_tf_saved_model_save_multiple_signatures(self):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>681</td><td class="mono snip">  def test_sequential_keras_saved_model_save(self):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>705</td><td class="mono snip">  def test_distrat_sequential_keras_saved_model_save(self):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>737</td><td class="mono snip">  def test_profiler_service_with_valid_trace_request(self):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…batching/test_util/matrix_half_plus_two_saved_model.py</td><td>23</td><td class="mono snip">def _generate_saved_model_for_matrix_half_plus_two(export_dir):</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#f59e0b"></span><span class="cat-name">Docstring Block Structure</span><span class="cat-meta">2 hits &middot; 10 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">tensorflow_serving/example/mnist_client.py</td><td>124</td><td class="mono snip">Tests PredictionService with concurrent requests.
+
+  Args:
+    hostport: Host:port address of the PredictionService.
+   </td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr><tr><td><span class="sev-dot" style="background:#f59e0b"></span>HIGH</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>152</td><td class="mono snip">Run tensorflow_model_server using test config.
+
+    A unique instance of server is started for each set of arguments.
+  </td><td><span style="color:#fbbf24;font-size:.75rem;font-weight:600">STRING</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Excessive Try-Catch Wrapping</span><span class="cat-meta">9 hits &middot; 9 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>453</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>473</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>493</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>514</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>534</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>563</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>579</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>597</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>102</td><td class="mono snip">    except Exception as e:  # pylint: disable=broad-except</td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">AI Slop Vocabulary</span><span class="cat-meta">1 hit &middot; 3 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">…_serving/model_servers/tensorflow_model_server_test.py</td><td>574</td><td class="mono snip">        # the sort OK (and the test robust).</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#eab308"></span><span class="cat-name">Slop Phrases</span><span class="cat-meta">1 hit &middot; 3 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#eab308"></span>MEDIUM</td><td class="mono">tensorflow_serving/batching/streaming_batch_scheduler.h</td><td>167</td><td class="mono snip">  // StreamingBatchScheduler never enqueues tasks, as discussed above.</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">Example Usage Blocks</span><span class="cat-meta">1 hit &middot; 2 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">tensorflow_serving/core/basic_manager.h</td><td>89</td><td class="mono snip">/// Example usage:</td><td><span style="color:#67e8f9;font-size:.75rem;font-weight:600">COMMENT</span></td></tr></tbody></table></div></details><details class="cat-item fade-in"><summary class="cat-header"><span class="cat-dot" style="background:#34d399"></span><span class="cat-name">AI Structural Patterns</span><span class="cat-meta">1 hit &middot; 1 pts</span></summary><div class="cat-body"><table style="width:100%"><thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Snippet</th><th>Context</th></tr></thead><tbody><tr><td><span class="sev-dot" style="background:#34d399"></span>LOW</td><td class="mono">…servers/test_util/tensorflow_model_server_test_base.py</td><td>138</td><td class="mono snip"></td><td><span style="color:#34d399;font-size:.75rem;font-weight:600">CODE</span></td></tr></tbody></table></div></details>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>Scanned 2026-07-08 &middot; Generated 2026-07-12 13:18 UTC &middot; AI Code Slop Monitor
+    &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan" target="_blank" rel="noopener">SynthScan v2.0</a></p>
+    <p style="margin-top:.5rem">
+      <a class="back-link" href="../index_dark.html">&larr; Back to all repositories</a>
+      &ensp;
+      <a class="suggest-btn" style="display:inline-flex" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
+        Suggest a Repository
+      </a>
+    </p>
+    <div style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem; text-align:center;">
+      <small style="color:var(--text-dim);display:block;margin-bottom:.5rem;">
+        <strong>Disclaimer:</strong> This is a personal research project. Please help me in developing it further by reaching out, contributing, or starring the project on GitHub: <a href="https://github.com/marcoramilli" target="_blank" rel="noopener">@marcoramilli</a>.
+      </small>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleTheme() {
+    const isDark = window.location.pathname.includes('_dark.html');
+    if (isDark) {
+        window.location.assign(window.location.href.replace('_dark.html', '.html'));
+    } else {
+        window.location.assign(window.location.href.replace('.html', '_dark.html'));
+    }
+}
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ── History chart ──
+(function() {
+  const ctx = document.getElementById('histChart');
+  if (!ctx) return;
+  const grid = 'rgba(255,255,255,0.05)';
+  const tip  = {backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+                  borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,padding:10};
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["2026-06-29", "2026-07-05", "2026-07-06"],
+      datasets: [
+        {
+          label: 'Adjusted Score', data: [23.1, 23.1, 23.0], yAxisID: 'y',
+          borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)',
+          fill: true, tension: .35, pointRadius: 5, borderWidth: 2,
+          pointBackgroundColor: '#06b6d4', pointBorderColor: '#07101a', pointBorderWidth: 2,
+        },
+        {
+          label: 'Pattern Hits', data: [403, 403, 411], yAxisID: 'y1',
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.06)',
+          fill: false, tension: .35, pointRadius: 4, borderWidth: 2,
+          pointBackgroundColor: '#f59e0b', borderDash: [5,3],
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: {mode:'index', intersect:false},
+      plugins: {legend: {labels: {color:'#94a3b8'}}, tooltip: tip},
+      scales: {
+        x: {grid:{color:grid}, ticks:{color:'#64748b',font:{size:11}}},
+        y: {type:'linear', position:'left', min:0,
+             title:{display:true,text:'Score',color:'#06b6d4'},
+             grid:{color:grid}, ticks:{color:'#64748b'}},
+        y1: {type:'linear', position:'right', min:0,
+              title:{display:true,text:'Hits',color:'#f59e0b'},
+              grid:{drawOnChartArea:false}, ticks:{color:'#64748b'}},
+      },
+      animation: {
+        duration: 1500,
+        easing: 'easeOutQuint',
+        y: { from: 0 }
+      },
+    },
+  });
+})();
+
+// ── Severity bar chart ──
+(function() {
+  const ctx = document.getElementById('sevChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+      datasets: [{
+        data: [18, 2, 66, 325],
+        backgroundColor: ["#ef4444", "#f59e0b", "#eab308", "#34d399"],
+        borderRadius: 8, barPercentage: .6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display: false},
+        tooltip: {
+          backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+          borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,
+          callbacks: {label: c => c.parsed.y + ' findings'},
+        },
+      },
+      scales: {
+        x: {grid:{display:false}, ticks:{color:'#94a3b8',font:{weight:'bold',size:12}}},
+        y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#64748b'}, min:0},
+      },
+      animation: {
+        duration: 1500,
+        easing: 'easeOutQuint',
+        y: { from: 0 }
+      },
+    },
+  });
+})();
+
+// ── Scroll fade-in ──
+const io = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+  {threshold: 0.08}
+);
+document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+// ── Directory breakdown chart ──
+(function() {
+  const ctx = document.getElementById('dirChart');
+  if (!ctx) return;
+  const grid = 'rgba(255,255,255,0.05)';
+  const tip  = {backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+                  borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,padding:10};
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ["tensorflow_serving/example", "tensorflow_serving/tools/docker/tests", "tensorflow_serving/core", "tensorflow_serving/model_servers", "tensorflow_serving/servables/tensorflow/testdata", "tensorflow_serving/util", "tensorflow_serving/servables/tensorflow", "tensorflow_serving/batching", "tensorflow_serving/apis", "tensorflow_serving/experimental/example", "tensorflow_serving/model_servers/test_util", "tools", "tensorflow_serving/experimental/tensorflow/ops/remote_predict", "tensorflow_serving/experimental/tensorflow/ops/remote_predict/python/ops", "tensorflow_serving/resources", "tensorflow_serving/util/net_http/server/public", "tensorflow_serving/util/net_http/compression", "tensorflow_serving/batching/test_util", "tensorflow_serving/core/test_util", "tensorflow_serving/tools/docker"],
+      datasets: [{
+        label: 'Score',
+        data: [220.8, 84, 77.5, 61, 45, 38, 25, 24, 22, 16.5, 15, 9, 8, 8, 8, 7, 6, 6, 5, 4],
+        backgroundColor: 'rgba(6,182,212,0.55)',
+        borderColor: '#06b6d4',
+        borderWidth: 1,
+        borderRadius: 8,
+        barPercentage: .6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend:{display:false}, tooltip:tip},
+      scales: {
+        x: {grid:{color:grid}, ticks:{color:'#64748b'}, min:0,
+             title:{display:true,text:'Raw score total',color:'#64748b'}},
+        y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#94a3b8',font:{size:11}}},
+      },
+      animation:{
+        duration: 1500,
+        easing: 'easeOutQuint',
+        x: { from: 0 }
+      },
+    },
+  });
+})();
+
+// ── Category filter ──
+function filterCats() {
+  const q   = document.getElementById('catSearch').value.toLowerCase();
+  const sev = document.getElementById('catSevFilter').value.toLowerCase();
+  document.querySelectorAll('#catList details').forEach(el => {
+    const txt = el.textContent.toLowerCase();
+    el.style.display = ((!sev || txt.includes(sev)) && (!q || txt.includes(q))) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>
