@@ -16,7 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.16/dist/plot.umd.min.js"></script>
 <style>
 
 :root {
@@ -324,7 +325,6 @@ footer a:hover{color:#67e8f9}
   .table-controls input{width:100%}
 }
 
-
 /* ── Detail page extras ── */
 .breadcrumb{display:flex;align-items:center;gap:.5rem;color:var(--text-dim);font-size:.85rem;margin-bottom:1.2rem}
 .breadcrumb a{color:var(--cyan)}
@@ -401,7 +401,7 @@ footer a:hover{color:#67e8f9}
 <div class="detail-hero">
   <div class="container">
     <div class="breadcrumb fade-in">
-      <a href="../index_dark.html">Home</a>
+      <a href="../index.html">Home</a>
       <span class="sep">/</span>
       <a href="https://github.com/thomaspark/bootswatch" target="_blank" rel="noopener">thomaspark</a>
       <span class="sep">/</span>
@@ -532,7 +532,7 @@ footer a:hover{color:#67e8f9}
 
 <footer>
   <div class="container">
-    <p>Scanned 2026-08-02 &middot; Generated 2026-08-13 16:31 UTC &middot; AI Code Slop Monitor
+    <p>Scanned 2026-08-02 &middot; Generated 2026-08-26 09:51 UTC &middot; AI Code Slop Monitor
     &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan" target="_blank" rel="noopener">SynthScan v2.0</a></p>
     <p style="margin-top:.5rem">
       <a class="back-link" href="../index.html">&larr; Back to all repositories</a>
@@ -553,103 +553,91 @@ footer a:hover{color:#67e8f9}
 <script>
 function toggleTheme() {
     let url = new URL(window.location.href);
-    if (url.pathname.endsWith('_dark.html')) {
-        url.pathname = url.pathname.replace('_dark.html', '.html');
+    if (url.pathname.endsWith('_light.html')) {
+        url.pathname = url.pathname.replace('_light.html', '.html');
     } else if (url.pathname.endsWith('.html')) {
-        url.pathname = url.pathname.replace('.html', '_dark.html');
+        url.pathname = url.pathname.replace('.html', '_light.html');
     } else {
         if (!url.pathname.endsWith('/')) url.pathname += '/';
-        url.pathname += 'index_dark.html';
+        url.pathname += 'index_light.html';
     }
     window.location.assign(url.toString());
 }
-Chart.defaults.color = '#64748b';
-Chart.defaults.font.family = "'Inter', sans-serif";
+
+function mountPlot(canvasId, plotObj) {
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+        const container = canvas.parentElement;
+        container.innerHTML = '';
+        container.appendChild(plotObj);
+    }
+}
 
 // ── History chart ──
 (function() {
-  const ctx = document.getElementById('histChart');
-  if (!ctx) return;
-  const grid = 'rgba(255,255,255,0.05)';
-  const tip  = {backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
-                  borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,padding:10};
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ["2026-07-08", "2026-07-14"],
-      datasets: [
-        {
-          label: 'Adjusted Score', data: [0.8, 0.8], yAxisID: 'y',
-          borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)',
-          fill: true, tension: .35, pointRadius: 5, borderWidth: 2,
-          pointBackgroundColor: '#06b6d4', pointBorderColor: '#07101a', pointBorderWidth: 2,
-        },
-        {
-          label: 'Pattern Hits', data: [965, 965], yAxisID: 'y1',
-          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.06)',
-          fill: false, tension: .35, pointRadius: 4, borderWidth: 2,
-          pointBackgroundColor: '#f59e0b', borderDash: [5,3],
-        },
+  const histDates = ["2026-07-08", "2026-07-14"];
+  const histScores = [0.8, 0.8];
+  const histHits = [965, 965];
+  const histData = histDates.map((d, i) => ({date: d, score: histScores[i], hits: histHits[i]}));
+  if(!histData.length) return;
+  const p = Plot.plot({
+      width: 800,
+      height: 250,
+      style: {background: "transparent", color: '#64748b', fontSize: "11px", fontFamily: "Inter"},
+      x: {type: "point", label: "Date"},
+      y: {grid: true, label: "Score / Hits"},
+      marks: [
+          Plot.lineY(histData, {x: "date", y: "score", stroke: '#06b6d4', title: "Score"}),
+          Plot.dot(histData, {x: "date", y: "score", fill: '#06b6d4', title: d => `Date: ${d.date}\nScore: ${d.score}`}),
+          Plot.lineY(histData, {x: "date", y: "hits", stroke: '#f59e0b', strokeDasharray: "5,3", title: "Hits"}),
+          Plot.dot(histData, {x: "date", y: "hits", fill: '#f59e0b', title: d => `Date: ${d.date}\nHits: ${d.hits}`}),
+          Plot.ruleY([0])
       ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: {mode:'index', intersect:false},
-      plugins: {legend: {labels: {color:'#94a3b8'}}, tooltip: tip},
-      scales: {
-        x: {grid:{color:grid}, ticks:{color:'#64748b',font:{size:11}}},
-        y: {type:'linear', position:'left', min:0,
-             title:{display:true,text:'Score',color:'#06b6d4'},
-             grid:{color:grid}, ticks:{color:'#64748b'}},
-        y1: {type:'linear', position:'right', min:0,
-              title:{display:true,text:'Hits',color:'#f59e0b'},
-              grid:{drawOnChartArea:false}, ticks:{color:'#64748b'}},
-      },
-      animation: {
-        duration: 1500,
-        easing: 'easeOutQuint',
-        y: { from: 0 }
-      },
-    },
   });
+  mountPlot('histChart', p);
 })();
 
 // ── Severity bar chart ──
 (function() {
-  const ctx = document.getElementById('sevChart');
-  if (!ctx) return;
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
-      datasets: [{
-        data: [5, 0, 79, 881],
-        backgroundColor: ["#ef4444", "#f59e0b", "#eab308", "#34d399"],
-        borderRadius: 8, barPercentage: .6,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {display: false},
-        tooltip: {
-          backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
-          borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,
-          callbacks: {label: c => c.parsed.y + ' findings'},
-        },
-      },
-      scales: {
-        x: {grid:{display:false}, ticks:{color:'#94a3b8',font:{weight:'bold',size:12}}},
-        y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#64748b'}, min:0},
-      },
-      animation: {
-        duration: 1500,
-        easing: 'easeOutQuint',
-        y: { from: 0 }
-      },
-    },
+  const sevLabels = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+  const sevVals = [5, 0, 79, 881];
+  const sevColors = ["#ef4444", "#f59e0b", "#eab308", "#34d399"];
+  const sevData = sevLabels.map((l, i) => ({label: l, value: sevVals[i], color: sevColors[i]}));
+  const p = Plot.plot({
+      width: 800,
+      height: 160,
+      style: {background: "transparent", color: '#64748b', fontSize: "11px", fontFamily: "Inter"},
+      x: {domain: sevLabels, label: null},
+      y: {grid: true, label: "Findings"},
+      marks: [
+          Plot.barY(sevData, {x: "label", y: "value", fill: "color", title: d => d.value + " findings", rx: 4}),
+          Plot.ruleY([0])
+      ]
   });
+  mountPlot('sevChart', p);
 })();
+
+// ── Directory breakdown chart ──
+(function() {
+  const dirLabels = ["docs/3/bower_components/font-awesome/src", "docs/3/bower_components/font-awesome/src/3.2.1/test", "docs/3/bower_components/font-awesome/src/assets/js", "docs/2/bower_components/jquery", "docs/2/bower_components/bootstrap/docs", "docs/3/journal", "docs/3/paper", "docs/3/united", "docs/3/cerulean", "docs/3/sandstone", "docs/3/slate", "docs/3/simplex", "docs/3/lumen", "docs/3/readable", "docs/3/flatly", "docs/3/cosmo", "docs/3/superhero", "docs/3/cyborg", "docs/3/darkly", "docs/3/spacelab"];
+  const dirVals = [202.5, 67.5, 28, 28, 25, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22];
+  const dirData = dirLabels.map((l, i) => ({label: l, value: dirVals[i]}));
+  if(!dirData.length) return;
+  const p = Plot.plot({
+      width: 800,
+      height: Math.min(40 * dirData.length + 60, 480),
+      marginLeft: 150,
+      style: {background: "transparent", color: '#64748b', fontSize: "11px", fontFamily: "Inter"},
+      x: {grid: true, label: "Score"},
+      y: {domain: dirLabels, label: null},
+      marks: [
+          Plot.barX(dirData, {x: "value", y: "label", fill: 'rgba(6,182,212,0.55)', stroke: '#06b6d4', title: d => d.label + ": " + d.value, rx: 4}),
+          Plot.ruleX([0])
+      ]
+  });
+  mountPlot('dirChart', p);
+})();
+
 
 // ── Scroll fade-in ──
 const io = new IntersectionObserver(
@@ -657,45 +645,6 @@ const io = new IntersectionObserver(
   {threshold: 0.08}
 );
 document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
-
-// ── Directory breakdown chart ──
-(function() {
-  const ctx = document.getElementById('dirChart');
-  if (!ctx) return;
-  const grid = 'rgba(255,255,255,0.05)';
-  const tip  = {backgroundColor:'rgba(7,16,26,0.95)',titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
-                  borderColor:'rgba(6,182,212,0.2)',borderWidth:1,cornerRadius:10,padding:10};
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ["docs/3/bower_components/font-awesome/src", "docs/3/bower_components/font-awesome/src/3.2.1/test", "docs/3/bower_components/font-awesome/src/assets/js", "docs/2/bower_components/jquery", "docs/2/bower_components/bootstrap/docs", "docs/3/journal", "docs/3/paper", "docs/3/united", "docs/3/cerulean", "docs/3/sandstone", "docs/3/slate", "docs/3/simplex", "docs/3/lumen", "docs/3/readable", "docs/3/flatly", "docs/3/cosmo", "docs/3/superhero", "docs/3/cyborg", "docs/3/darkly", "docs/3/spacelab"],
-      datasets: [{
-        label: 'Score',
-        data: [202.5, 67.5, 28, 28, 25, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-        backgroundColor: 'rgba(6,182,212,0.55)',
-        borderColor: '#06b6d4',
-        borderWidth: 1,
-        borderRadius: 8,
-        barPercentage: .6,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: {legend:{display:false}, tooltip:tip},
-      scales: {
-        x: {grid:{color:grid}, ticks:{color:'#64748b'}, min:0,
-             title:{display:true,text:'Raw score total',color:'#64748b'}},
-        y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#94a3b8',font:{size:11}}},
-      },
-      animation:{
-        duration: 1500,
-        easing: 'easeOutQuint',
-        x: { from: 0 }
-      },
-    },
-  });
-})();
 
 // ── Category filter ──
 function filterCats() {

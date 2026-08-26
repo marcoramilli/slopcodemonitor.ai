@@ -16,7 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.16/dist/plot.umd.min.js"></script>
 <style>
 
 :root {
@@ -247,7 +248,6 @@ footer a:hover{text-decoration-color:var(--text-hi)}
   .table-controls input{width:100%}
 }
 
-
 /* ── Detail page extras (light theme) ── */
 .breadcrumb{display:flex;align-items:center;gap:.5rem;color:var(--text-dim);font-size:.85rem;margin-bottom:1.5rem}
 .breadcrumb a{color:var(--text-hi);text-decoration:none}
@@ -305,7 +305,7 @@ footer a:hover{text-decoration-color:var(--text-hi)}
     <div class="nav-logo">
     </div>
     <ul class="nav-links" style="display:flex">
-      <li><a href="index_light.html">&larr; All Repositories</a></li>
+      <li><a href="../index_light.html">&larr; All Repositories</a></li>
       <li><a href="https://github.com/clap-rs/clap" target="_blank" rel="noopener">GitHub &rarr;</a></li>
     </ul>
     <div style="display:flex; gap:0.5rem">
@@ -328,7 +328,7 @@ footer a:hover{text-decoration-color:var(--text-hi)}
 <div class="detail-hero">
   <div class="container">
     <div class="breadcrumb fade-in">
-      <a href="../index.html">Home</a>
+      <a href="../index_light.html">Home</a>
       <span class="sep">/</span>
       <a href="https://github.com/clap-rs/clap" target="_blank" rel="noopener">clap-rs</a>
       <span class="sep">/</span>
@@ -459,10 +459,10 @@ footer a:hover{text-decoration-color:var(--text-hi)}
 
 <footer>
   <div class="container">
-    <p>Scanned 2026-08-02 &middot; Generated 2026-08-13 16:31 UTC &middot; AI Code Slop Monitor
+    <p>Scanned 2026-08-02 &middot; Generated 2026-08-26 09:51 UTC &middot; AI Code Slop Monitor
     &middot; Powered by <a href="https://github.com/marcoramilli/SynthScan" target="_blank" rel="noopener">SynthScan v2.0</a></p>
     <p style="margin-top:.5rem">
-      <a class="back-link" href="index_light.html">&larr; Back to all repositories</a>
+      <a class="back-link" href="../index_light.html">&larr; Back to all repositories</a>
       &ensp;
       <a class="suggest-btn" style="display:inline-flex" href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A%0A%3E+Any+extra+details+about+why+this+repo+is+interesting+to+analyse.%0A" target="_blank" rel="noopener">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0Z"/></svg>
@@ -480,103 +480,91 @@ footer a:hover{text-decoration-color:var(--text-hi)}
 <script>
 function toggleTheme() {
     let url = new URL(window.location.href);
-    if (url.pathname.endsWith('_dark.html')) {
-        url.pathname = url.pathname.replace('_dark.html', '.html');
+    if (url.pathname.endsWith('_light.html')) {
+        url.pathname = url.pathname.replace('_light.html', '.html');
     } else if (url.pathname.endsWith('.html')) {
-        url.pathname = url.pathname.replace('.html', '_dark.html');
+        url.pathname = url.pathname.replace('.html', '_light.html');
     } else {
         if (!url.pathname.endsWith('/')) url.pathname += '/';
-        url.pathname += 'index_dark.html';
+        url.pathname += 'index_light.html';
     }
     window.location.assign(url.toString());
 }
-Chart.defaults.color = '#57534e';
-Chart.defaults.font.family = "'Inter', sans-serif";
+
+function mountPlot(canvasId, plotObj) {
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+        const container = canvas.parentElement;
+        container.innerHTML = '';
+        container.appendChild(plotObj);
+    }
+}
 
 // ── History chart ──
 (function() {
-  const ctx = document.getElementById('histChart');
-  if (!ctx) return;
-  const grid = 'rgba(0,0,0,0.06)';
-  const tip  = {backgroundColor:'#ffffff',titleColor:'#111827',bodyColor:'#374151',
-                  borderColor:'#d6d3d1',borderWidth:1,cornerRadius:0,padding:10};
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ["2026-04-28", "2026-05-08", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-20", "2026-05-25", "2026-05-26", "2026-05-31", "2026-06-03", "2026-06-19", "2026-07-05", "2026-07-06", "2026-07-08", "2026-07-14"],
-      datasets: [
-        {
-          label: 'Adjusted Score', data: [0.3, 0.3, 0.3, 6.3, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.3, 6.3, 6.3], yAxisID: 'y',
-          borderColor: '#57534e', backgroundColor: 'rgba(87,83,78,0.06)',
-          fill: false, tension: 0, pointRadius: 5, borderWidth: 2,
-          pointBackgroundColor: '#57534e', pointBorderColor: '#ffffff', pointBorderWidth: 2,
-        },
-        {
-          label: 'Pattern Hits', data: [16, 16, 16, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 792, 792, 793], yAxisID: 'y1',
-          borderColor: '#b91c1c', backgroundColor: 'rgba(185,28,28,0.06)',
-          fill: false, tension: 0, pointRadius: 4, borderWidth: 2,
-          pointBackgroundColor: '#b91c1c', borderDash: [5,3],
-        },
+  const histDates = ["2026-04-28", "2026-05-08", "2026-05-15", "2026-05-16", "2026-05-17", "2026-05-18", "2026-05-20", "2026-05-25", "2026-05-26", "2026-05-31", "2026-06-03", "2026-06-19", "2026-07-05", "2026-07-06", "2026-07-08", "2026-07-14"];
+  const histScores = [0.3, 0.3, 0.3, 6.3, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.1, 6.3, 6.3, 6.3];
+  const histHits = [16, 16, 16, 788, 788, 788, 788, 788, 788, 788, 788, 788, 788, 792, 792, 793];
+  const histData = histDates.map((d, i) => ({date: d, score: histScores[i], hits: histHits[i]}));
+  if(!histData.length) return;
+  const p = Plot.plot({
+      width: 800,
+      height: 250,
+      style: {background: "transparent", color: '#57534e', fontSize: "11px", fontFamily: "Inter"},
+      x: {type: "point", label: "Date"},
+      y: {grid: true, label: "Score / Hits"},
+      marks: [
+          Plot.lineY(histData, {x: "date", y: "score", stroke: '#57534e', title: "Score"}),
+          Plot.dot(histData, {x: "date", y: "score", fill: '#57534e', title: d => `Date: ${d.date}\nScore: ${d.score}`}),
+          Plot.lineY(histData, {x: "date", y: "hits", stroke: '#b91c1c', strokeDasharray: "5,3", title: "Hits"}),
+          Plot.dot(histData, {x: "date", y: "hits", fill: '#b91c1c', title: d => `Date: ${d.date}\nHits: ${d.hits}`}),
+          Plot.ruleY([0])
       ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: {mode:'index', intersect:false},
-      plugins: {legend: {labels: {color:'#78716c'}}, tooltip: tip},
-      scales: {
-        x: {grid:{color:grid}, ticks:{color:'#57534e',font:{size:11}}},
-        y: {type:'linear', position:'left', min:0,
-             title:{display:true,text:'Score',color:'#57534e'},
-             grid:{color:grid}, ticks:{color:'#57534e'}},
-        y1: {type:'linear', position:'right', min:0,
-              title:{display:true,text:'Hits',color:'#b91c1c'},
-              grid:{drawOnChartArea:false}, ticks:{color:'#57534e'}},
-      },
-      animation: {
-        duration: 1500,
-        easing: 'easeOutQuint',
-        y: { from: 0 }
-      },
-    },
   });
+  mountPlot('histChart', p);
 })();
 
 // ── Severity bar chart ──
 (function() {
-  const ctx = document.getElementById('sevChart');
-  if (!ctx) return;
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
-      datasets: [{
-        data: [0, 4, 0, 789],
-        backgroundColor: ["#b91c1c", "#a8a29e", "#d6d3d1", "#f5f5f4"],
-        borderRadius: 0, barPercentage: 0.9,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {display: false},
-        tooltip: {
-          backgroundColor:'#ffffff',titleColor:'#111827',bodyColor:'#374151',
-          borderColor:'#d6d3d1',borderWidth:1,cornerRadius:0,
-          callbacks: {label: c => c.parsed.y + ' findings'},
-        },
-      },
-      scales: {
-        x: {grid:{display:false}, ticks:{color:'#78716c',font:{weight:'bold',size:12}}},
-        y: {grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#57534e'}, min:0},
-      },
-      animation: {
-        duration: 1500,
-        easing: 'easeOutQuint',
-        y: { from: 0 }
-      },
-    },
+  const sevLabels = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+  const sevVals = [0, 4, 0, 789];
+  const sevColors = ["#b91c1c", "#a8a29e", "#d6d3d1", "#f5f5f4"];
+  const sevData = sevLabels.map((l, i) => ({label: l, value: sevVals[i], color: sevColors[i]}));
+  const p = Plot.plot({
+      width: 800,
+      height: 160,
+      style: {background: "transparent", color: '#57534e', fontSize: "11px", fontFamily: "Inter"},
+      x: {domain: sevLabels, label: null},
+      y: {grid: true, label: "Findings"},
+      marks: [
+          Plot.barY(sevData, {x: "label", y: "value", fill: "color", title: d => d.value + " findings", rx: 4}),
+          Plot.ruleY([0])
+      ]
   });
+  mountPlot('sevChart', p);
 })();
+
+// ── Directory breakdown chart ──
+(function() {
+  const dirLabels = ["clap_builder/src/builder", "tests/derive", "clap_builder/src/parser/matches", "src/_derive", "src", "clap_builder/src/error", "clap_builder/src", "clap_lex/src", "src/_cookbook", "clap_complete/src/aot/generator", ".", "clap_complete/src/aot/shells", "tests/derive_ui", "clap_derive/src/derives", ".github", "clap_complete/src/engine", "clap_complete/src", "clap_builder/src/util", "clap_builder/src/output/textwrap", "tests"];
+  const dirVals = [293.5, 43, 38, 37.5, 30, 23, 20, 18, 17, 11, 10, 10, 8, 5, 5, 4, 3, 3, 3, 3];
+  const dirData = dirLabels.map((l, i) => ({label: l, value: dirVals[i]}));
+  if(!dirData.length) return;
+  const p = Plot.plot({
+      width: 800,
+      height: Math.min(40 * dirData.length + 60, 480),
+      marginLeft: 150,
+      style: {background: "transparent", color: '#57534e', fontSize: "11px", fontFamily: "Inter"},
+      x: {grid: true, label: "Score"},
+      y: {domain: dirLabels, label: null},
+      marks: [
+          Plot.barX(dirData, {x: "value", y: "label", fill: 'rgba(87,83,78,0.1)', stroke: '#57534e', title: d => d.label + ": " + d.value, rx: 4}),
+          Plot.ruleX([0])
+      ]
+  });
+  mountPlot('dirChart', p);
+})();
+
 
 // ── Scroll fade-in ──
 const io = new IntersectionObserver(
@@ -584,45 +572,6 @@ const io = new IntersectionObserver(
   {threshold: 0.08}
 );
 document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
-
-// ── Directory breakdown chart ──
-(function() {
-  const ctx = document.getElementById('dirChart');
-  if (!ctx) return;
-  const grid = 'rgba(0,0,0,0.06)';
-  const tip  = {backgroundColor:'#ffffff',titleColor:'#111827',bodyColor:'#374151',
-                  borderColor:'#d6d3d1',borderWidth:1,cornerRadius:0,padding:10};
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ["clap_builder/src/builder", "tests/derive", "clap_builder/src/parser/matches", "src/_derive", "src", "clap_builder/src/error", "clap_builder/src", "clap_lex/src", "src/_cookbook", "clap_complete/src/aot/generator", ".", "clap_complete/src/aot/shells", "tests/derive_ui", "clap_derive/src/derives", ".github", "clap_complete/src/engine", "clap_complete/src", "clap_builder/src/util", "clap_builder/src/output/textwrap", "tests"],
-      datasets: [{
-        label: 'Score',
-        data: [293.5, 43, 38, 37.5, 30, 23, 20, 18, 17, 11, 10, 10, 8, 5, 5, 4, 3, 3, 3, 3],
-        backgroundColor: 'rgba(87,83,78,0.1)',
-        borderColor: '#57534e',
-        borderWidth: 1,
-        borderRadius: 0,
-        barPercentage: 0.9,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: {legend:{display:false}, tooltip:tip},
-      scales: {
-        x: {grid:{color:grid}, ticks:{color:'#57534e'}, min:0,
-             title:{display:true,text:'Raw score total',color:'#57534e'}},
-        y: {grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#78716c',font:{size:11}}},
-      },
-      animation:{
-        duration: 1500,
-        easing: 'easeOutQuint',
-        x: { from: 0 }
-      },
-    },
-  });
-})();
 
 // ── Category filter ──
 function filterCats() {
