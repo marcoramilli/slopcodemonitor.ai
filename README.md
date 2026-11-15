@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Real-time detection of AI-generated code across open-source repositories</strong><br>
-  <em>Powered by <a href="https://github.com/marcoramilli/SynthScan">SynthScan</a> — the synthetic code fingerprint engine</em>
+  <em>Powered by SynthScan — the synthetic code fingerprint engine</em>
 </p>
 
 <p align="center">
@@ -104,10 +104,10 @@ The dashboard is rebuilt daily and features:
 
 ## 🤝 Suggest a Repository
 
-Think a repo should be scanned? Open an issue:
+Find a repository and follow the suggestion link if it has not been scanned:
 
 <p align="center">
-  <a href="https://github.com/marcoramilli/slopcodemonitor.ai/issues/new?title=%5BRepo+Suggestion%5D+&labels=repo-suggestion&body=%23%23+Repository+Suggestion%0A%0A**Repository+URL**%3A+%0A%3E+Paste+the+full+GitHub+URL+here+%28e.g.+https%3A%2F%2Fgithub.com%2Fowner%2Frepo%29%0A%0A**Why+should+we+scan+this+repo%3F**%0A%0A-+%5B+%5D+Popular+%2F+widely+used+project%0A-+%5B+%5D+Suspected+AI-generated+code%0A-+%5B+%5D+Educational+%2F+research+interest%0A-+%5B+%5D+Other%0A%0A**Additional+context+%28optional%29**%3A%0A"><img src="https://img.shields.io/badge/➕_Suggest_a_Repository-10b981?style=for-the-badge" alt="Suggest a Repository"></a>
+  <a href="https://slopcodemonitor.ai/#badge-generator">Find a Repository</a>
 </p>
 
 ---
@@ -116,12 +116,12 @@ Think a repo should be scanned? Open an issue:
 
 | Project | Description |
 |---|---|
-| [**SynthScan**](https://github.com/marcoramilli/SynthScan) | The pattern-matching engine that powers this monitor |
-| [**SLOP-Code-Calculator**](https://github.com/marcoramilli/SLOP-Code-Calculator) | Source code for the scanner, fetcher, and report generator |
+| [**Dashboard**](https://slopcodemonitor.ai/) | Repository reports and benchmarks |
+| [**Methodology**](https://slopcodemonitor.ai/#risk-payload-methodology) | Scan and scoring definitions |
 
 ---
 
 <p align="center">
   <img src="images/logo.png" alt="" width="40"><br>
-  <sub>Built by <a href="https://github.com/marcoramilli">Marco Ramilli</a> · Updated daily · Powered by SynthScan</sub>
+  <sub>Updated daily · Powered by SynthScan</sub>
 </p>
